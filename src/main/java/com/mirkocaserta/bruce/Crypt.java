@@ -389,19 +389,38 @@ public class Crypt {
     }
 
     /**
-     * Returns a signer for the given private key.
+     * Returns a signer for the given private key with
+     * the default signing algorithm.
      *
      * @param privateKey the signing key
      * @return the signer
+     * @see Crypt#DEFAULT_SIGNING_ALGORITHM
      */
     public static Signer signer(PrivateKey privateKey) {
         return signer(privateKey, DEFAULT_SIGNING_ALGORITHM);
     }
 
+    /**
+     * Returns a signer for the given private key and
+     * algorithm.
+     *
+     * @param privateKey the signing key
+     * @param algorithm the signing algorithm
+     * @return the signer
+     */
     public static Signer signer(PrivateKey privateKey, String algorithm) {
         return signer(privateKey, algorithm, null);
     }
 
+    /**
+     * Returns a signer for the given private key,
+     * algorithm and provider.
+     *
+     * @param privateKey the signing key
+     * @param algorithm the signing algorithm
+     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @return the signer
+     */
     public static Signer signer(PrivateKey privateKey, String algorithm, String provider) {
         return message -> {
             try {
