@@ -388,15 +388,21 @@ public class Crypt {
         return digester(algorithm, (String) null);
     }
 
-    public static com.mirkocaserta.bruce.signature.Signer signer(PrivateKey privateKey) {
+    /**
+     * Returns a signer for the given private key.
+     *
+     * @param privateKey the signing key
+     * @return the signer
+     */
+    public static Signer signer(PrivateKey privateKey) {
         return signer(privateKey, DEFAULT_SIGNING_ALGORITHM);
     }
 
-    public static com.mirkocaserta.bruce.signature.Signer signer(PrivateKey privateKey, String algorithm) {
+    public static Signer signer(PrivateKey privateKey, String algorithm) {
         return signer(privateKey, algorithm, null);
     }
 
-    public static com.mirkocaserta.bruce.signature.Signer signer(PrivateKey privateKey, String algorithm, String provider) {
+    public static Signer signer(PrivateKey privateKey, String algorithm, String provider) {
         return message -> {
             try {
                 // this way signature should be thread safe
