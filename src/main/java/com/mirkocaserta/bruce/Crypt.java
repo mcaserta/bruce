@@ -235,6 +235,15 @@ public class Crypt {
         }
     }
 
+    /**
+     * Loads a private key from the given keystore.
+     *
+     * @param keystore the keystore to read from
+     * @param alias    the certificate alias
+     * @param password the private key password
+     * @return the private key
+     * @throws CryptException on loading errors
+     */
     public static PrivateKey privateKey(KeyStore keystore, String alias, String password) {
         try {
             final KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keystore.getEntry(alias, new KeyStore.PasswordProtection(password.toCharArray()));
@@ -249,6 +258,15 @@ public class Crypt {
         }
     }
 
+    /**
+     * Loads a secret key from the given keystore.
+     *
+     * @param keystore the keystore to read from
+     * @param alias    the secret key alias
+     * @param password the secret key password
+     * @return the secret key
+     * @throws CryptException on loading errors
+     */
     public static Key secretKey(KeyStore keystore, String alias, String password) {
         try {
             final Key key = keystore.getKey(alias, password.toCharArray());
