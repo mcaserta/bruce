@@ -1,0 +1,85 @@
+package com.mirkocaserta.bruce.digest;
+
+import com.mirkocaserta.bruce.Crypt;
+import com.mirkocaserta.bruce.CryptException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.nio.charset.StandardCharsets;
+
+import static com.mirkocaserta.bruce.Crypt.digester;
+import static com.mirkocaserta.bruce.digest.DigesterConsts.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+@DisplayName("Raw digester tests")
+class DigesterTest {
+
+    @Test
+    @DisplayName("Digester for the SHA1 algorithm")
+    void sha1() {
+        Digester digester = Crypt.digester("SHA1");
+        assertArrayEquals(MESSAGE_SHA1, digester.digest("message".getBytes(StandardCharsets.UTF_8)));
+        assertArrayEquals(EMPTY_SHA1, digester.digest("".getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @Test
+    @DisplayName("Digester for the MD5 algorithm")
+    void md5() {
+        Digester digester = Crypt.digester("MD5");
+        assertArrayEquals(MESSAGE_MD5, digester.digest("message".getBytes(StandardCharsets.UTF_8)));
+        assertArrayEquals(EMPTY_MD5, digester.digest("".getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @Test
+    @DisplayName("Digester for an invalid algorithm should throw a DigesterException")
+    void invalidAlgorithm1() {
+        Assertions.assertThrows(
+                CryptException.class,
+                () -> Crypt.digester("foo"),
+                "No such algorithm: foo"
+        );
+    }
+
+    @Test
+    @DisplayName("Digester for an invalid algorithm and invalid provider should throw a DigesterException")
+    void invalidAlgorithm2() {
+        assertThrows(
+                CryptException.class,
+                () -> Crypt.digester("foo", "bar"),
+                "No such algorithm: foo"
+        );
+    }
+
+    @Test
+    @DisplayName("Digester for an invalid provider should throw a DigesterException")
+    void invalidProvider() {
+        assertThrows(
+                CryptException.class,
+                () -> Crypt.digester("SHA1", "foo"),
+                "No such provider: foo"
+        );
+    }
+
+    @Test
+    @DisplayName("Digester for an empty provider should throw a DigesterException")
+    void emptyProvider() {
+        assertThrows(
+                CryptException.class,
+                () -> Crypt.digester("SHA1", "   "),
+                "No such provider: '   '"
+        );
+    }
+
+    @Test
+    @DisplayName("Digester for an invalid encoder should throw a DigesterException")
+    void invalidEncoder() {
+        assertThrows(
+                CryptException.class,
+                () -> Crypt.digester("SHA1", "SUN", null),
+                "No such encoding: null"
+        );
+    }
+
+}
