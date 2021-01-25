@@ -1,6 +1,5 @@
 package com.mirkocaserta.bruce.digest;
 
-import com.mirkocaserta.bruce.Crypt;
 import com.mirkocaserta.bruce.CryptException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -19,7 +18,7 @@ class DigesterTest {
     @Test
     @DisplayName("Digester for the SHA1 algorithm")
     void sha1() {
-        Digester digester = Crypt.digester("SHA1");
+        Digester digester = digester("SHA1");
         assertArrayEquals(MESSAGE_SHA1, digester.digest("message".getBytes(StandardCharsets.UTF_8)));
         assertArrayEquals(EMPTY_SHA1, digester.digest("".getBytes(StandardCharsets.UTF_8)));
     }
@@ -27,7 +26,7 @@ class DigesterTest {
     @Test
     @DisplayName("Digester for the MD5 algorithm")
     void md5() {
-        Digester digester = Crypt.digester("MD5");
+        Digester digester = digester("MD5");
         assertArrayEquals(MESSAGE_MD5, digester.digest("message".getBytes(StandardCharsets.UTF_8)));
         assertArrayEquals(EMPTY_MD5, digester.digest("".getBytes(StandardCharsets.UTF_8)));
     }
@@ -37,7 +36,7 @@ class DigesterTest {
     void invalidAlgorithm1() {
         Assertions.assertThrows(
                 CryptException.class,
-                () -> Crypt.digester("foo"),
+                () -> digester("foo"),
                 "No such algorithm: foo"
         );
     }
@@ -47,7 +46,7 @@ class DigesterTest {
     void invalidAlgorithm2() {
         assertThrows(
                 CryptException.class,
-                () -> Crypt.digester("foo", "bar"),
+                () -> digester("foo", "bar"),
                 "No such algorithm: foo"
         );
     }
@@ -57,7 +56,7 @@ class DigesterTest {
     void invalidProvider() {
         assertThrows(
                 CryptException.class,
-                () -> Crypt.digester("SHA1", "foo"),
+                () -> digester("SHA1", "foo"),
                 "No such provider: foo"
         );
     }
@@ -67,7 +66,7 @@ class DigesterTest {
     void emptyProvider() {
         assertThrows(
                 CryptException.class,
-                () -> Crypt.digester("SHA1", "   "),
+                () -> digester("SHA1", "   "),
                 "No such provider: '   '"
         );
     }
@@ -77,7 +76,7 @@ class DigesterTest {
     void invalidEncoder() {
         assertThrows(
                 CryptException.class,
-                () -> Crypt.digester("SHA1", "SUN", null),
+                () -> digester("SHA1", "SUN", null),
                 "No such encoding: null"
         );
     }

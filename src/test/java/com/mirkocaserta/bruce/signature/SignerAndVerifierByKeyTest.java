@@ -6,22 +6,25 @@ import org.junit.jupiter.api.Test;
 import java.security.KeyStore;
 import java.util.Map;
 
+import static com.mirkocaserta.bruce.Crypt.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SignerAndVerifierByKeyTest {
 
-    private final KeyStore aliceKeystore = Crypt.keystore("classpath:/keystore-alice.p12", "password", "PKCS12");
+    private final KeyStore aliceKeystore = keystore("classpath:/keystore-alice.p12", "password", "PKCS12");
 
-    private final KeyStore bobKeystore = Crypt.keystore("classpath:/keystore-bob.p12", "password", "PKCS12");
+    private final KeyStore bobKeystore = keystore("classpath:/keystore-bob.p12", "password", "PKCS12");
 
-    private final SignerByKey signer = Crypt.signer(
-            Map.of("alice", Crypt.privateKey(aliceKeystore, "alice", "password"),
-                    "bob", Crypt.privateKey(bobKeystore, "bob", "password")));
+    private final SignerByKey signer =
+            signer(
+                    Map.of("alice", Crypt.privateKey(aliceKeystore, "alice", "password"),
+                            "bob", Crypt.privateKey(bobKeystore, "bob", "password")));
 
-    private final VerifierByKey verifier = Crypt.verifier(
-            Map.of("alice", Crypt.publicKey(aliceKeystore, "alice"),
-                    "bob", Crypt.publicKey(bobKeystore, "bob")));
+    private final VerifierByKey verifier =
+            verifier(
+                    Map.of("alice", Crypt.publicKey(aliceKeystore, "alice"),
+                            "bob", Crypt.publicKey(bobKeystore, "bob")));
 
     @Test
     void aliceAndBobHaveASignedAndVerifiedConversation() {

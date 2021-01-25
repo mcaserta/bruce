@@ -1,6 +1,5 @@
 package com.mirkocaserta.bruce.digest.spring;
 
-import com.mirkocaserta.bruce.Crypt;
 import com.mirkocaserta.bruce.digest.Digester;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.DisplayName;
@@ -49,12 +48,12 @@ class DigesterWithCustomProviderTest {
     public static class Cfg {
         @Bean
         public Digester md5() {
-            return Crypt.digester("MD5", "BC");
+            return digester("MD5", "BC");
         }
 
         @Bean
         public Digester sha1() {
-            return Crypt.digester("SHA1", "BC");
+            return digester("SHA1", "BC");
         }
     }
 

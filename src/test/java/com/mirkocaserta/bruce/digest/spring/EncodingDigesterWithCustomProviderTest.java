@@ -107,42 +107,42 @@ class EncodingDigesterWithCustomProviderTest {
     public static class Cfg {
         @Bean
         public EncodingDigester sha1hex() {
-            return Crypt.digester("SHA1", "BC", Crypt.Encoding.HEX);
+            return digester("SHA1", "BC", Crypt.Encoding.HEX);
         }
 
         @Bean
         public EncodingDigester sha1base64() {
-            return Crypt.digester("SHA1", "BC", Crypt.Encoding.BASE64);
+            return digester("SHA1", "BC", Crypt.Encoding.BASE64);
         }
 
         @Bean
         public EncodingDigester sha1url() {
-            return Crypt.digester("SHA1", "BC", Crypt.Encoding.URL);
+            return digester("SHA1", "BC", Crypt.Encoding.URL);
         }
 
         @Bean
         public EncodingDigester sha1mime() {
-            return Crypt.digester("SHA1", "BC", Crypt.Encoding.MIME);
+            return digester("SHA1", "BC", Crypt.Encoding.MIME);
         }
 
         @Bean
         public EncodingDigester md5hex() {
-            return Crypt.digester("MD5", "BC", Crypt.Encoding.HEX);
+            return digester("MD5", "BC", Crypt.Encoding.HEX);
         }
 
         @Bean
         public EncodingDigester md5base64() {
-            return Crypt.digester("MD5", "BC", Crypt.Encoding.BASE64);
+            return digester("MD5", "BC", Crypt.Encoding.BASE64);
         }
 
         @Bean
         public EncodingDigester md5url() {
-            return Crypt.digester("MD5", "BC", Crypt.Encoding.URL);
+            return digester("MD5", "BC", Crypt.Encoding.URL);
         }
 
         @Bean
         public EncodingDigester md5mime() {
-            return Crypt.digester("MD5", "BC", Crypt.Encoding.MIME);
+            return digester("MD5", "BC", Crypt.Encoding.MIME);
         }
     }
 

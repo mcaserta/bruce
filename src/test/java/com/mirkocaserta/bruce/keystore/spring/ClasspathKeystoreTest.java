@@ -1,6 +1,5 @@
 package com.mirkocaserta.bruce.keystore.spring;
 
-import com.mirkocaserta.bruce.Crypt;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +9,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.security.KeyStore;
 
+import static com.mirkocaserta.bruce.Crypt.keystore;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -29,8 +29,8 @@ class ClasspathKeystoreTest {
     @Configuration
     public static class Cfg {
         @Bean
-        public KeyStore keystore() {
-            return Crypt.keystore("classpath:keystore.jks", "password");
+        public KeyStore keystoreB() {
+            return keystore("classpath:keystore.jks", "password");
         }
     }
 

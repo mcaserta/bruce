@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 
+import static com.mirkocaserta.bruce.Crypt.keystore;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultKeystoreTest {
@@ -18,7 +19,7 @@ class DefaultKeystoreTest {
     void defaultKeystore() throws KeyStoreException {
         System.setProperty("javax.net.ssl.keyStore", "src/test/resources/keystore.jks");
         System.setProperty("javax.net.ssl.keyStorePassword", "password");
-        KeyStore keystore = Crypt.keystore();
+        KeyStore keystore = keystore();
         assertNotNull(keystore);
         assertEquals("JKS", keystore.getType(), "type");
         assertEquals(1, keystore.size(), "size");
@@ -29,7 +30,7 @@ class DefaultKeystoreTest {
     void defaultKeystoreWithType() throws KeyStoreException {
         System.setProperty("javax.net.ssl.keyStore", "src/test/resources/keystore.p12");
         System.setProperty("javax.net.ssl.keyStorePassword", "password");
-        KeyStore keystore = Crypt.keystore("PKCS12");
+        KeyStore keystore = keystore("PKCS12");
         assertNotNull(keystore);
         assertEquals("PKCS12", keystore.getType(), "type");
         assertEquals(2, keystore.size(), "size");

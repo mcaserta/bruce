@@ -1,6 +1,5 @@
 package com.mirkocaserta.bruce.digest.spring;
 
-import com.mirkocaserta.bruce.Crypt;
 import com.mirkocaserta.bruce.digest.Digester;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,12 +42,12 @@ class DigesterTest {
     public static class Cfg {
         @Bean
         public Digester md5() {
-            return Crypt.digester("MD5");
+            return digester("MD5");
         }
 
         @Bean
         public Digester sha1() {
-            return Crypt.digester("SHA1");
+            return digester("SHA1");
         }
     }
 
