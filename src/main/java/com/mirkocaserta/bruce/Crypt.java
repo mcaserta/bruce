@@ -28,7 +28,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * the rest.</p>
  *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
- * @since 1.5.0
  */
 public class Crypt {
 
