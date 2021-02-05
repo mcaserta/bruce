@@ -3,7 +3,9 @@ package com.mirkocaserta.bruce.cipher.symmetric;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.Test;
 
+import java.security.SecureRandom;
 import java.security.Security;
+import java.util.Random;
 
 import static com.mirkocaserta.bruce.Bruce.cipherer;
 import static com.mirkocaserta.bruce.Bruce.symmetricKey;
@@ -15,14 +17,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class CiphererRoundTripWithCustomProviderTest {
 
-    private static final byte[] iv = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
-
     static {
         Security.addProvider(new BouncyCastleProvider());
     }
 
     @Test
     void roundTrip() {
+        Random rng = new SecureRandom();
+        byte[] iv = new byte[8];
+        rng.nextBytes(iv);
         byte[] key = symmetricKey("DESede", "BC");
         Cipherer encrypter = cipherer("DESede", "DESede/CBC/PKCS5Padding", "BC", ENCRYPT);
         Cipherer decrypter = cipherer("DESede", "DESede/CBC/PKCS5Padding", "BC", DECRYPT);

@@ -2,6 +2,9 @@ package com.mirkocaserta.bruce.cipher.symmetric;
 
 import org.junit.jupiter.api.Test;
 
+import java.security.SecureRandom;
+import java.util.Random;
+
 import static com.mirkocaserta.bruce.Bruce.cipherer;
 import static com.mirkocaserta.bruce.Bruce.symmetricKey;
 import static com.mirkocaserta.bruce.cipher.symmetric.Mode.DECRYPT;
@@ -12,10 +15,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class CiphererRoundTripTest {
 
-    private static final byte[] iv = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
-
     @Test
     void roundTrip() {
+        Random rng = new SecureRandom();
+        byte[] iv = new byte[8];
+        rng.nextBytes(iv);
         byte[] key = symmetricKey("DESede");
         Cipherer encrypter = cipherer("DESede", "DESede/CBC/PKCS5Padding", ENCRYPT);
         Cipherer decrypter = cipherer("DESede", "DESede/CBC/PKCS5Padding", DECRYPT);

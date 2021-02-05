@@ -2,6 +2,10 @@ package com.mirkocaserta.bruce.cipher.symmetric;
 
 import org.junit.jupiter.api.Test;
 
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.Random;
+
 import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
 import static com.mirkocaserta.bruce.Bruce.cipherer;
 import static com.mirkocaserta.bruce.Bruce.symmetricKey;
@@ -13,10 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class EncodingCiphererRoundTripTest {
 
-    private static final String iv = "AQIDBAUGAQI=";
-
     @Test
     void roundTrip() {
+        Random rng = new SecureRandom();
+        byte[] ivBA = new byte[8];
+        rng.nextBytes(ivBA);
+        String iv = Base64.getEncoder().encodeToString(ivBA);
         String key = symmetricKey("DESede", BASE64);
         EncodingCipherer encrypter = cipherer("DESede", "DESede/CBC/PKCS5Padding", ENCRYPT, UTF_8);
         EncodingCipherer decrypter = cipherer("DESede", "DESede/CBC/PKCS5Padding", DECRYPT, UTF_8);
