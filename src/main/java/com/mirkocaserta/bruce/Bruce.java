@@ -2,10 +2,11 @@ package com.mirkocaserta.bruce;
 
 import com.mirkocaserta.bruce.digest.Digester;
 import com.mirkocaserta.bruce.digest.EncodingDigester;
+import com.mirkocaserta.bruce.signature.Signer;
 import com.mirkocaserta.bruce.signature.*;
 import com.mirkocaserta.bruce.util.Hex;
-import com.mirkocaserta.bruce.signature.Signer;
 
+import javax.crypto.KeyGenerator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -29,7 +30,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
-public class Crypt {
+public class Bruce {
 
     public static final String DEFAULT_SIGNING_ALGORITHM = "SHA512withRSA";
 
@@ -42,7 +43,7 @@ public class Crypt {
     private static final Base64.Decoder URL_DECODER = Base64.getUrlDecoder();
     private static final Base64.Decoder MIME_DECODER = Base64.getMimeDecoder();
 
-    private Crypt() {
+    private Bruce() {
         // utility class, users can't make new instances
     }
 
@@ -69,7 +70,7 @@ public class Crypt {
      * The default keystore type is <code>JKS</code>.
      *
      * @return the default keystore
-     * @throws CryptException on loading errors
+     * @throws BruceException on loading errors
      */
     public static KeyStore keystore() {
         return keystore("JKS");
@@ -97,13 +98,13 @@ public class Crypt {
      *
      * @param type the keystore type (ex: <code>JKS</code>, <code>PKCS12</code>)
      * @return the default keystore
-     * @throws CryptException on loading errors
+     * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String type) {
         final String location = System.getProperty("javax.net.ssl.keyStore");
 
-        if (location == null || location.trim().length() == 0) {
-            throw new CryptException("no value was specified for the system property: javax.net.ssl.keyStore");
+        if (location == null || location.isBlank()) {
+            throw new BruceException("no value was specified for the system property: javax.net.ssl.keyStore");
         }
 
         return keystore(location, System.getProperty("javax.net.ssl.keyStorePassword"), type);
@@ -122,7 +123,7 @@ public class Crypt {
      *                 If no protocol is specified, <code>file</code> is assumed.
      * @param password the password
      * @return a key store
-     * @throws CryptException on loading errors
+     * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String location, String password) {
         return keystore(location, password, "JKS", "SUN");
@@ -142,7 +143,7 @@ public class Crypt {
      * @param password the password
      * @param type     the keystore type (ex: <code>JKS</code>, <code>PKCS12</code>)
      * @return a key store
-     * @throws CryptException on loading errors
+     * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String location, String password, String type) {
         return keystore(location, password, type, "SUN");
@@ -163,19 +164,19 @@ public class Crypt {
      * @param type     the keystore type (ex: <code>JKS</code>, <code>PKCS12</code>)
      * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
      * @return a key store
-     * @throws CryptException on loading errors
+     * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String location, String password, String type, String provider) {
         try {
             final KeyStore keyStore;
-            if (provider == null || provider.trim().isEmpty()) {
-                throw new CryptException(String.format("invalid provider: %s", provider));
+            if (provider == null || provider.isBlank()) {
+                throw new BruceException(String.format("invalid provider: %s", provider));
             } else {
                 keyStore = KeyStore.getInstance(type, provider);
             }
             final InputStream inputStream;
             if (location.startsWith("classpath:")) {
-                inputStream = Crypt.class.getResourceAsStream(location.replaceFirst("classpath:", ""));
+                inputStream = Bruce.class.getResourceAsStream(location.replaceFirst("classpath:", ""));
             } else if (location.matches("^https*://.*$")) {
                 inputStream = new URL(location).openConnection().getInputStream();
             } else {
@@ -184,9 +185,9 @@ public class Crypt {
             keyStore.load(inputStream, password.toCharArray());
             return keyStore;
         } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException e) {
-            throw new CryptException(String.format("error loading keystore: location=%s", location), e);
+            throw new BruceException(String.format("error loading keystore: location=%s", location), e);
         } catch (NoSuchProviderException e) {
-            throw new CryptException(String.format("error loading keystore, no such provider: provider=%s", provider), e);
+            throw new BruceException(String.format("error loading keystore, no such provider: provider=%s", provider), e);
         }
     }
 
@@ -196,19 +197,19 @@ public class Crypt {
      * @param keystore the keystore to read from
      * @param alias    the certificate alias
      * @return the certificate
-     * @throws CryptException on loading errors
+     * @throws BruceException on loading errors
      */
     public static Certificate certificate(KeyStore keystore, String alias) {
         try {
             final Certificate certificate = keystore.getCertificate(alias);
 
             if (certificate == null) {
-                throw new CryptException(String.format("certificate not found for alias: %s", alias));
+                throw new BruceException(String.format("certificate not found for alias: %s", alias));
             }
 
             return certificate;
         } catch (KeyStoreException e) {
-            throw new CryptException(String.format("error loading certificate with alias: %s", alias), e);
+            throw new BruceException(String.format("error loading certificate with alias: %s", alias), e);
         }
     }
 
@@ -218,19 +219,19 @@ public class Crypt {
      * @param keystore the keystore to read from
      * @param alias    the certificate alias
      * @return the public key
-     * @throws CryptException on loading errors
+     * @throws BruceException on loading errors
      */
     public static PublicKey publicKey(KeyStore keystore, String alias) {
         try {
             final Certificate certificate = keystore.getCertificate(alias);
 
             if (certificate == null) {
-                throw new CryptException(String.format("certificate not found for alias: %s", alias));
+                throw new BruceException(String.format("certificate not found for alias: %s", alias));
             }
 
             return certificate.getPublicKey();
         } catch (KeyStoreException e) {
-            throw new CryptException(String.format("error loading public key with alias: %s", alias), e);
+            throw new BruceException(String.format("error loading public key with alias: %s", alias), e);
         }
     }
 
@@ -241,19 +242,19 @@ public class Crypt {
      * @param alias    the certificate alias
      * @param password the private key password
      * @return the private key
-     * @throws CryptException on loading errors
+     * @throws BruceException on loading errors
      */
     public static PrivateKey privateKey(KeyStore keystore, String alias, String password) {
         try {
             final KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keystore.getEntry(alias, new KeyStore.PasswordProtection(password.toCharArray()));
 
             if (privateKeyEntry == null) {
-                throw new CryptException(String.format("no such private key with alias: %s", alias));
+                throw new BruceException(String.format("no such private key with alias: %s", alias));
             }
 
             return privateKeyEntry.getPrivateKey();
         } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException e) {
-            throw new CryptException(String.format("error loading private key with alias: %s", alias), e);
+            throw new BruceException(String.format("error loading private key with alias: %s", alias), e);
         }
     }
 
@@ -264,19 +265,19 @@ public class Crypt {
      * @param alias    the secret key alias
      * @param password the secret key password
      * @return the secret key
-     * @throws CryptException on loading errors
+     * @throws BruceException on loading errors
      */
     public static Key secretKey(KeyStore keystore, String alias, String password) {
         try {
             final Key key = keystore.getKey(alias, password.toCharArray());
 
             if (key == null) {
-                throw new CryptException(String.format("no such secret key with alias: %s", alias));
+                throw new BruceException(String.format("no such secret key with alias: %s", alias));
             }
 
             return key;
         } catch (KeyStoreException | UnrecoverableKeyException | NoSuchAlgorithmException e) {
-            throw new CryptException(String.format("error loading secret key with alias: %s", alias), e);
+            throw new BruceException(String.format("error loading secret key with alias: %s", alias), e);
         }
     }
 
@@ -289,7 +290,7 @@ public class Crypt {
      * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc)
      * @param encoding  the encoding
      * @return an encoding message digester
-     * @throws CryptException on no such algorithm or provider exceptions
+     * @throws BruceException on no such algorithm or provider exceptions
      */
     public static EncodingDigester digester(String algorithm, Encoding encoding) {
         return digester(algorithm, null, encoding, UTF_8);
@@ -305,7 +306,7 @@ public class Crypt {
      * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
      * @param encoding  the encoding
      * @return an encoding message digester
-     * @throws CryptException on no such algorithm or provider exceptions
+     * @throws BruceException on no such algorithm or provider exceptions
      */
     public static EncodingDigester digester(String algorithm, String provider, Encoding encoding) {
         return digester(algorithm, provider, encoding, UTF_8);
@@ -319,11 +320,11 @@ public class Crypt {
      * @param encoding  the encoding
      * @param charset   the charset used for the input messages
      * @return an encoding message digester
-     * @throws CryptException on no such algorithm or provider exceptions
+     * @throws BruceException on no such algorithm or provider exceptions
      */
     public static EncodingDigester digester(String algorithm, String provider, Encoding encoding, Charset charset) {
         if (encoding == null) {
-            throw new CryptException("Invalid encoding: null");
+            throw new BruceException("Invalid encoding: null");
         }
 
         final Digester rawDigester = Optional.ofNullable(provider)
@@ -340,7 +341,7 @@ public class Crypt {
             case MIME:
                 return message -> MIME_ENCODER.encodeToString(rawDigester.digest(message.getBytes(charset)));
             default: // unreachable
-                throw new CryptException(String.format("Unexpected encoding: %s", encoding));
+                throw new BruceException(String.format("Unexpected encoding: %s", encoding));
         }
     }
 
@@ -350,7 +351,7 @@ public class Crypt {
      * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc)
      * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
      * @return a raw byte array message digester
-     * @throws CryptException on no such algorithm or provider exceptions
+     * @throws BruceException on no such algorithm or provider exceptions
      */
     public static Digester digester(String algorithm, String provider) {
         final MessageDigest digester;
@@ -360,16 +361,16 @@ public class Crypt {
                     try {
                         return MessageDigest.getInstance(algorithm, p);
                     } catch (NoSuchAlgorithmException e) {
-                        throw new CryptException(String.format("No such algorithm: %s", algorithm), e);
+                        throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
                     } catch (NoSuchProviderException e) {
-                        throw new CryptException(String.format("No such provider: %s", provider), e);
+                        throw new BruceException(String.format("No such provider: %s", provider), e);
                     }
                 })
                 .orElseGet(() -> {
                     try {
                         return MessageDigest.getInstance(algorithm);
                     } catch (NoSuchAlgorithmException e) {
-                        throw new CryptException(String.format("No such algorithm: %s", algorithm), e);
+                        throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
                     }
                 });
 
@@ -381,7 +382,7 @@ public class Crypt {
      *
      * @param algorithm the algorithm (ex: SHA1, MD5, etc)
      * @return a raw byte array message digester
-     * @throws CryptException on no such algorithm exception
+     * @throws BruceException on no such algorithm exception
      */
     public static Digester digester(String algorithm) {
         return digester(algorithm, (String) null);
@@ -393,7 +394,7 @@ public class Crypt {
      *
      * @param privateKey the signing key
      * @return the signer
-     * @see Crypt#DEFAULT_SIGNING_ALGORITHM
+     * @see Bruce#DEFAULT_SIGNING_ALGORITHM
      */
     public static Signer signer(PrivateKey privateKey) {
         return signer(privateKey, DEFAULT_SIGNING_ALGORITHM);
@@ -404,7 +405,7 @@ public class Crypt {
      * algorithm.
      *
      * @param privateKey the signing key
-     * @param algorithm the signing algorithm
+     * @param algorithm  the signing algorithm
      * @return the signer
      */
     public static Signer signer(PrivateKey privateKey, String algorithm) {
@@ -416,8 +417,8 @@ public class Crypt {
      * algorithm and provider.
      *
      * @param privateKey the signing key
-     * @param algorithm the signing algorithm
-     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param algorithm  the signing algorithm
+     * @param provider   the provider (hint: Bouncy Castle is <code>BC</code>)
      * @return the signer
      */
     public static Signer signer(PrivateKey privateKey, String algorithm, String provider) {
@@ -425,13 +426,14 @@ public class Crypt {
             try {
                 // this way signature should be thread safe
                 final Signature signature =
-                        ((provider == null) || (provider.trim().isEmpty())) ? Signature
-                                .getInstance(algorithm) : Signature.getInstance(algorithm, provider);
+                        provider == null || provider.isBlank() ?
+                                Signature.getInstance(algorithm) :
+                                Signature.getInstance(algorithm, provider);
                 signature.initSign(privateKey);
                 signature.update(message);
                 return signature.sign();
             } catch (NoSuchAlgorithmException | NoSuchProviderException | SignatureException | InvalidKeyException e) {
-                throw new CryptException(String.format("error generating the signature: algorithm=%s, provider=%s", algorithm, provider), e);
+                throw new BruceException(String.format("error generating the signature: algorithm=%s, provider=%s", algorithm, provider), e);
             }
         };
     }
@@ -449,32 +451,32 @@ public class Crypt {
             PrivateKey privateKey = privateKeyMap.get(privateKeyId);
 
             if (privateKey == null) {
-                throw new CryptException(String.format("private key not found for id: %s", privateKeyId));
+                throw new BruceException(String.format("private key not found for id: %s", privateKeyId));
             }
 
             return signer(privateKey, algorithm, provider).sign(message);
         };
     }
 
-    public static EncodingSigner encodingSigner(PrivateKey privateKey, Encoding encoding) {
-        return encodingSigner(privateKey, UTF_8, encoding);
+    public static EncodingSigner signer(PrivateKey privateKey, Encoding encoding) {
+        return signer(privateKey, UTF_8, encoding);
     }
 
-    public static EncodingSigner encodingSigner(PrivateKey privateKey, Charset charset, Encoding encoding) {
-        return encodingSigner(privateKey, DEFAULT_SIGNING_ALGORITHM, charset, encoding);
+    public static EncodingSigner signer(PrivateKey privateKey, Charset charset, Encoding encoding) {
+        return signer(privateKey, DEFAULT_SIGNING_ALGORITHM, charset, encoding);
     }
 
-    public static EncodingSigner encodingSigner(PrivateKey privateKey, String algorithm, Charset charset, Encoding encoding) {
-        return encodingSigner(privateKey, algorithm, null, charset, encoding);
+    public static EncodingSigner signer(PrivateKey privateKey, String algorithm, Charset charset, Encoding encoding) {
+        return signer(privateKey, algorithm, null, charset, encoding);
     }
 
-    public static EncodingSigner encodingSigner(PrivateKey privateKey, String algorithm, String provider, Charset charset, Encoding encoding) {
+    public static EncodingSigner signer(PrivateKey privateKey, String algorithm, String provider, Charset charset, Encoding encoding) {
         if (encoding == null) {
-            throw new CryptException("Invalid encoding: null");
+            throw new BruceException("Invalid encoding: null");
         }
 
         if (charset == null) {
-            throw new CryptException("Invalid charset: null");
+            throw new BruceException("Invalid charset: null");
         }
 
         final Signer signer = signer(privateKey, algorithm, provider);
@@ -490,7 +492,7 @@ public class Crypt {
                 case MIME:
                     return MIME_ENCODER.encodeToString(signer.sign(message.getBytes(charset)));
                 default: // unreachable
-                    throw new CryptException(String.format("Unexpected encoding: %s", encoding));
+                    throw new BruceException(String.format("Unexpected encoding: %s", encoding));
             }
         };
     }
@@ -500,7 +502,7 @@ public class Crypt {
     }
 
     public static Verifier verifier(PublicKey publicKey, String algorithm) {
-        return verifier(publicKey, algorithm, null);
+        return verifier(publicKey, algorithm, "");
     }
 
     public static Verifier verifier(PublicKey publicKey, String algorithm, String provider) {
@@ -508,13 +510,14 @@ public class Crypt {
             try {
                 // this way signatureInstance should be thread safe
                 final Signature signatureInstance =
-                        ((provider == null) || (provider.trim().isEmpty())) ? Signature
-                                .getInstance(algorithm) : Signature.getInstance(algorithm, provider);
+                        provider == null || provider.isBlank() ?
+                                Signature.getInstance(algorithm) :
+                                Signature.getInstance(algorithm, provider);
                 signatureInstance.initVerify(publicKey);
                 signatureInstance.update(message);
                 return signatureInstance.verify(signature);
             } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException e) {
-                throw new CryptException(String.format("error verifying the signature: algorithm=%s, provider=%s", algorithm, provider), e);
+                throw new BruceException(String.format("error verifying the signature: algorithm=%s, provider=%s", algorithm, provider), e);
             } catch (SignatureException e) {
                 return false;
             }
@@ -534,32 +537,32 @@ public class Crypt {
             PublicKey publicKey = publicKeyMap.get(publicKeyId);
 
             if (publicKey == null) {
-                throw new CryptException(String.format("public key not found for id: %s", publicKeyId));
+                throw new BruceException(String.format("public key not found for id: %s", publicKeyId));
             }
 
             return verifier(publicKey, algorithm, provider).verify(message, signature);
         };
     }
 
-    public static EncodingVerifier encodingVerifier(PublicKey publicKey, Encoding encoding) {
-        return encodingVerifier(publicKey, DEFAULT_SIGNING_ALGORITHM, encoding);
+    public static EncodingVerifier verifier(PublicKey publicKey, Encoding encoding) {
+        return verifier(publicKey, DEFAULT_SIGNING_ALGORITHM, encoding);
     }
 
-    public static EncodingVerifier encodingVerifier(PublicKey publicKey, String algorithm, Encoding encoding) {
-        return encodingVerifier(publicKey, algorithm, null, encoding);
+    public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, Encoding encoding) {
+        return verifier(publicKey, algorithm, null, encoding);
     }
 
-    public static EncodingVerifier encodingVerifier(PublicKey publicKey, String algorithm, String provider, Encoding encoding) {
-        return encodingVerifier(publicKey, algorithm, provider, UTF_8, encoding);
+    public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, String provider, Encoding encoding) {
+        return verifier(publicKey, algorithm, provider, UTF_8, encoding);
     }
 
-    public static EncodingVerifier encodingVerifier(PublicKey publicKey, String algorithm, String provider, Charset charset, Encoding encoding) {
+    public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, String provider, Charset charset, Encoding encoding) {
         if (encoding == null) {
-            throw new CryptException("Invalid encoding: null");
+            throw new BruceException("Invalid encoding: null");
         }
 
         if (charset == null) {
-            throw new CryptException("Invalid charset: null");
+            throw new BruceException("Invalid charset: null");
         }
 
         final Verifier verifier = verifier(publicKey, algorithm, provider);
@@ -582,14 +585,51 @@ public class Crypt {
                         sig = HEX_DECODER.decode(signature);
                         break;
                     default: // unreachable
-                        throw new CryptException(String.format("Unexpected encoding: %s", encoding));
+                        throw new BruceException(String.format("Unexpected encoding: %s", encoding));
                 }
             } catch (IllegalArgumentException e) {
-                throw new CryptException(String.format("cannot decode signature: %s", signature), e);
+                throw new BruceException(String.format("cannot decode signature: %s", signature), e);
             }
 
             return verifier.verify(message.getBytes(charset), sig);
         };
+    }
+
+    public static byte[] symmetricKey(String algorithm) {
+        return symmetricKey(algorithm, "");
+    }
+
+    public static byte[] symmetricKey(String algorithm, String provider) {
+        try {
+            final KeyGenerator generator = provider == null || provider.isBlank() ?
+                    KeyGenerator.getInstance(algorithm) :
+                    KeyGenerator.getInstance(algorithm, provider);
+            generator.init(new SecureRandom());
+            return generator.generateKey().getEncoded();
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new BruceException(String.format("cannot generate key: algorithm=%s, provider=%s", algorithm, provider), e);
+        }
+    }
+
+    public static String symmetricKey(String algorithm, Encoding encoding) {
+        return symmetricKey(algorithm, null, encoding);
+    }
+
+    public static String symmetricKey(String algorithm, String provider, Encoding encoding) {
+        final byte[] key = symmetricKey(algorithm, provider);
+
+        switch (encoding) {
+            case HEX:
+                return HEX_ENCODER.encodeToString(key);
+            case BASE64:
+                return BASE_64_ENCODER.encodeToString(key);
+            case URL:
+                return URL_ENCODER.encodeToString(key);
+            case MIME:
+                return MIME_ENCODER.encodeToString(key);
+        }
+
+        throw new BruceException(String.format("unsupported encoding: %s", encoding));
     }
 
     public enum Encoding {

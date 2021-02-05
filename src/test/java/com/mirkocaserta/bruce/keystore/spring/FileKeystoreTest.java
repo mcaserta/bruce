@@ -9,7 +9,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.security.KeyStore;
 
-import static com.mirkocaserta.bruce.Crypt.keystore;
+import static com.mirkocaserta.bruce.Bruce.keystore;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

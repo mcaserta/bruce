@@ -1,7 +1,6 @@
 package com.mirkocaserta.bruce.keystore;
 
-import com.mirkocaserta.bruce.Crypt;
-import com.mirkocaserta.bruce.CryptException;
+import com.mirkocaserta.bruce.BruceException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -10,7 +9,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 
-import static com.mirkocaserta.bruce.Crypt.keystore;
+import static com.mirkocaserta.bruce.Bruce.keystore;
 import static org.junit.jupiter.api.Assertions.*;
 
 class KeystoreTest {
@@ -55,31 +54,31 @@ class KeystoreTest {
     @Test
     @DisplayName("loading a non existent keystore should throw an exception")
     void nonExistent() {
-        assertThrows(CryptException.class, () -> keystore("foo", "bar"));
+        assertThrows(BruceException.class, () -> keystore("foo", "bar"));
     }
 
     @Test
     @DisplayName("loading a keystore with the wrong type should throw an exception")
     void noSuchType() {
-        assertThrows(CryptException.class, () -> keystore("classpath:keystore.jks", "password", "foo"));
+        assertThrows(BruceException.class, () -> keystore("classpath:keystore.jks", "password", "foo"));
     }
 
     @Test
     @DisplayName("loading a keystore with the wrong provider should throw an exception")
     void noSuchProvider() {
-        assertThrows(CryptException.class, () -> keystore("classpath:keystore.jks", "password", "JKS", "foo"));
+        assertThrows(BruceException.class, () -> keystore("classpath:keystore.jks", "password", "JKS", "foo"));
     }
 
     @Test
     @DisplayName("loading a keystore with an empty provider should throw an exception")
     void emptyProvider() {
-        assertThrows(CryptException.class, () -> keystore("classpath:keystore.jks", "password", "JKS", "   "));
+        assertThrows(BruceException.class, () -> keystore("classpath:keystore.jks", "password", "JKS", "   "));
     }
 
     @Test
     @DisplayName("loading a keystore with a null provider should throw an exception")
     void nullProvider() {
-        assertThrows(CryptException.class, () -> keystore("classpath:keystore.jks", "password", "JKS", null));
+        assertThrows(BruceException.class, () -> keystore("classpath:keystore.jks", "password", "JKS", null));
     }
 
 }

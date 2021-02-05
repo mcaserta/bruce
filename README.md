@@ -4,7 +4,7 @@
 
 ## Bruce
 
-We're not ready for prime time yet but feel free to look around.
+We're not ready for prime time yet but feel free to take a look around.
 
 The [unit
 tests](https://github.com/mcaserta/bruce/tree/main/src/test/java/com/mirkocaserta/bruce)

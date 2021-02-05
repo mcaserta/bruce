@@ -1,12 +1,12 @@
 package com.mirkocaserta.bruce.signature;
 
-import com.mirkocaserta.bruce.Crypt;
+import com.mirkocaserta.bruce.Bruce;
 import org.junit.jupiter.api.Test;
 
 import java.security.KeyStore;
 import java.util.Map;
 
-import static com.mirkocaserta.bruce.Crypt.*;
+import static com.mirkocaserta.bruce.Bruce.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -18,13 +18,13 @@ class SignerAndVerifierByKeyTest {
 
     private final SignerByKey signer =
             signer(
-                    Map.of("alice", Crypt.privateKey(aliceKeystore, "alice", "password"),
-                            "bob", Crypt.privateKey(bobKeystore, "bob", "password")));
+                    Map.of("alice", Bruce.privateKey(aliceKeystore, "alice", "password"),
+                            "bob", Bruce.privateKey(bobKeystore, "bob", "password")));
 
     private final VerifierByKey verifier =
             verifier(
-                    Map.of("alice", Crypt.publicKey(aliceKeystore, "alice"),
-                            "bob", Crypt.publicKey(bobKeystore, "bob")));
+                    Map.of("alice", Bruce.publicKey(aliceKeystore, "alice"),
+                            "bob", Bruce.publicKey(bobKeystore, "bob")));
 
     @Test
     void aliceAndBobHaveASignedAndVerifiedConversation() {

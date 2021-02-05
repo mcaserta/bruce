@@ -1,6 +1,6 @@
 package com.mirkocaserta.bruce.digest.spring;
 
-import com.mirkocaserta.bruce.Crypt;
+import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.digest.EncodingDigester;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import static com.mirkocaserta.bruce.Crypt.digester;
+import static com.mirkocaserta.bruce.Bruce.digester;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringJUnitConfig
@@ -100,42 +100,42 @@ class EncodingDigesterTest {
     public static class Cfg {
         @Bean
         public EncodingDigester sha1hex() {
-            return digester("SHA1", Crypt.Encoding.HEX);
+            return digester("SHA1", Bruce.Encoding.HEX);
         }
 
         @Bean
         public EncodingDigester sha1base64() {
-            return digester("SHA1", Crypt.Encoding.BASE64);
+            return digester("SHA1", Bruce.Encoding.BASE64);
         }
 
         @Bean
         public EncodingDigester sha1url() {
-            return digester("SHA1", Crypt.Encoding.URL);
+            return digester("SHA1", Bruce.Encoding.URL);
         }
 
         @Bean
         public EncodingDigester sha1mime() {
-            return digester("SHA1", Crypt.Encoding.MIME);
+            return digester("SHA1", Bruce.Encoding.MIME);
         }
 
         @Bean
         public EncodingDigester md5hex() {
-            return digester("MD5", Crypt.Encoding.HEX);
+            return digester("MD5", Bruce.Encoding.HEX);
         }
 
         @Bean
         public EncodingDigester md5base64() {
-            return digester("MD5", Crypt.Encoding.BASE64);
+            return digester("MD5", Bruce.Encoding.BASE64);
         }
 
         @Bean
         public EncodingDigester md5url() {
-            return digester("MD5", Crypt.Encoding.URL);
+            return digester("MD5", Bruce.Encoding.URL);
         }
 
         @Bean
         public EncodingDigester md5mime() {
-            return digester("MD5", Crypt.Encoding.MIME);
+            return digester("MD5", Bruce.Encoding.MIME);
         }
     }
 

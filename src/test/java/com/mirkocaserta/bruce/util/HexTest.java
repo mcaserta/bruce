@@ -1,6 +1,6 @@
 package com.mirkocaserta.bruce.util;
 
-import com.mirkocaserta.bruce.CryptException;
+import com.mirkocaserta.bruce.BruceException;
 import com.mirkocaserta.bruce.digest.DigesterConsts;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -34,7 +34,7 @@ class HexTest {
     @Test
     @DisplayName("Decoding a non hex string should throw an error")
     void decodeNonHexString() {
-        assertThrows(CryptException.class, () -> DECODER.decode("sgiao belo"));
+        assertThrows(BruceException.class, () -> DECODER.decode("sgiao belo"));
     }
 
 }

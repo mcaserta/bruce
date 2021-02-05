@@ -1,6 +1,6 @@
 package com.mirkocaserta.bruce.signature;
 
-import com.mirkocaserta.bruce.CryptException;
+import com.mirkocaserta.bruce.BruceException;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
@@ -68,7 +68,7 @@ abstract class EncodingSignerAndVerifierCommonTest {
     @Test
     void verifyWithGarbageInputFails() {
         String message = "this is a top-secret message";
-        assertThrows(CryptException.class, () -> verifier.verify(message, "sgiao belo"));
+        assertThrows(BruceException.class, () -> verifier.verify(message, "sgiao belo"));
     }
 
 }

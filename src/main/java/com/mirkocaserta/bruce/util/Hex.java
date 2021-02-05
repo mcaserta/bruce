@@ -1,6 +1,6 @@
 package com.mirkocaserta.bruce.util;
 
-import com.mirkocaserta.bruce.CryptException;
+import com.mirkocaserta.bruce.BruceException;
 
 import java.nio.charset.StandardCharsets;
 
@@ -39,7 +39,7 @@ public class Hex {
     public static final class Decoder {
         public byte[] decode(String hex) {
             if (!hex.matches("^[0-9a-fA-F]+$")) {
-                throw new CryptException(String.format("input is not a valid hexadecimal string: %s", hex));
+                throw new BruceException(String.format("input is not a valid hexadecimal string: %s", hex));
             }
             final int l = hex.length();
             final byte[] data = new byte[l / 2];

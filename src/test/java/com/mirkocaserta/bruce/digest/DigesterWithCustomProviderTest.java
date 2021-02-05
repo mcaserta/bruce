@@ -1,6 +1,6 @@
 package com.mirkocaserta.bruce.digest;
 
-import com.mirkocaserta.bruce.CryptException;
+import com.mirkocaserta.bruce.BruceException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
 
-import static com.mirkocaserta.bruce.Crypt.digester;
+import static com.mirkocaserta.bruce.Bruce.digester;
 
 @DisplayName("Raw digester tests with custom provider (Bouncy Castle)")
 class DigesterWithCustomProviderTest {
@@ -38,7 +38,7 @@ class DigesterWithCustomProviderTest {
     @DisplayName("Digester for an invalid algorithm should throw a DigesterException")
     void invalidAlgorithm1() {
         Assertions.assertThrows(
-                CryptException.class,
+                BruceException.class,
                 () -> digester("foo", "BC"), // use Bouncy Castle provider
                 "No such algorithm: foo"
         );

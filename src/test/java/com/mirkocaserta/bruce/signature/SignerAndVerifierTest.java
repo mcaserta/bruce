@@ -1,11 +1,11 @@
 package com.mirkocaserta.bruce.signature;
 
-import com.mirkocaserta.bruce.CryptException;
+import com.mirkocaserta.bruce.BruceException;
 import org.junit.jupiter.api.Test;
 
 import java.security.KeyStore;
 
-import static com.mirkocaserta.bruce.Crypt.*;
+import static com.mirkocaserta.bruce.Bruce.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class SignerAndVerifierTest extends SignerAndVerifierCommonTest {
@@ -26,9 +26,9 @@ class SignerAndVerifierTest extends SignerAndVerifierCommonTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     void signerAndVerifiersWithWrongParamsShouldFail() {
         final KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
-        assertThrows(CryptException.class, () -> signer(privateKey(keystore, "sgiao belo", "password")));
-        assertThrows(CryptException.class, () -> signer(privateKey(keystore, "test", "sgiao belo")));
-        assertThrows(CryptException.class, () -> verifier(publicKey(keystore, "sgiao belo")));
+        assertThrows(BruceException.class, () -> signer(privateKey(keystore, "sgiao belo", "password")));
+        assertThrows(BruceException.class, () -> signer(privateKey(keystore, "test", "sgiao belo")));
+        assertThrows(BruceException.class, () -> verifier(publicKey(keystore, "sgiao belo")));
     }
 
 }

@@ -1,7 +1,7 @@
 package com.mirkocaserta.bruce.keystore;
 
-import com.mirkocaserta.bruce.Crypt;
-import com.mirkocaserta.bruce.CryptException;
+import com.mirkocaserta.bruce.Bruce;
+import com.mirkocaserta.bruce.BruceException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 
-import static com.mirkocaserta.bruce.Crypt.keystore;
+import static com.mirkocaserta.bruce.Bruce.keystore;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultKeystoreTest {
@@ -41,7 +41,7 @@ class DefaultKeystoreTest {
     void nonExisting() {
         System.setProperty("javax.net.ssl.keyStore", "sgiao belo");
         System.setProperty("javax.net.ssl.keyStorePassword", "wrong");
-        assertThrows(CryptException.class, Crypt::keystore);
+        assertThrows(BruceException.class, Bruce::keystore);
     }
 
     @Test
@@ -49,7 +49,7 @@ class DefaultKeystoreTest {
     void emptyLocation() {
         System.setProperty("javax.net.ssl.keyStore", "   ");
         System.setProperty("javax.net.ssl.keyStorePassword", "wrong");
-        assertThrows(CryptException.class, Crypt::keystore);
+        assertThrows(BruceException.class, Bruce::keystore);
     }
 
     @AfterEach

@@ -1,6 +1,6 @@
 package com.mirkocaserta.bruce.key;
 
-import com.mirkocaserta.bruce.CryptException;
+import com.mirkocaserta.bruce.BruceException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -8,8 +8,8 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 
-import static com.mirkocaserta.bruce.Crypt.keystore;
-import static com.mirkocaserta.bruce.Crypt.secretKey;
+import static com.mirkocaserta.bruce.Bruce.keystore;
+import static com.mirkocaserta.bruce.Bruce.secretKey;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SecretKeyTest {
@@ -34,7 +34,7 @@ class SecretKeyTest {
         assertNotNull(keystore);
         assertEquals("PKCS12", keystore.getType(), "type");
         assertEquals(2, keystore.size(), "size");
-        assertThrows(CryptException.class, () -> secretKey(keystore, "sgiao belo", "foo"));
+        assertThrows(BruceException.class, () -> secretKey(keystore, "sgiao belo", "foo"));
     }
 
 }

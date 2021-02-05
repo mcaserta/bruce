@@ -2,7 +2,7 @@ package com.mirkocaserta.bruce.signature;
 
 import java.security.KeyStore;
 
-import static com.mirkocaserta.bruce.Crypt.*;
+import static com.mirkocaserta.bruce.Bruce.*;
 
 class SignerAndVerifierWithCustomAlgorithmTest extends SignerAndVerifierCommonTest {
 

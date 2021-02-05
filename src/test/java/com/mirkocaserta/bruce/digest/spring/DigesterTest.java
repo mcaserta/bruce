@@ -10,7 +10,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.nio.charset.StandardCharsets;
 
-import static com.mirkocaserta.bruce.Crypt.digester;
+import static com.mirkocaserta.bruce.Bruce.digester;
 import static com.mirkocaserta.bruce.digest.DigesterConsts.*;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
