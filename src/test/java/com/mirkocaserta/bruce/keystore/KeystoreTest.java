@@ -69,16 +69,4 @@ class KeystoreTest {
         assertThrows(BruceException.class, () -> keystore("classpath:keystore.jks", "password", "JKS", "foo"));
     }
 
-    @Test
-    @DisplayName("loading a keystore with an empty provider should throw an exception")
-    void emptyProvider() {
-        assertThrows(BruceException.class, () -> keystore("classpath:keystore.jks", "password", "JKS", "   "));
-    }
-
-    @Test
-    @DisplayName("loading a keystore with a null provider should throw an exception")
-    void nullProvider() {
-        assertThrows(BruceException.class, () -> keystore("classpath:keystore.jks", "password", "JKS", null));
-    }
-
 }

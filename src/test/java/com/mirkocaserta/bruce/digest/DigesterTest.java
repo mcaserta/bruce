@@ -62,16 +62,6 @@ class DigesterTest {
     }
 
     @Test
-    @DisplayName("Digester for an empty provider should throw a DigesterException")
-    void emptyProvider() {
-        assertThrows(
-                BruceException.class,
-                () -> digester("SHA1", "   "),
-                "No such provider: '   '"
-        );
-    }
-
-    @Test
     @DisplayName("Digester for an invalid encoder should throw a DigesterException")
     void invalidEncoder() {
         assertThrows(
