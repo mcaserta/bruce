@@ -23,12 +23,4 @@ class EncodingSignerAndVerifierMimeTest extends EncodingSignerAndVerifierCommonT
         return Bruce.verifier(publicKey(keystore, "test"), Bruce.Encoding.MIME);
     }
 
-    @Test
-    void signerAndVerifiersWithWrongParamsShouldFail() {
-        final KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
-        assertThrows(BruceException.class, () -> Bruce.signer(privateKey(keystore, "sgiao belo", "password"), Bruce.Encoding.MIME));
-        assertThrows(BruceException.class, () -> Bruce.signer(privateKey(keystore, "test", "sgiao belo"), Bruce.Encoding.MIME));
-        assertThrows(BruceException.class, () -> Bruce.verifier(publicKey(keystore, "sgiao belo"), Bruce.Encoding.MIME));
-    }
-
 }
