@@ -1,10 +1,8 @@
 package com.mirkocaserta.bruce.cipher.asymmetric;
 
 import com.mirkocaserta.bruce.BruceException;
-import com.mirkocaserta.bruce.cipher.Mode;
 import org.junit.jupiter.api.Test;
 
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.KeyStore;
 
@@ -51,10 +49,12 @@ class CiphererRoundTripTest {
         assertArrayEquals(bobMsg01, bobMsg01Decrypted);
 
         // Someone writes garbage for Alice
-        assertThrows(BruceException.class, () -> decryptForAlice.encrypt("sgiao bela".getBytes(UTF_8)));
+        byte[] garbageForAlice = "sgiao bela".getBytes(UTF_8);
+        assertThrows(BruceException.class, () -> decryptForAlice.encrypt(garbageForAlice));
 
         // Someone writes garbage for Bob
-        assertThrows(BruceException.class, () -> decryptForBob.encrypt("sgiao belo".getBytes(UTF_8)));
+        byte[] garbageForBob = "sgiao belo".getBytes(UTF_8);
+        assertThrows(BruceException.class, () -> decryptForBob.encrypt(garbageForBob));
     }
 
 }

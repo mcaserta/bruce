@@ -51,6 +51,7 @@ public class Bruce {
     private static final Base64.Decoder MIME_DECODER = Base64.getMimeDecoder();
 
     private static final String BLANK = "";
+    private static final String INVALID_ENCODING_NULL = "Invalid encoding: null";
 
     private static final ConcurrentMap<String, com.mirkocaserta.bruce.cipher.asymmetric.Cipherer> ciphererCache = new ConcurrentHashMap<>();
 
@@ -335,7 +336,7 @@ public class Bruce {
      */
     public static EncodingDigester digester(String algorithm, String provider, Encoding encoding, Charset charset) {
         if (encoding == null) {
-            throw new BruceException("Invalid encoding: null");
+            throw new BruceException(INVALID_ENCODING_NULL);
         }
 
         final Digester rawDigester = provider == null || provider.isBlank()
@@ -463,7 +464,7 @@ public class Bruce {
 
     public static EncodingSigner signer(PrivateKey privateKey, String algorithm, String provider, Charset charset, Encoding encoding) {
         if (encoding == null) {
-            throw new BruceException("Invalid encoding: null");
+            throw new BruceException(INVALID_ENCODING_NULL);
         }
 
         if (charset == null) {
@@ -534,7 +535,7 @@ public class Bruce {
 
     public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, String provider, Charset charset, Encoding encoding) {
         if (encoding == null) {
-            throw new BruceException("Invalid encoding: null");
+            throw new BruceException(INVALID_ENCODING_NULL);
         }
 
         if (charset == null) {

@@ -54,10 +54,12 @@ class CiphererByKeyRoundTripTest {
         assertArrayEquals(bobMsg01, bobMsg01Decrypted);
 
         // Someone writes garbage for Alice
-        assertThrows(BruceException.class, () -> cipherer.encrypt("alice-private", DECRYPT, "sgiao bela".getBytes(UTF_8)));
+        byte[] garbageForAlice = "sgiao bela".getBytes(UTF_8);
+        assertThrows(BruceException.class, () -> cipherer.encrypt("alice-private", DECRYPT, garbageForAlice));
 
         // Someone writes garbage for Bob
-        assertThrows(BruceException.class, () -> cipherer.encrypt("bob-private", DECRYPT, "sgiao belo".getBytes(UTF_8)));
+        byte[] garbageForBob = "sgiao belo".getBytes(UTF_8);
+        assertThrows(BruceException.class, () -> cipherer.encrypt("bob-private", DECRYPT, garbageForBob));
 
         // Using an unregistered key should also throw an exception
         assertThrows(BruceException.class, () -> cipherer.encrypt("sgiao-belo", DECRYPT, bobMsg01Encrypted));
