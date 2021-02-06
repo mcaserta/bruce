@@ -695,6 +695,37 @@ public class Bruce {
         };
     }
 
+    public static com.mirkocaserta.bruce.mac.Mac mac(Key key, String algorithm) {
+        return mac(key, algorithm, BLANK);
+    }
+
+    public static com.mirkocaserta.bruce.mac.Mac mac(Key key, String algorithm, String provider) {
+        return message -> {
+            try {
+                final javax.crypto.Mac mac = provider == null || provider.isBlank()
+                        ? javax.crypto.Mac.getInstance(algorithm)
+                        : javax.crypto.Mac.getInstance(algorithm, provider);
+                mac.init(key);
+                return mac.doFinal(message);
+            } catch (NoSuchAlgorithmException e) {
+                throw new BruceException(String.format("no such algorithm: %s", key.getAlgorithm()), e);
+            } catch (InvalidKeyException e) {
+                throw new BruceException("invalid key", e);
+            } catch (NoSuchProviderException e) {
+                throw new BruceException(String.format("no such provider: %s", provider), e);
+            }
+        };
+    }
+
+    public static com.mirkocaserta.bruce.mac.EncodingMac mac(Key key, String algorithm, Encoding encoding, Charset charset) {
+        return mac(key, algorithm, BLANK, encoding, charset);
+    }
+
+    public static com.mirkocaserta.bruce.mac.EncodingMac mac(Key key, String algorithm, String provider, Encoding encoding, Charset charset) {
+        final com.mirkocaserta.bruce.mac.Mac mac = mac(key, algorithm, provider);
+        return message -> encode(encoding, mac.get(message.getBytes(charset)));
+    }
+
     private static String crypt(Cipherer cipherer, String message, Mode mode, Encoding encoding, Charset charset) {
         switch (mode) {
             case ENCRYPT:
