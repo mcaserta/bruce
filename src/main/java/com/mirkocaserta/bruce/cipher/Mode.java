@@ -1,4 +1,4 @@
-package com.mirkocaserta.bruce.cipher.symmetric;
+package com.mirkocaserta.bruce.cipher;
 
 /**
  * An enum for the symmetric encryption mode.

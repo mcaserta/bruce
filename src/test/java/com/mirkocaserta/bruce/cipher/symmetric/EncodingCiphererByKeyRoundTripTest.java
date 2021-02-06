@@ -8,8 +8,8 @@ import java.util.Random;
 
 import static com.mirkocaserta.bruce.Bruce.*;
 import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
-import static com.mirkocaserta.bruce.cipher.symmetric.Mode.DECRYPT;
-import static com.mirkocaserta.bruce.cipher.symmetric.Mode.ENCRYPT;
+import static com.mirkocaserta.bruce.cipher.Mode.DECRYPT;
+import static com.mirkocaserta.bruce.cipher.Mode.ENCRYPT;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

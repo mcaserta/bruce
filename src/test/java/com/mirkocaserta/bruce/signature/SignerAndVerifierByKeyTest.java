@@ -18,13 +18,13 @@ class SignerAndVerifierByKeyTest {
 
     private final SignerByKey signer =
             signer(
-                    Map.of("alice", Bruce.privateKey(aliceKeystore, "alice", "password"),
-                            "bob", Bruce.privateKey(bobKeystore, "bob", "password")));
+                    Map.of("alice", privateKey(aliceKeystore, "alice", "password"),
+                            "bob", privateKey(bobKeystore, "bob", "password")));
 
     private final VerifierByKey verifier =
             verifier(
-                    Map.of("alice", Bruce.publicKey(aliceKeystore, "alice"),
-                            "bob", Bruce.publicKey(bobKeystore, "bob")));
+                    Map.of("alice", publicKey(aliceKeystore, "alice"),
+                            "bob", publicKey(bobKeystore, "bob")));
 
     @Test
     void aliceAndBobHaveASignedAndVerifiedConversation() {
