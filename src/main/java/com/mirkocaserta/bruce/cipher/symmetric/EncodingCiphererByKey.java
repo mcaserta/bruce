@@ -8,12 +8,13 @@ import com.mirkocaserta.bruce.Bruce.Encoding;
  *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
-public interface EncodingCipherer {
+public interface EncodingCiphererByKey {
 
     /**
      * Encrypts or decrypts a message. The encryption/decryption mode
      * depends on the configuration of the underlying implementation.
      *
+     * @param key      an encoded version of the symmetric key
      * @param iv       an encoded version of the initialization vector
      * @param message  if in encryption mode, the clear-text message to encrypt,
      *                 otherwise an encoded version of the message to decrypt
@@ -21,6 +22,6 @@ public interface EncodingCipherer {
      * @return if in encryption mode, returns an encoded version of the encrypted message,
      * otherwise returns the decrypted clear-text message
      */
-    String encrypt(String iv, String message, Encoding encoding);
+    String encrypt(String key, String iv, String message, Encoding encoding);
 
 }
