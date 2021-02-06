@@ -2,12 +2,82 @@
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=security_rating)](https://sonarcloud.io/dashboard?id=mcaserta_bruce)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=mcaserta_bruce)
 
-## Bruce
+# Welcome
 
-We're not ready for prime time yet but feel free to take a look around.
+Bruce is an opinionated, lightweight wrapper around the Java Cryptography API.
 
-The [unit
-tests](https://github.com/mcaserta/bruce/tree/main/src/test/java/com/mirkocaserta/bruce)
-might be a good starting point.
+## Features
 
-Bye, [Mirko](https://mirkocaserta.com/)
+- All functionality is exposed through the `Bruce` entry point class. Just type `Bruce.` and let your IDE's autocomplete
+  do the rest.
+- No checked exceptions to clutter your code.
+- Support for different encodings: [Base64](https://en.wikipedia.org/wiki/Base64)
+  , [Url](https://en.wikipedia.org/wiki/Percent-encoding), [Mime](https://en.wikipedia.org/wiki/MIME)
+  , [Hex](https://en.wikipedia.org/wiki/Hexadecimal).
+- Out of the box support for:
+    - key stores
+    - public, private and secret keys
+    - certificates
+    - digital signatures
+    - symmetric and asymmetric encryption
+    - message digesters
+    - message authentication codes
+    - custom providers such as [Bouncy Castle](https://www.bouncycastle.org/java.html)
+- Open source: you don't need to trust Bruce: you can see for yourself if you like what Bruce does.
+
+## How to Bruce
+
+### With Apache Maven
+
+```xml
+
+<dependency>
+    TODO
+</dependency>
+```
+
+### Without Apache Maven
+
+Grab the latest release from [here](TODO).
+
+## Keystore
+
+TODO
+
+## Keys
+
+TODO
+
+## Certificate
+
+TODO
+
+## Signature
+
+### With a Single Key
+
+TODO
+
+### With Multiple Keys
+
+TODO
+
+## Symmetric Encription
+
+TODO
+
+## Asymmetric Encryption
+
+TODO
+
+## Message Digests
+
+TODO
+
+## Message Authentication Codes
+
+TODO
+
+## License
+
+Bruce is licensed under the Apache License, Version 2.0.
