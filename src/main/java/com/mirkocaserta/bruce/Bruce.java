@@ -630,13 +630,13 @@ public class Bruce {
         };
     }
 
-    public static com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherer cipherer(String key, String keyAlgorithm, String cipherAlgorithm, Mode mode, Charset charset) {
-        return cipherer(key, keyAlgorithm, cipherAlgorithm, BLANK, mode, charset);
+    public static com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherer cipherer(String key, String keyAlgorithm, String cipherAlgorithm, Mode mode, Charset charset, Encoding encoding) {
+        return cipherer(key, keyAlgorithm, cipherAlgorithm, BLANK, mode, charset, encoding);
     }
 
-    public static com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherer cipherer(String key, String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode, Charset charset) {
+    public static com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherer cipherer(String key, String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode, Charset charset, Encoding encoding) {
         final EncodingCiphererByKey cipherer = ciphererByKey(keyAlgorithm, cipherAlgorithm, provider, mode, charset);
-        return (iv, message, encoding) -> cipherer.encrypt(key, iv, message, encoding);
+        return (iv, message) -> cipherer.encrypt(key, iv, message, encoding);
     }
 
     public static com.mirkocaserta.bruce.cipher.asymmetric.Cipherer cipherer(Key key, String algorithm, Mode mode) {

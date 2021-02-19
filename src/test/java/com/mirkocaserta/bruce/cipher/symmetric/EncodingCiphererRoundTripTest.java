@@ -23,12 +23,12 @@ class EncodingCiphererRoundTripTest {
         rng.nextBytes(ivBA);
         String iv = Base64.getEncoder().encodeToString(ivBA);
         String key = symmetricKey("DESede", BASE64);
-        EncodingCipherer encrypter = cipherer(key, "DESede", "DESede/CBC/PKCS5Padding", ENCRYPT, UTF_8);
-        EncodingCipherer decrypter = cipherer(key, "DESede", "DESede/CBC/PKCS5Padding", DECRYPT, UTF_8);
+        EncodingCipherer encrypter = cipherer(key, "DESede", "DESede/CBC/PKCS5Padding", ENCRYPT, UTF_8, BASE64);
+        EncodingCipherer decrypter = cipherer(key, "DESede", "DESede/CBC/PKCS5Padding", DECRYPT, UTF_8, BASE64);
         String clearText = "Hi there";
-        String cypherText = encrypter.encrypt(iv, clearText, BASE64);
+        String cypherText = encrypter.encrypt(iv, clearText);
         assertNotNull(cypherText);
-        String decryptedText = decrypter.encrypt(iv, cypherText, BASE64);
+        String decryptedText = decrypter.encrypt(iv, cypherText);
         assertNotNull(decryptedText);
         assertEquals(clearText, decryptedText);
     }

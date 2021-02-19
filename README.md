@@ -4,13 +4,14 @@
 
 # Welcome
 
-Bruce is an opinionated, lightweight wrapper around the Java Cryptography API.
+Bruce is an opinionated, lightweight, pure Java wrapper around the Java Cryptography API.
 
 ## Features
 
 - All functionality is exposed through the `Bruce` entry point class. Just type `Bruce.` and let your IDE's autocomplete
   do the rest.
 - No checked exceptions to clutter your code.
+- No transitive dependencies. Zero. Zilch.
 - Support for different encodings: [Base64](https://en.wikipedia.org/wiki/Base64)
   , [Url](https://en.wikipedia.org/wiki/Percent-encoding), [Mime](https://en.wikipedia.org/wiki/MIME)
   , [Hex](https://en.wikipedia.org/wiki/Hexadecimal).
@@ -23,7 +24,8 @@ Bruce is an opinionated, lightweight wrapper around the Java Cryptography API.
     - message digesters
     - message authentication codes
     - custom providers such as [Bouncy Castle](https://www.bouncycastle.org/java.html)
-- Open source: you don't need to trust Bruce: you can see for yourself if you like what Bruce does.
+- Massively unit tested<!-- TODO: and documented -->.
+- Open Source: you don't need to trust Bruce: you can see for yourself if you like what Bruce does.
 
 ## How to Bruce
 

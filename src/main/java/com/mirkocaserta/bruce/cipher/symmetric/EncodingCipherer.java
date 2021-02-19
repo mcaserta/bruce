@@ -1,7 +1,5 @@
 package com.mirkocaserta.bruce.cipher.symmetric;
 
-import com.mirkocaserta.bruce.Bruce.Encoding;
-
 /**
  * Interface for performing symmetric encryption with strings
  * containing encoded versions of raw byte arrays.
@@ -14,13 +12,12 @@ public interface EncodingCipherer {
      * Encrypts or decrypts a message. The encryption/decryption mode
      * depends on the configuration of the underlying implementation.
      *
-     * @param iv       an encoded version of the initialization vector
-     * @param message  if in encryption mode, the clear-text message to encrypt,
-     *                 otherwise an encoded version of the message to decrypt
-     * @param encoding the encoding to use
+     * @param iv      an encoded version of the initialization vector
+     * @param message if in encryption mode, the clear-text message to encrypt,
+     *                otherwise an encoded version of the message to decrypt
      * @return if in encryption mode, returns an encoded version of the encrypted message,
      * otherwise returns the decrypted clear-text message
      */
-    String encrypt(String iv, String message, Encoding encoding);
+    String encrypt(String iv, String message);
 
 }
