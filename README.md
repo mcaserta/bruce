@@ -27,6 +27,10 @@ Bruce is an opinionated, lightweight, pure Java wrapper around the Java Cryptogr
 - Massively unit tested<!-- TODO: and documented -->.
 - Open Source: you don't need to trust Bruce: you can see for yourself if you like what Bruce does.
 
+## Requirements
+
+- Java 15
+
 ## How to Bruce
 
 ### With Apache Maven
