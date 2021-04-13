@@ -39,6 +39,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class Bruce {
 
+    public static final String DEFAULT_KEYSTORE_TYPE = "PKCS12";
     public static final String DEFAULT_SIGNING_ALGORITHM = "SHA512withRSA";
 
     private static final Hex.Encoder HEX_ENCODER = Hex.getEncoder();
@@ -79,13 +80,13 @@ public class Bruce {
      * <p>
      * If no protocol is specified, <code>file</code> is assumed.
      * <p>
-     * The default keystore type is <code>JKS</code>.
+     * The default keystore type is {@value #DEFAULT_KEYSTORE_TYPE}.
      *
      * @return the default keystore
      * @throws BruceException on loading errors
      */
     public static KeyStore keystore() {
-        return keystore("JKS");
+        return keystore(DEFAULT_KEYSTORE_TYPE);
     }
 
     /**
@@ -123,7 +124,7 @@ public class Bruce {
     }
 
     /**
-     * Returns a key store.
+     * Returns a key store. The default keystore type is {@value #DEFAULT_KEYSTORE_TYPE}.
      *
      * @param location the keystore location. The following protocols are supported:
      *                 <ul>
@@ -138,7 +139,7 @@ public class Bruce {
      * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String location, String password) {
-        return keystore(location, password, "JKS", BLANK);
+        return keystore(location, password, DEFAULT_KEYSTORE_TYPE, BLANK);
     }
 
     /**

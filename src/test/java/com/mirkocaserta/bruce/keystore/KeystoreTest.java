@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 
+import static com.mirkocaserta.bruce.Bruce.DEFAULT_KEYSTORE_TYPE;
 import static com.mirkocaserta.bruce.Bruce.keystore;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,30 +17,30 @@ class KeystoreTest {
 
     @DisplayName("loads a keystore from the classpath and the filesystem")
     @ParameterizedTest
-    @ValueSource(strings = {"classpath:/keystore.jks", "file:src/test/resources/keystore.jks", "src/test/resources/keystore.jks"})
+    @ValueSource(strings = {"classpath:/keystore.p12", "file:src/test/resources/keystore.p12", "src/test/resources/keystore.p12"})
     void classpathKeystore(String location) throws KeyStoreException {
         KeyStore keystore = keystore(location, "password");
         assertNotNull(keystore);
-        assertEquals("JKS", keystore.getType(), "type");
-        assertEquals(1, keystore.size(), "size");
+        assertEquals(DEFAULT_KEYSTORE_TYPE, keystore.getType(), "type");
+        assertEquals(2, keystore.size(), "size");
     }
 
     @Test
     @DisplayName("loads a keystore from the classpath with the default provider")
     void classpathKeystoreWithDefaultProvider() throws KeyStoreException {
-        KeyStore keystore = keystore("classpath:/keystore.jks", "password", "JKS");
+        KeyStore keystore = keystore("classpath:/keystore.p12", "password", DEFAULT_KEYSTORE_TYPE);
         assertNotNull(keystore);
-        assertEquals("JKS", keystore.getType(), "type");
-        assertEquals(1, keystore.size(), "size");
+        assertEquals(DEFAULT_KEYSTORE_TYPE, keystore.getType(), "type");
+        assertEquals(2, keystore.size(), "size");
     }
 
     @Test
     @DisplayName("loads a keystore from the classpath with the default provider and type")
     void classpathKeystoreWithDefaultProviderAndType() throws KeyStoreException {
-        KeyStore keystore = keystore("classpath:/keystore.jks", "password");
+        KeyStore keystore = keystore("classpath:/keystore.p12", "password");
         assertNotNull(keystore);
-        assertEquals("JKS", keystore.getType(), "type");
-        assertEquals(1, keystore.size(), "size");
+        assertEquals(DEFAULT_KEYSTORE_TYPE, keystore.getType(), "type");
+        assertEquals(2, keystore.size(), "size");
     }
 
     @Test

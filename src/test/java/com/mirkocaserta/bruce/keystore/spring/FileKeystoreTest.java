@@ -9,6 +9,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.security.KeyStore;
 
+import static com.mirkocaserta.bruce.Bruce.DEFAULT_KEYSTORE_TYPE;
 import static com.mirkocaserta.bruce.Bruce.keystore;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -23,14 +24,14 @@ class FileKeystoreTest {
     @DisplayName("loads a keystore from a local file")
     void classpathKeystore() {
         assertNotNull(keystore);
-        assertEquals("JKS", keystore.getType(), "type");
+        assertEquals(DEFAULT_KEYSTORE_TYPE, keystore.getType(), "type");
     }
 
     @Configuration
     public static class Cfg {
         @Bean
         public KeyStore keystoreB() {
-            return keystore("file:src/test/resources/keystore.jks", "password");
+            return keystore("file:src/test/resources/keystore.p12", "password");
         }
     }
 
