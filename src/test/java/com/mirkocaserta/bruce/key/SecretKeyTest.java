@@ -8,9 +8,9 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 
-import static com.mirkocaserta.bruce.Bruce.keystore;
-import static com.mirkocaserta.bruce.Bruce.secretKey;
+import static com.mirkocaserta.bruce.Bruce.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 class SecretKeyTest {
 
@@ -35,6 +35,13 @@ class SecretKeyTest {
         assertEquals("PKCS12", keystore.getType(), "type");
         assertEquals(2, keystore.size(), "size");
         assertThrows(BruceException.class, () -> secretKey(keystore, "sgiao belo", "foo"));
+    }
+
+    @Test
+    @DisplayName("an exception should be wrapped")
+    void exceptionsShouldBeWrapped() {
+        KeyStore keystore = mock(KeyStore.class);
+        assertThrows(BruceException.class, () -> secretKey(keystore, "hmac", "password"));
     }
 
 }

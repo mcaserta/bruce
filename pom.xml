@@ -11,7 +11,7 @@
     <url>https://mcaserta.github.com/bruce</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>11</java.version>
+        <java.version>15</java.version>
         <junit.version>5.7.1</junit.version>
         <spring.boot.version>2.4.4</spring.boot.version>
         <sonar.projectKey>mcaserta_bruce</sonar.projectKey>

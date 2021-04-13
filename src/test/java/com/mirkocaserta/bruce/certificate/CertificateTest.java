@@ -11,6 +11,7 @@ import java.security.cert.Certificate;
 import static com.mirkocaserta.bruce.Bruce.certificate;
 import static com.mirkocaserta.bruce.Bruce.keystore;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 class CertificateTest {
 
@@ -37,6 +38,13 @@ class CertificateTest {
         assertEquals("PKCS12", keystore.getType(), "type");
         assertEquals(2, keystore.size(), "size");
         assertThrows(BruceException.class, () -> certificate(keystore, "sgiao belo"));
+    }
+
+    @Test
+    @DisplayName("an exception in getCertificate should be wrapped in a BruceException")
+    void getCertificateExceptionGetsWrapped() {
+        KeyStore keystore = mock(KeyStore.class);
+        assertThrows(BruceException.class, () -> certificate(keystore, "test"));
     }
 
 }

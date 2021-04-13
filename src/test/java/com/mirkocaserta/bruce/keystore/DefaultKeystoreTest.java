@@ -46,9 +46,17 @@ class DefaultKeystoreTest {
     }
 
     @Test
+    @DisplayName("loading a blank location should throw an error")
+    void blankLocation() {
+        System.setProperty("javax.net.ssl.keyStore", "   ");
+        System.setProperty("javax.net.ssl.keyStorePassword", "wrong");
+        assertThrows(BruceException.class, Bruce::keystore);
+    }
+
+    @Test
     @DisplayName("loading an empty location should throw an error")
     void emptyLocation() {
-        System.setProperty("javax.net.ssl.keyStore", "   ");
+        System.setProperty("javax.net.ssl.keyStore", "");
         System.setProperty("javax.net.ssl.keyStorePassword", "wrong");
         assertThrows(BruceException.class, Bruce::keystore);
     }

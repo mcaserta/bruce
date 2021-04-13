@@ -11,6 +11,7 @@ import java.security.PrivateKey;
 import static com.mirkocaserta.bruce.Bruce.keystore;
 import static com.mirkocaserta.bruce.Bruce.privateKey;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 class PrivateKeyTest {
 
@@ -35,6 +36,13 @@ class PrivateKeyTest {
         assertEquals("PKCS12", keystore.getType(), "type");
         assertEquals(2, keystore.size(), "size");
         assertThrows(BruceException.class, () -> privateKey(keystore, "sgiao belo", "foo"));
+    }
+
+    @Test
+    @DisplayName("an exception thrown in getPrivateKey should be wrapped")
+    void exceptionsShouldBeWrapped() {
+        KeyStore keystore = mock(KeyStore.class);
+        assertThrows(BruceException.class, () -> privateKey(keystore, "test", "password"));
     }
 
 }

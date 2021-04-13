@@ -113,13 +113,11 @@ public class Bruce {
      * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String type) {
-        final String location = System.getProperty("javax.net.ssl.keyStore");
-
-        if (location == null || location.isBlank()) {
-            throw new BruceException("no value was specified for the system property: javax.net.ssl.keyStore");
-        }
-
-        return keystore(location, System.getProperty("javax.net.ssl.keyStorePassword"), type);
+        return keystore(
+                System.getProperty("javax.net.ssl.keyStore"),
+                System.getProperty("javax.net.ssl.keyStorePassword"),
+                type
+        );
     }
 
     /**
@@ -138,7 +136,7 @@ public class Bruce {
      * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String location, String password) {
-        return keystore(location, password, DEFAULT_KEYSTORE_TYPE, BLANK);
+        return keystore(location, password, DEFAULT_KEYSTORE_TYPE, "SUN");
     }
 
     /**
@@ -158,7 +156,7 @@ public class Bruce {
      * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String location, String password, String type) {
-        return keystore(location, password, type, BLANK);
+        return keystore(location, password, type, "SUN");
     }
 
     /**
@@ -180,12 +178,7 @@ public class Bruce {
      */
     public static KeyStore keystore(String location, String password, String type, String provider) {
         try {
-            final KeyStore keyStore;
-            if (provider == null || provider.isBlank()) {
-                keyStore = KeyStore.getInstance(type);
-            } else {
-                keyStore = KeyStore.getInstance(type, provider);
-            }
+            final KeyStore keyStore = KeyStore.getInstance(type, provider);
             final InputStream inputStream;
             if (location.startsWith("classpath:")) {
                 inputStream = Bruce.class.getResourceAsStream(location.replaceFirst("classpath:", BLANK));
@@ -234,17 +227,7 @@ public class Bruce {
      * @throws BruceException on loading errors
      */
     public static PublicKey publicKey(KeyStore keystore, String alias) {
-        try {
-            final Certificate certificate = keystore.getCertificate(alias);
-
-            if (certificate == null) {
-                throw new BruceException(String.format("certificate not found for alias: %s", alias));
-            }
-
-            return certificate.getPublicKey();
-        } catch (KeyStoreException e) {
-            throw new BruceException(String.format("error loading public key with alias: %s", alias), e);
-        }
+        return certificate(keystore, alias).getPublicKey();
     }
 
     /**
@@ -403,19 +386,33 @@ public class Bruce {
      * @return the signer
      */
     public static Signer signer(PrivateKey privateKey, String algorithm, String provider) {
-        return message -> {
+        final Signer signer = message -> {
             try {
-                final Signature signature =
-                        provider == null || provider.isBlank()
-                                ? Signature.getInstance(algorithm)
-                                : Signature.getInstance(algorithm, provider);
+                final Signature signature = getSignature(algorithm, provider);
                 signature.initSign(privateKey);
                 signature.update(message);
                 return signature.sign();
-            } catch (NoSuchAlgorithmException | NoSuchProviderException | SignatureException | InvalidKeyException e) {
+            } catch (SignatureException | InvalidKeyException e) {
                 throw new BruceException(String.format("error generating the signature: algorithm=%s, provider=%s", algorithm, provider), e);
             }
         };
+
+        /*
+        This is here so we can trigger exceptions at initialization time
+        rather then at runtime when invoking the sign method on the signer.
+         */
+        signer.sign("FAIL FAST".getBytes(UTF_8));
+        return signer;
+    }
+
+    private static Signature getSignature(String algorithm, String provider) {
+        try {
+            return provider == null || provider.isBlank()
+                    ? Signature.getInstance(algorithm)
+                    : Signature.getInstance(algorithm, provider);
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new BruceException(String.format("error getting signer: algorithm=%s, provider=%s", algorithm, provider), e);
+        }
     }
 
     public static SignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm) {
@@ -462,14 +459,11 @@ public class Bruce {
     public static Verifier verifier(PublicKey publicKey, String algorithm, String provider) {
         return (message, signature) -> {
             try {
-                final Signature signatureInstance =
-                        provider == null || provider.isBlank()
-                                ? Signature.getInstance(algorithm)
-                                : Signature.getInstance(algorithm, provider);
+                final Signature signatureInstance = getSignature(algorithm, provider);
                 signatureInstance.initVerify(publicKey);
                 signatureInstance.update(message);
                 return signatureInstance.verify(signature);
-            } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException e) {
+            } catch (InvalidKeyException e) {
                 throw new BruceException(String.format("error verifying the signature: algorithm=%s, provider=%s", algorithm, provider), e);
             } catch (SignatureException e) {
                 return false;
@@ -551,14 +545,8 @@ public class Bruce {
                         ? Cipher.getInstance(cipherAlgorithm)
                         : Cipher.getInstance(cipherAlgorithm, provider);
                 switch (mode) {
-                    case ENCRYPT:
-                        cipher.init(Cipher.ENCRYPT_MODE, spec, initializationVectorSpec);
-                        break;
-                    case DECRYPT:
-                        cipher.init(Cipher.DECRYPT_MODE, spec, initializationVectorSpec);
-                        break;
-                    default:
-                        throw new BruceException(String.format("error encrypting/decrypting message: invalid mode; mode=%s", mode));
+                    case ENCRYPT -> cipher.init(Cipher.ENCRYPT_MODE, spec, initializationVectorSpec);
+                    case DECRYPT -> cipher.init(Cipher.DECRYPT_MODE, spec, initializationVectorSpec);
                 }
                 return cipher.doFinal(message);
             } catch (NoSuchAlgorithmException | BadPaddingException | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException | NoSuchProviderException | IllegalBlockSizeException e) {
@@ -587,14 +575,10 @@ public class Bruce {
             final byte[] keyBA = decode(encoding, key);
             final byte[] ivBA = decode(encoding, iv);
 
-            switch (mode) {
-                case ENCRYPT:
-                    return encode(encoding, cipherer.encrypt(keyBA, ivBA, message.getBytes(charset)));
-                case DECRYPT:
-                    return new String(cipherer.encrypt(keyBA, ivBA, decode(encoding, message)), charset);
-                default:
-                    throw new BruceException(String.format("unsupported mode: %s", mode));
-            }
+            return switch (mode) {
+                case ENCRYPT -> encode(encoding, cipherer.encrypt(keyBA, ivBA, message.getBytes(charset)));
+                case DECRYPT -> new String(cipherer.encrypt(keyBA, ivBA, decode(encoding, message)), charset);
+            };
         };
     }
 
@@ -618,14 +602,8 @@ public class Bruce {
                         ? Cipher.getInstance(algorithm)
                         : Cipher.getInstance(algorithm, provider);
                 switch (mode) {
-                    case ENCRYPT:
-                        cipher.init(Cipher.ENCRYPT_MODE, key);
-                        break;
-                    case DECRYPT:
-                        cipher.init(Cipher.DECRYPT_MODE, key);
-                        break;
-                    default:
-                        throw new BruceException(String.format("error encrypting/decrypting message: invalid mode; mode=%s", mode));
+                    case ENCRYPT -> cipher.init(Cipher.ENCRYPT_MODE, key);
+                    case DECRYPT -> cipher.init(Cipher.DECRYPT_MODE, key);
                 }
                 return cipher.doFinal(message);
             } catch (Exception e) {
@@ -695,14 +673,10 @@ public class Bruce {
     }
 
     private static String crypt(Cipherer cipherer, String message, Mode mode, Encoding encoding, Charset charset) {
-        switch (mode) {
-            case ENCRYPT:
-                return encode(encoding, cipherer.encrypt(message.getBytes(charset)));
-            case DECRYPT:
-                return new String(cipherer.encrypt(decode(encoding, message)), charset);
-            default:
-                throw new BruceException(String.format("unsupported mode: %s", mode));
-        }
+        return switch (mode) {
+            case ENCRYPT -> encode(encoding, cipherer.encrypt(message.getBytes(charset)));
+            case DECRYPT -> new String(cipherer.encrypt(decode(encoding, message)), charset);
+        };
     }
 
     private static Cipherer getCipherer(Map<String, Key> keys, String keyId, String algorithm, String provider, Mode mode) {
@@ -721,36 +695,24 @@ public class Bruce {
 
     private static byte[] decode(final Encoding encoding, final String input) {
         try {
-            switch (encoding) {
-                case HEX:
-                    return HEX_DECODER.decode(input);
-                case BASE64:
-                    return BASE_64_DECODER.decode(input);
-                case URL:
-                    return URL_DECODER.decode(input);
-                case MIME:
-                    return MIME_DECODER.decode(input);
-                default:
-                    throw new BruceException(String.format("unsupported encoding: %s", encoding));
-            }
+            return switch (encoding) {
+                case HEX -> HEX_DECODER.decode(input);
+                case BASE64 -> BASE_64_DECODER.decode(input);
+                case URL -> URL_DECODER.decode(input);
+                case MIME -> MIME_DECODER.decode(input);
+            };
         } catch (IllegalArgumentException e) {
-            throw new BruceException(String.format("invalid input: encoding=%s, input=%s", encoding, input));
+            throw new BruceException(String.format("invalid input for encoding %s", encoding));
         }
     }
 
     private static String encode(final Encoding encoding, final byte[] input) {
-        switch (encoding) {
-            case HEX:
-                return HEX_ENCODER.encodeToString(input);
-            case BASE64:
-                return BASE_64_ENCODER.encodeToString(input);
-            case URL:
-                return URL_ENCODER.encodeToString(input);
-            case MIME:
-                return MIME_ENCODER.encodeToString(input);
-            default:
-                throw new BruceException(String.format("unsupported encoding: %s", encoding));
-        }
+        return switch (encoding) {
+            case HEX -> HEX_ENCODER.encodeToString(input);
+            case BASE64 -> BASE_64_ENCODER.encodeToString(input);
+            case URL -> URL_ENCODER.encodeToString(input);
+            case MIME -> MIME_ENCODER.encodeToString(input);
+        };
     }
 
     public enum Encoding {
