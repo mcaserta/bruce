@@ -1,6 +1,5 @@
 package com.mirkocaserta.bruce.signature;
 
-import com.mirkocaserta.bruce.Bruce;
 import org.junit.jupiter.api.Test;
 
 import java.security.KeyStore;
@@ -19,12 +18,14 @@ class SignerAndVerifierByKeyTest {
     private final SignerByKey signer =
             signer(
                     Map.of("alice", privateKey(aliceKeystore, "alice", "password"),
-                            "bob", privateKey(bobKeystore, "bob", "password")));
+                            "bob", privateKey(bobKeystore, "bob", "password")),
+                    "SHA512withRSA");
 
     private final VerifierByKey verifier =
             verifier(
                     Map.of("alice", publicKey(aliceKeystore, "alice"),
-                            "bob", publicKey(bobKeystore, "bob")));
+                            "bob", publicKey(bobKeystore, "bob")),
+                    "SHA512withRSA");
 
     @Test
     void aliceAndBobHaveASignedAndVerifiedConversation() {

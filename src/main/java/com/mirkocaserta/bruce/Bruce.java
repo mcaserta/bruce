@@ -40,7 +40,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class Bruce {
 
     public static final String DEFAULT_KEYSTORE_TYPE = "PKCS12";
-    public static final String DEFAULT_SIGNING_ALGORITHM = "SHA512withRSA";
 
     private static final Hex.Encoder HEX_ENCODER = Hex.getEncoder();
     private static final Base64.Encoder BASE_64_ENCODER = Base64.getEncoder();
@@ -383,18 +382,6 @@ public class Bruce {
     }
 
     /**
-     * Returns a signer for the given private key with
-     * the default signing algorithm.
-     *
-     * @param privateKey the signing key
-     * @return the signer
-     * @see Bruce#DEFAULT_SIGNING_ALGORITHM
-     */
-    public static Signer signer(PrivateKey privateKey) {
-        return signer(privateKey, DEFAULT_SIGNING_ALGORITHM);
-    }
-
-    /**
      * Returns a signer for the given private key and
      * algorithm.
      *
@@ -431,10 +418,6 @@ public class Bruce {
         };
     }
 
-    public static SignerByKey signer(Map<String, PrivateKey> privateKeyMap) {
-        return signer(privateKeyMap, DEFAULT_SIGNING_ALGORITHM);
-    }
-
     public static SignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm) {
         return signer(privateKeyMap, algorithm, BLANK);
     }
@@ -451,12 +434,8 @@ public class Bruce {
         };
     }
 
-    public static EncodingSigner signer(PrivateKey privateKey, Encoding encoding) {
-        return signer(privateKey, UTF_8, encoding);
-    }
-
-    public static EncodingSigner signer(PrivateKey privateKey, Charset charset, Encoding encoding) {
-        return signer(privateKey, DEFAULT_SIGNING_ALGORITHM, charset, encoding);
+    public static EncodingSigner signer(PrivateKey privateKey, String algorithm, Encoding encoding) {
+        return signer(privateKey, algorithm, BLANK, UTF_8, encoding);
     }
 
     public static EncodingSigner signer(PrivateKey privateKey, String algorithm, Charset charset, Encoding encoding) {
@@ -474,10 +453,6 @@ public class Bruce {
 
         final Signer signer = signer(privateKey, algorithm, provider);
         return message -> encode(encoding, signer.sign(message.getBytes(charset)));
-    }
-
-    public static Verifier verifier(PublicKey publicKey) {
-        return verifier(publicKey, DEFAULT_SIGNING_ALGORITHM);
     }
 
     public static Verifier verifier(PublicKey publicKey, String algorithm) {
@@ -502,10 +477,6 @@ public class Bruce {
         };
     }
 
-    public static VerifierByKey verifier(Map<String, PublicKey> publicKeyMap) {
-        return verifier(publicKeyMap, DEFAULT_SIGNING_ALGORITHM);
-    }
-
     public static VerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm) {
         return verifier(publicKeyMap, algorithm, BLANK);
     }
@@ -520,10 +491,6 @@ public class Bruce {
 
             return verifier(publicKey, algorithm, provider).verify(message, signature);
         };
-    }
-
-    public static EncodingVerifier verifier(PublicKey publicKey, Encoding encoding) {
-        return verifier(publicKey, DEFAULT_SIGNING_ALGORITHM, encoding);
     }
 
     public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, Encoding encoding) {
