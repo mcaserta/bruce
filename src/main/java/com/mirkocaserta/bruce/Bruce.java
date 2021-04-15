@@ -193,6 +193,8 @@ public class Bruce {
             throw new BruceException(String.format("error loading keystore: location=%s", location), e);
         } catch (NoSuchProviderException e) {
             throw new BruceException(String.format("error loading keystore, no such provider: provider=%s", provider), e);
+        } catch (Exception e) {
+            throw new BruceException("error loading keystore", e);
         }
     }
 
