@@ -5,6 +5,8 @@ import com.mirkocaserta.bruce.BruceException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -37,26 +39,11 @@ class DefaultKeystoreTest {
         assertEquals(1, keystore.size(), "size");
     }
 
-    @Test
-    @DisplayName("loading a non existing keystore should throw an error")
-    void nonExisting() {
-        System.setProperty("javax.net.ssl.keyStore", "sgiao belo");
-        System.setProperty("javax.net.ssl.keyStorePassword", "wrong");
-        assertThrows(BruceException.class, Bruce::keystore);
-    }
-
-    @Test
-    @DisplayName("loading a blank location should throw an error")
-    void blankLocation() {
-        System.setProperty("javax.net.ssl.keyStore", "   ");
-        System.setProperty("javax.net.ssl.keyStorePassword", "wrong");
-        assertThrows(BruceException.class, Bruce::keystore);
-    }
-
-    @Test
-    @DisplayName("loading an empty location should throw an error")
-    void emptyLocation() {
-        System.setProperty("javax.net.ssl.keyStore", "");
+    @ParameterizedTest
+    @ValueSource(strings = {"sgiao belo", "   ", ""})
+    @DisplayName("these keystore locations should throw an error")
+    void badLocations(String location) {
+        System.setProperty("javax.net.ssl.keyStore", location);
         System.setProperty("javax.net.ssl.keyStorePassword", "wrong");
         assertThrows(BruceException.class, Bruce::keystore);
     }
