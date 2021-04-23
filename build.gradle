@@ -40,3 +40,9 @@ sonarqube {
         property "sonar.host.url", "https://sonarcloud.io"
     }
 }
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
