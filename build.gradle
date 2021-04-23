@@ -1,0 +1,32 @@
+plugins {
+    id 'java-library'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.bouncycastle:bcprov-jdk15on:1.68'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.4.5'
+}
+
+group = 'com.mirkocaserta'
+version = '1.0.0-SNAPSHOT'
+description = 'Bruce'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_15
+    withSourcesJar()
+    withJavadocJar()
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
