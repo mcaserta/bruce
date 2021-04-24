@@ -1,5 +1,7 @@
 package com.mirkocaserta.bruce.signature;
 
+import com.mirkocaserta.bruce.BruceException;
+
 /**
  * An interface for verifying the authenticity of messages using digital signatures.
  *
@@ -13,6 +15,7 @@ public interface Verifier {
      * @param message   the original message to verify
      * @param signature the digital signature
      * @return true if the original message is verified by the digital signature
+     * @throws BruceException on verification errors
      */
     boolean verify(byte[] message, byte[] signature);
 

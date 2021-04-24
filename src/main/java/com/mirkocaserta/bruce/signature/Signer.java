@@ -1,5 +1,7 @@
 package com.mirkocaserta.bruce.signature;
 
+import com.mirkocaserta.bruce.BruceException;
+
 /**
  * An interface for providing digital signatures.
  *
@@ -12,6 +14,7 @@ public interface Signer {
      *
      * @param message the message to sign
      * @return the signature
+     * @throws BruceException on signing errors
      */
     byte[] sign(byte[] message);
 

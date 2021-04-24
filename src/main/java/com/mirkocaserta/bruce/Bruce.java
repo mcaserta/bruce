@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.*;
@@ -373,6 +374,7 @@ public class Bruce {
      * @param privateKey the signing key
      * @param algorithm  the signing algorithm
      * @return the signer
+     * @throws BruceException on no such algorithm or provider exceptions
      */
     public static Signer signer(PrivateKey privateKey, String algorithm) {
         return signer(privateKey, algorithm, BLANK);
@@ -386,6 +388,7 @@ public class Bruce {
      * @param algorithm  the signing algorithm
      * @param provider   the provider (hint: Bouncy Castle is <code>BC</code>)
      * @return the signer
+     * @throws BruceException on no such algorithm or provider exceptions
      */
     public static Signer signer(PrivateKey privateKey, String algorithm, String provider) {
         final Signer signer = message -> {
@@ -417,10 +420,31 @@ public class Bruce {
         }
     }
 
+    /**
+     * Returns a signer where the private key can be chosen at runtime.
+     * The signing keys must be provided in a map where the map key is an
+     * alias to the signing key and the value is the corresponding signing key.
+     *
+     * @param privateKeyMap the signing key map
+     * @param algorithm     the signing algorithm
+     * @return the signer
+     * @throws BruceException on no such algorithm or provider exceptions
+     */
     public static SignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm) {
         return signer(privateKeyMap, algorithm, BLANK);
     }
 
+    /**
+     * Returns a signer where the private key can be chosen at runtime.
+     * The signing keys must be provided in a map where the map key is an
+     * alias to the signing key and the value is the corresponding signing key.
+     *
+     * @param privateKeyMap the signing key map
+     * @param algorithm     the signing algorithm
+     * @param provider      the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @return the signer
+     * @throws BruceException on no such algorithm or provider exceptions
+     */
     public static SignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm, String provider) {
         return (privateKeyId, message) -> {
             PrivateKey privateKey = privateKeyMap.get(privateKeyId);
@@ -433,14 +457,47 @@ public class Bruce {
         };
     }
 
+    /**
+     * Returns an encoding signer for the given private key using the
+     * default provider and {@link StandardCharsets#UTF_8}
+     * as the default charset used in messages.
+     *
+     * @param privateKey the signing key
+     * @param algorithm  the signing algorithm
+     * @param encoding   the signature encoding
+     * @return the signer
+     * @throws BruceException on initialization exceptions
+     */
     public static EncodingSigner signer(PrivateKey privateKey, String algorithm, Encoding encoding) {
         return signer(privateKey, algorithm, BLANK, UTF_8, encoding);
     }
 
+    /**
+     * Returns an encoding signer for the given private key using the
+     * default provider.
+     *
+     * @param privateKey the signing key
+     * @param algorithm  the signing algorithm
+     * @param charset    the charset used in messages
+     * @param encoding   the signature encoding
+     * @return the signer
+     * @throws BruceException on initialization exceptions
+     */
     public static EncodingSigner signer(PrivateKey privateKey, String algorithm, Charset charset, Encoding encoding) {
         return signer(privateKey, algorithm, BLANK, charset, encoding);
     }
 
+    /**
+     * Returns an encoding signer for the given private key.
+     *
+     * @param privateKey the signing key
+     * @param algorithm  the signing algorithm
+     * @param provider   the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param charset    the charset used in messages
+     * @param encoding   the signature encoding
+     * @return the signer
+     * @throws BruceException on initialization exceptions
+     */
     public static EncodingSigner signer(PrivateKey privateKey, String algorithm, String provider, Charset charset, Encoding encoding) {
         if (encoding == null) {
             throw new BruceException(INVALID_ENCODING_NULL);
@@ -454,10 +511,29 @@ public class Bruce {
         return message -> encode(encoding, signer.sign(message.getBytes(charset)));
     }
 
+    /**
+     * Returns a verifier for the given public key and
+     * algorithm using the default provider.
+     *
+     * @param publicKey the verification key
+     * @param algorithm the verification algorithm
+     * @return the verifier
+     * @throws BruceException on no such algorithm or provider exceptions
+     */
     public static Verifier verifier(PublicKey publicKey, String algorithm) {
         return verifier(publicKey, algorithm, BLANK);
     }
 
+    /**
+     * Returns a verifier for the given public key,
+     * algorithm and provider.
+     *
+     * @param publicKey the verification key
+     * @param algorithm the verification algorithm
+     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @return the verifier
+     * @throws BruceException on no such algorithm or provider exceptions
+     */
     public static Verifier verifier(PublicKey publicKey, String algorithm, String provider) {
         return (message, signature) -> {
             try {
@@ -717,8 +793,42 @@ public class Bruce {
         };
     }
 
+    /**
+     * Bruce supports these encodings. Encodings are used
+     * in cryptography as a wire safe representation of raw
+     * bytes which would otherwise get screwed-up in all
+     * sort of possible ways while traversing networks or,
+     * more generally, while exchanging hands.
+     * <p>
+     * Have you ever played the
+     * <a href="https://en.wikipedia.org/wiki/Chinese_whispers">telephone game</a>?
+     * Computers do that with raw bytes as different architectures
+     * internally encode bytes in different ways. Unless you
+     * use a standard encoding, messages get lost in translation
+     * with catastrophic consequences.
+     */
     public enum Encoding {
-        HEX, BASE64, URL, MIME
+        /**
+         * Hexadecimal encoding. For instance, the hexadecimal
+         * encoding of a random MD5 hash is
+         * <code>78e731027d8fd50ed642340b7c9a63b3</code>.
+         */
+        HEX,
+        /**
+         * Base64 encoding. For instance, the Base64 encoding of
+         * a random MD5 hash is <code>eOcxAn2P1Q7WQjQLfJpjsw==</code>.
+         */
+        BASE64,
+        /**
+         * URL encoding. For instance, the URL encoding of a random
+         * MD5 hash is <code>eOcxAn2P1Q7WQjQLfJpjsw==</code>.
+         */
+        URL,
+        /**
+         * MIME encoding. For instance, the MIME encoding of a random
+         * MD5 hash is <code>eOcxAn2P1Q7WQjQLfJpjsw==</code>.
+         */
+        MIME
     }
 
 }

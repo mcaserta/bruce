@@ -1,5 +1,7 @@
 package com.mirkocaserta.bruce.signature;
 
+import com.mirkocaserta.bruce.BruceException;
+
 /**
  * An interface for providing digital signatures when the private key
  * is configured in an underlying map using a logical name.
@@ -15,6 +17,7 @@ public interface SignerByKey {
      *                     in the underlying map
      * @param message      the message to sign
      * @return the signature
+     * @throws BruceException on key not found or signing errors
      */
     byte[] sign(String privateKeyId, byte[] message);
 

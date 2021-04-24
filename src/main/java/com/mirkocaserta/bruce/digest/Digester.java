@@ -1,5 +1,7 @@
 package com.mirkocaserta.bruce.digest;
 
+import com.mirkocaserta.bruce.BruceException;
+
 /**
  * Generic interface for getting message digests
  * in raw bytes format.
@@ -13,6 +15,7 @@ public interface Digester {
      *
      * @param message the message
      * @return the message digest in raw bytes format
+     * @throws BruceException on digesting errors
      */
     byte[] digest(byte[] message);
 
