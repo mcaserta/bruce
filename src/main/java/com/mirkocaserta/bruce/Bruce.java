@@ -549,10 +549,33 @@ public class Bruce {
         };
     }
 
+    /**
+     * Returns a verifier where the public key can be chosen at runtime.
+     * The verification keys must be provided in a map where the map key is an
+     * alias to the verification key and the value is the corresponding
+     * verification key. This method uses the default provider.
+     *
+     * @param publicKeyMap the verification key map
+     * @param algorithm    the verification algorithm
+     * @return the verifier
+     * @throws BruceException on no such algorithm or provider exceptions
+     */
     public static VerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm) {
         return verifier(publicKeyMap, algorithm, BLANK);
     }
 
+    /**
+     * Returns a verifier where the public key can be chosen at runtime.
+     * The verification keys must be provided in a map where the map key is an
+     * alias to the verification key and the value is the corresponding
+     * verification key.
+     *
+     * @param publicKeyMap the verification key map
+     * @param algorithm    the verification algorithm
+     * @param provider     the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @return the verifier
+     * @throws BruceException on no such algorithm or provider exceptions
+     */
     public static VerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm, String provider) {
         return (publicKeyId, message, signature) -> {
             PublicKey publicKey = publicKeyMap.get(publicKeyId);
@@ -565,14 +588,49 @@ public class Bruce {
         };
     }
 
+    /**
+     * Returns an encoding verifier for the given public key.
+     * This method assumes the default messages charset is
+     * {@link StandardCharsets#UTF_8}. The default provider
+     * is used.
+     *
+     * @param publicKey the verification key
+     * @param algorithm the verification algorithm
+     * @param encoding  the verification encoding
+     * @return the verifier
+     * @throws BruceException on initialization exceptions
+     */
     public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, Encoding encoding) {
         return verifier(publicKey, algorithm, BLANK, encoding);
     }
 
+    /**
+     * Returns an encoding verifier for the given public key.
+     * This method assumes the default messages charset is
+     * {@link StandardCharsets#UTF_8}.
+     *
+     * @param publicKey the verification key
+     * @param algorithm the verification algorithm
+     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param encoding  the verification encoding
+     * @return the verifier
+     * @throws BruceException on initialization exceptions
+     */
     public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, String provider, Encoding encoding) {
         return verifier(publicKey, algorithm, provider, UTF_8, encoding);
     }
 
+    /**
+     * Returns an encoding verifier for the given public key.
+     *
+     * @param publicKey the verification key
+     * @param algorithm the verification algorithm
+     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param charset   the charset used in messages
+     * @param encoding  the verification encoding
+     * @return the verifier
+     * @throws BruceException on initialization exceptions
+     */
     public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, String provider, Charset charset, Encoding encoding) {
         if (encoding == null) {
             throw new BruceException(INVALID_ENCODING_NULL);
@@ -767,10 +825,27 @@ public class Bruce {
         });
     }
 
+    /**
+     * This is used to calculate the cipher cache key.
+     *
+     * @param keyId     the key id
+     * @param algorithm the cypher algorithm
+     * @param provider  the cypher provider
+     * @param mode      the cyphering mode
+     * @return the cache key
+     */
     private static String ciphererCacheKey(String keyId, String algorithm, String provider, Mode mode) {
         return keyId + "::" + algorithm + "::" + provider + "::" + mode;
     }
 
+    /**
+     * Decodes the input using the specified encoding.
+     *
+     * @param encoding the encoding to use
+     * @param input    the input to decode
+     * @return a raw bytes array representation of the decoded input
+     * @throws BruceException on decoding errors
+     */
     private static byte[] decode(final Encoding encoding, final String input) {
         try {
             return switch (encoding) {
@@ -784,6 +859,13 @@ public class Bruce {
         }
     }
 
+    /**
+     * Encodes the input using the specified encoding.
+     *
+     * @param encoding the encoding to use
+     * @param input    the input to encode
+     * @return a string representation of the encoded input
+     */
     private static String encode(final Encoding encoding, final byte[] input) {
         return switch (encoding) {
             case HEX -> HEX_ENCODER.encodeToString(input);
