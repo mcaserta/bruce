@@ -9,7 +9,7 @@ import com.mirkocaserta.bruce.cipher.Mode;
  *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
-public interface CiphererByKey {
+public interface CipherByKey {
 
     /**
      * Encrypts/decrypts a message based on the underlying mode of operation.

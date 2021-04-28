@@ -14,7 +14,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class EncodingCiphererByKeyRoundTripTest {
+class EncodingCipherByKeyRoundTripTest {
 
     @Test
     void roundTrip() {
@@ -23,8 +23,8 @@ class EncodingCiphererByKeyRoundTripTest {
         rng.nextBytes(ivBA);
         String iv = Base64.getEncoder().encodeToString(ivBA);
         String key = symmetricKey("DESede", BASE64);
-        EncodingCiphererByKey encrypter = ciphererByKey("DESede", "DESede/CBC/PKCS5Padding", ENCRYPT, UTF_8);
-        EncodingCiphererByKey decrypter = ciphererByKey("DESede", "DESede/CBC/PKCS5Padding", DECRYPT, UTF_8);
+        EncodingCipherByKey encrypter = cipherByKey("DESede", "DESede/CBC/PKCS5Padding", ENCRYPT, UTF_8);
+        EncodingCipherByKey decrypter = cipherByKey("DESede", "DESede/CBC/PKCS5Padding", DECRYPT, UTF_8);
         String clearText = "Hi there";
         String cypherText = encrypter.encrypt(key, iv, clearText, BASE64);
         assertNotNull(cypherText);

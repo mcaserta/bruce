@@ -6,7 +6,7 @@ package com.mirkocaserta.bruce.cipher.asymmetric;
  *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
-public interface Cipherer {
+public interface Cipher {
 
     /**
      * Encrypts/decrypts a message based on the underlying mode of operation.

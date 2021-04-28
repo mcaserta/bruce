@@ -1,16 +1,20 @@
 package com.mirkocaserta.bruce;
 
 import com.mirkocaserta.bruce.cipher.Mode;
-import com.mirkocaserta.bruce.cipher.asymmetric.Cipherer;
-import com.mirkocaserta.bruce.cipher.symmetric.CiphererByKey;
-import com.mirkocaserta.bruce.cipher.symmetric.EncodingCiphererByKey;
+import com.mirkocaserta.bruce.cipher.asymmetric.Cipher;
+import com.mirkocaserta.bruce.cipher.symmetric.CipherByKey;
+import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipher;
+import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherByKey;
 import com.mirkocaserta.bruce.digest.Digester;
 import com.mirkocaserta.bruce.digest.EncodingDigester;
 import com.mirkocaserta.bruce.signature.Signer;
 import com.mirkocaserta.bruce.signature.*;
 import com.mirkocaserta.bruce.util.Hex;
 
-import javax.crypto.*;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
@@ -54,7 +58,7 @@ public class Bruce {
     private static final String BLANK = "";
     private static final String INVALID_ENCODING_NULL = "Invalid encoding: null";
 
-    private static final ConcurrentMap<String, com.mirkocaserta.bruce.cipher.asymmetric.Cipherer> ciphererCache = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, Cipher> cipherCache = new ConcurrentHashMap<>();
 
     private Bruce() {
         // utility class, users can't make new instances
@@ -644,10 +648,24 @@ public class Bruce {
         return (message, signature) -> verifier.verify(message.getBytes(charset), decode(encoding, signature));
     }
 
+    /**
+     * Generates a symmetric key using the specified algorithm.
+     *
+     * @param algorithm the key algorithm
+     * @return a newly generated symmetric key
+     */
     public static byte[] symmetricKey(String algorithm) {
         return symmetricKey(algorithm, BLANK);
     }
 
+    /**
+     * Generates a symmetric key using the specified algorithm
+     * and provider.
+     *
+     * @param algorithm the key algorithm
+     * @param provider  the key provider
+     * @return a newly generated symmetric key
+     */
     public static byte[] symmetricKey(String algorithm, String provider) {
         try {
             final KeyGenerator generator = provider == null || provider.isBlank()
@@ -660,29 +678,45 @@ public class Bruce {
         }
     }
 
+    /**
+     * Generates an encoded symmetric key using the specified algorithm.
+     *
+     * @param algorithm the key algorithm
+     * @param encoding  the key encoding
+     * @return a newly generated symmetric key
+     */
     public static String symmetricKey(String algorithm, Encoding encoding) {
         return symmetricKey(algorithm, BLANK, encoding);
     }
 
+    /**
+     * Generates an encoded symmetric key using the specified algorithm
+     * and provider.
+     *
+     * @param algorithm the key algorithm
+     * @param provider  the key provider
+     * @param encoding  the key encoding
+     * @return a newly generated symmetric key
+     */
     public static String symmetricKey(String algorithm, String provider, Encoding encoding) {
         return encode(encoding, symmetricKey(algorithm, provider));
     }
 
-    public static com.mirkocaserta.bruce.cipher.symmetric.CiphererByKey cipherer(String keyAlgorithm, String cipherAlgorithm, Mode mode) {
-        return cipherer(keyAlgorithm, cipherAlgorithm, BLANK, mode);
+    public static CipherByKey cipher(String keyAlgorithm, String cipherAlgorithm, Mode mode) {
+        return cipher(keyAlgorithm, cipherAlgorithm, BLANK, mode);
     }
 
-    public static com.mirkocaserta.bruce.cipher.symmetric.CiphererByKey cipherer(String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode) {
+    public static CipherByKey cipher(String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode) {
         return (key, iv, message) -> {
             try {
                 final IvParameterSpec initializationVectorSpec = new IvParameterSpec(iv);
                 final SecretKeySpec spec = new SecretKeySpec(key, keyAlgorithm);
-                final Cipher cipher = provider == null || provider.isBlank()
-                        ? Cipher.getInstance(cipherAlgorithm)
-                        : Cipher.getInstance(cipherAlgorithm, provider);
+                final javax.crypto.Cipher cipher = provider == null || provider.isBlank()
+                        ? javax.crypto.Cipher.getInstance(cipherAlgorithm)
+                        : javax.crypto.Cipher.getInstance(cipherAlgorithm, provider);
                 switch (mode) {
-                    case ENCRYPT -> cipher.init(Cipher.ENCRYPT_MODE, spec, initializationVectorSpec);
-                    case DECRYPT -> cipher.init(Cipher.DECRYPT_MODE, spec, initializationVectorSpec);
+                    case ENCRYPT -> cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, spec, initializationVectorSpec);
+                    case DECRYPT -> cipher.init(javax.crypto.Cipher.DECRYPT_MODE, spec, initializationVectorSpec);
                 }
                 return cipher.doFinal(message);
             } catch (NoSuchAlgorithmException | BadPaddingException | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException | NoSuchProviderException | IllegalBlockSizeException e) {
@@ -691,55 +725,64 @@ public class Bruce {
         };
     }
 
-    public static com.mirkocaserta.bruce.cipher.symmetric.Cipherer cipherer(byte[] key, String keyAlgorithm, String cipherAlgorithm, Mode mode) {
-        return cipherer(key, keyAlgorithm, cipherAlgorithm, BLANK, mode);
+    /**
+     * Returns a cipher.
+     *
+     * @param key             the ciphering key
+     * @param keyAlgorithm    the key's algorithm
+     * @param cipherAlgorithm the cipher's algorithm
+     * @param mode            the encryption mode
+     * @return the cipher
+     */
+    public static com.mirkocaserta.bruce.cipher.symmetric.Cipher cipher(byte[] key, String keyAlgorithm, String cipherAlgorithm, Mode mode) {
+        return cipher(key, keyAlgorithm, cipherAlgorithm, BLANK, mode);
     }
 
-    public static com.mirkocaserta.bruce.cipher.symmetric.Cipherer cipherer(byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode) {
-        final CiphererByKey cipherer = cipherer(keyAlgorithm, cipherAlgorithm, provider, mode);
-        return (iv, message) -> cipherer.encrypt(key, iv, message);
+    public static com.mirkocaserta.bruce.cipher.symmetric.Cipher cipher(byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode) {
+        final CipherByKey cipher = cipher(keyAlgorithm, cipherAlgorithm, provider, mode);
+        return (iv, message) -> cipher.encrypt(key, iv, message);
     }
 
-    public static com.mirkocaserta.bruce.cipher.symmetric.EncodingCiphererByKey ciphererByKey(String keyAlgorithm, String cipherAlgorithm, Mode mode, Charset charset) {
-        return ciphererByKey(keyAlgorithm, cipherAlgorithm, BLANK, mode, charset);
+    public static EncodingCipherByKey cipherByKey(String keyAlgorithm, String cipherAlgorithm, Mode mode, Charset charset) {
+        return cipherByKey(keyAlgorithm, cipherAlgorithm, BLANK, mode, charset);
     }
 
-    public static com.mirkocaserta.bruce.cipher.symmetric.EncodingCiphererByKey ciphererByKey(String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode, Charset charset) {
-        final CiphererByKey cipherer = cipherer(keyAlgorithm, cipherAlgorithm, provider, mode);
+    public static EncodingCipherByKey cipherByKey(String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode, Charset charset) {
+        final CipherByKey cipher = cipher(keyAlgorithm, cipherAlgorithm, provider, mode);
 
         return (key, iv, message, encoding) -> {
             final byte[] keyBA = decode(encoding, key);
             final byte[] ivBA = decode(encoding, iv);
 
             return switch (mode) {
-                case ENCRYPT -> encode(encoding, cipherer.encrypt(keyBA, ivBA, message.getBytes(charset)));
-                case DECRYPT -> new String(cipherer.encrypt(keyBA, ivBA, decode(encoding, message)), charset);
+                case ENCRYPT -> encode(encoding, cipher.encrypt(keyBA, ivBA, message.getBytes(charset)));
+                case DECRYPT -> new String(cipher.encrypt(keyBA, ivBA, decode(encoding, message)), charset);
             };
         };
     }
 
-    public static com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherer cipherer(String key, String keyAlgorithm, String cipherAlgorithm, Mode mode, Charset charset, Encoding encoding) {
-        return cipherer(key, keyAlgorithm, cipherAlgorithm, BLANK, mode, charset, encoding);
+    public static EncodingCipher cipher(String key, String keyAlgorithm, String cipherAlgorithm, Mode mode, Charset charset, Encoding encoding) {
+        return cipher(key, keyAlgorithm, cipherAlgorithm, BLANK, mode, charset, encoding);
     }
 
-    public static com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherer cipherer(String key, String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode, Charset charset, Encoding encoding) {
-        final EncodingCiphererByKey cipherer = ciphererByKey(keyAlgorithm, cipherAlgorithm, provider, mode, charset);
-        return (iv, message) -> cipherer.encrypt(key, iv, message, encoding);
+    public static EncodingCipher cipher(String key, String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode, Charset charset, Encoding encoding) {
+        final EncodingCipherByKey cipher = cipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode, charset);
+        return (iv, message) -> cipher.encrypt(key, iv, message, encoding);
     }
 
-    public static com.mirkocaserta.bruce.cipher.asymmetric.Cipherer cipherer(Key key, String algorithm, Mode mode) {
-        return cipherer(key, algorithm, BLANK, mode);
+    public static Cipher cipher(Key key, String algorithm, Mode mode) {
+        return cipher(key, algorithm, BLANK, mode);
     }
 
-    public static com.mirkocaserta.bruce.cipher.asymmetric.Cipherer cipherer(Key key, String algorithm, String provider, Mode mode) {
+    public static Cipher cipher(Key key, String algorithm, String provider, Mode mode) {
         return message -> {
             try {
-                final Cipher cipher = provider == null || provider.isBlank()
-                        ? Cipher.getInstance(algorithm)
-                        : Cipher.getInstance(algorithm, provider);
+                final javax.crypto.Cipher cipher = provider == null || provider.isBlank()
+                        ? javax.crypto.Cipher.getInstance(algorithm)
+                        : javax.crypto.Cipher.getInstance(algorithm, provider);
                 switch (mode) {
-                    case ENCRYPT -> cipher.init(Cipher.ENCRYPT_MODE, key);
-                    case DECRYPT -> cipher.init(Cipher.DECRYPT_MODE, key);
+                    case ENCRYPT -> cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, key);
+                    case DECRYPT -> cipher.init(javax.crypto.Cipher.DECRYPT_MODE, key);
                 }
                 return cipher.doFinal(message);
             } catch (Exception e) {
@@ -748,33 +791,63 @@ public class Bruce {
         };
     }
 
-    public static com.mirkocaserta.bruce.cipher.asymmetric.CiphererByKey cipherer(Map<String, Key> keys, String algorithm) {
-        return cipherer(keys, algorithm, BLANK);
+    public static com.mirkocaserta.bruce.cipher.asymmetric.CipherByKey cipher(Map<String, Key> keys, String algorithm) {
+        return cipher(keys, algorithm, BLANK);
     }
 
-    public static com.mirkocaserta.bruce.cipher.asymmetric.CiphererByKey cipherer(Map<String, Key> keys, String algorithm, String provider) {
-        // we use a cipherer cache here as getting a new one each time is a bit expensive
-        return (keyId, mode, message) -> getCipherer(keys, keyId, algorithm, provider, mode).encrypt(message);
+    public static com.mirkocaserta.bruce.cipher.asymmetric.CipherByKey cipher(Map<String, Key> keys, String algorithm, String provider) {
+        // we use a cipher cache here as getting a new one each time is a bit expensive
+        return (keyId, mode, message) -> getCipher(keys, keyId, algorithm, provider, mode).encrypt(message);
     }
 
-    public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipherer cipherer(Key key, String algorithm, Mode mode, Encoding encoding, Charset charset) {
-        return cipherer(key, algorithm, BLANK, mode, encoding, charset);
+    public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipher cipher(Key key, String algorithm, Mode mode, Encoding encoding, Charset charset) {
+        return cipher(key, algorithm, BLANK, mode, encoding, charset);
     }
 
-    public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipherer cipherer(Key key, String algorithm, String provider, Mode mode, Encoding encoding, Charset charset) {
-        final Cipherer cipherer = cipherer(key, algorithm, provider, mode);
-        return message -> crypt(cipherer, message, mode, encoding, charset);
+    public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipher cipher(Key key, String algorithm, String provider, Mode mode, Encoding encoding, Charset charset) {
+        final Cipher cipher = cipher(key, algorithm, provider, mode);
+        return message -> crypt(cipher, message, mode, encoding, charset);
     }
 
-    public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCiphererByKey cipherer(Map<String, Key> keys, String algorithm, Encoding encoding, Charset charset) {
-        return cipherer(keys, algorithm, BLANK, encoding, charset);
+    public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipherByKey cipher(Map<String, Key> keys, String algorithm, Encoding encoding, Charset charset) {
+        return cipher(keys, algorithm, BLANK, encoding, charset);
     }
 
-    public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCiphererByKey cipherer(Map<String, Key> keys, String algorithm, String provider, Encoding encoding, Charset charset) {
+    public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipherByKey cipher(Map<String, Key> keys, String algorithm, String provider, Encoding encoding, Charset charset) {
         return (keyId, mode, message) -> {
-            final Cipherer cipherer = getCipherer(keys, keyId, algorithm, provider, mode);
-            return crypt(cipherer, message, mode, encoding, charset);
+            final Cipher cipher = getCipher(keys, keyId, algorithm, provider, mode);
+            return crypt(cipher, message, mode, encoding, charset);
         };
+    }
+
+    private static String crypt(Cipher cipher, String message, Mode mode, Encoding encoding, Charset charset) {
+        return switch (mode) {
+            case ENCRYPT -> encode(encoding, cipher.encrypt(message.getBytes(charset)));
+            case DECRYPT -> new String(cipher.encrypt(decode(encoding, message)), charset);
+        };
+    }
+
+    private static Cipher getCipher(Map<String, Key> keys, String keyId, String algorithm, String provider, Mode mode) {
+        return cipherCache.computeIfAbsent(cipherCacheKey(keyId, algorithm, provider, mode), ignored -> {
+            final Key key = keys.get(keyId);
+            if (key == null) {
+                throw new BruceException(String.format("no such key: %s", keyId));
+            }
+            return cipher(key, algorithm, provider, mode);
+        });
+    }
+
+    /**
+     * This is used to calculate the cipher cache key.
+     *
+     * @param keyId     the key id
+     * @param algorithm the cypher algorithm
+     * @param provider  the cypher provider
+     * @param mode      the cyphering mode: encrypt/decrypt
+     * @return the cache key
+     */
+    private static String cipherCacheKey(String keyId, String algorithm, String provider, Mode mode) {
+        return keyId + "::" + algorithm + "::" + provider + "::" + mode;
     }
 
     public static com.mirkocaserta.bruce.mac.Mac mac(Key key, String algorithm) {
@@ -806,36 +879,6 @@ public class Bruce {
     public static com.mirkocaserta.bruce.mac.EncodingMac mac(Key key, String algorithm, String provider, Encoding encoding, Charset charset) {
         final com.mirkocaserta.bruce.mac.Mac mac = mac(key, algorithm, provider);
         return message -> encode(encoding, mac.get(message.getBytes(charset)));
-    }
-
-    private static String crypt(Cipherer cipherer, String message, Mode mode, Encoding encoding, Charset charset) {
-        return switch (mode) {
-            case ENCRYPT -> encode(encoding, cipherer.encrypt(message.getBytes(charset)));
-            case DECRYPT -> new String(cipherer.encrypt(decode(encoding, message)), charset);
-        };
-    }
-
-    private static Cipherer getCipherer(Map<String, Key> keys, String keyId, String algorithm, String provider, Mode mode) {
-        return ciphererCache.computeIfAbsent(ciphererCacheKey(keyId, algorithm, provider, mode), ignored -> {
-            final Key key = keys.get(keyId);
-            if (key == null) {
-                throw new BruceException(String.format("no such key: %s", keyId));
-            }
-            return cipherer(key, algorithm, provider, mode);
-        });
-    }
-
-    /**
-     * This is used to calculate the cipher cache key.
-     *
-     * @param keyId     the key id
-     * @param algorithm the cypher algorithm
-     * @param provider  the cypher provider
-     * @param mode      the cyphering mode
-     * @return the cache key
-     */
-    private static String ciphererCacheKey(String keyId, String algorithm, String provider, Mode mode) {
-        return keyId + "::" + algorithm + "::" + provider + "::" + mode;
     }
 
     /**

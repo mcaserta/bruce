@@ -5,14 +5,17 @@ import org.junit.jupiter.api.Test;
 
 import java.security.Key;
 import java.security.KeyStore;
+import java.util.HashMap;
+import java.util.Map;
 
+import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
 import static com.mirkocaserta.bruce.Bruce.*;
 import static com.mirkocaserta.bruce.cipher.Mode.DECRYPT;
 import static com.mirkocaserta.bruce.cipher.Mode.ENCRYPT;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 
-class CiphererRoundTripTest {
+class EncodingCipherByKeyRoundTripTest {
 
     private final KeyStore aliceKeystore = keystore("classpath:/keystore-alice.p12", "password", "PKCS12");
     private final KeyStore bobKeystore = keystore("classpath:/keystore-bob.p12", "password", "PKCS12");
@@ -23,38 +26,42 @@ class CiphererRoundTripTest {
 
     @Test
     void roundTrip() {
-        Cipherer encryptForAlice = cipherer(alicePublicKey, "RSA", ENCRYPT);
-        Cipherer decryptForAlice = cipherer(alicePrivateKey, "RSA", DECRYPT);
-        Cipherer encryptForBob = cipherer(bobPublicKey, "RSA", ENCRYPT);
-        Cipherer decryptForBob = cipherer(bobPrivateKey, "RSA", DECRYPT);
+        Map<String, Key> keys = new HashMap<>();
+        keys.put("alice-public", alicePublicKey);
+        keys.put("alice-private", alicePrivateKey);
+        keys.put("bob-public", bobPublicKey);
+        keys.put("bob-private", bobPrivateKey);
+
+        EncodingCipherByKey cipher = cipher(keys, "RSA", BASE64, UTF_8);
 
         // Alice writes to Bob
-        byte[] aliceMsg01 = "Hello".getBytes(UTF_8);
-        byte[] aliceMsg01Encrypted = encryptForBob.encrypt(aliceMsg01);
+        String aliceMsg01 = "Hello";
+        String aliceMsg01Encrypted = cipher.encrypt("bob-public", ENCRYPT, aliceMsg01);
         assertNotNull(aliceMsg01Encrypted);
 
         // Bob decrypts Alice's message
-        byte[] aliceMsg01Decrypted = decryptForBob.encrypt(aliceMsg01Encrypted);
+        String aliceMsg01Decrypted = cipher.encrypt("bob-private", DECRYPT, aliceMsg01Encrypted);
         assertNotNull(aliceMsg01Decrypted);
-        assertArrayEquals(aliceMsg01, aliceMsg01Decrypted);
+        assertEquals(aliceMsg01, aliceMsg01Decrypted);
 
         // Bob responds to Alice's message
-        byte[] bobMsg01 = "Hey Alice, nice to hear from you.".getBytes(UTF_8);
-        byte[] bobMsg01Encrypted = encryptForAlice.encrypt(bobMsg01);
+        String bobMsg01 = "Hey Alice, nice to hear from you.";
+        String bobMsg01Encrypted = cipher.encrypt("alice-public", ENCRYPT, bobMsg01);
         assertNotNull(bobMsg01Encrypted);
 
         // Alice decrypts Bob's message
-        byte[] bobMsg01Decrypted = decryptForAlice.encrypt(bobMsg01Encrypted);
+        String bobMsg01Decrypted = cipher.encrypt("alice-private", DECRYPT, bobMsg01Encrypted);
         assertNotNull(bobMsg01Decrypted);
-        assertArrayEquals(bobMsg01, bobMsg01Decrypted);
+        assertEquals(bobMsg01, bobMsg01Decrypted);
 
         // Someone writes garbage for Alice
-        byte[] garbageForAlice = "sgiao bela".getBytes(UTF_8);
-        assertThrows(BruceException.class, () -> decryptForAlice.encrypt(garbageForAlice));
+        assertThrows(BruceException.class, () -> cipher.encrypt("alice-private", DECRYPT, "sgiao bela"));
 
         // Someone writes garbage for Bob
-        byte[] garbageForBob = "sgiao belo".getBytes(UTF_8);
-        assertThrows(BruceException.class, () -> decryptForBob.encrypt(garbageForBob));
+        assertThrows(BruceException.class, () -> cipher.encrypt("bob-private", DECRYPT, "sgiao belo"));
+
+        // Using an unregistered key should also throw an exception
+        assertThrows(BruceException.class, () -> cipher.encrypt("sgiao-belo", DECRYPT, bobMsg01Encrypted));
     }
 
 }

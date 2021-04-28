@@ -1,12 +1,19 @@
 package com.mirkocaserta.bruce.cipher;
 
 /**
- * An enum for the symmetric encryption mode.
+ * An enum for the symmetric encryption modes.
  *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
 public enum Mode {
 
-    ENCRYPT, DECRYPT
+    /**
+     * Encryption mode.
+     */
+    ENCRYPT,
+    /**
+     * Decryption mode.
+     */
+    DECRYPT
 
 }
