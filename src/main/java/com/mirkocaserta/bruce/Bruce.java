@@ -663,7 +663,7 @@ public class Bruce {
      * and provider.
      *
      * @param algorithm the key algorithm
-     * @param provider  the key provider
+     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
      * @return a newly generated symmetric key
      */
     public static byte[] symmetricKey(String algorithm, String provider) {
@@ -694,7 +694,7 @@ public class Bruce {
      * and provider.
      *
      * @param algorithm the key algorithm
-     * @param provider  the key provider
+     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
      * @param encoding  the key encoding
      * @return a newly generated symmetric key
      */
@@ -702,10 +702,29 @@ public class Bruce {
         return encode(encoding, symmetricKey(algorithm, provider));
     }
 
+    /**
+     * Returns a symmetric cipher where the key is selectable at runtime
+     * through the returned interface.
+     *
+     * @param keyAlgorithm    the key's algorithm
+     * @param cipherAlgorithm the cipher's algorithm
+     * @param mode            the encryption mode
+     * @return the symmetric cipher
+     */
     public static CipherByKey cipher(String keyAlgorithm, String cipherAlgorithm, Mode mode) {
         return cipher(keyAlgorithm, cipherAlgorithm, BLANK, mode);
     }
 
+    /**
+     * Returns a symmetric cipher where the key is selectable at runtime
+     * through the returned interface.
+     *
+     * @param keyAlgorithm    the key's algorithm
+     * @param cipherAlgorithm the cipher's algorithm
+     * @param provider        the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param mode            the encryption mode
+     * @return the symmetric cipher
+     */
     public static CipherByKey cipher(String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode) {
         return (key, iv, message) -> {
             try {
@@ -726,27 +745,58 @@ public class Bruce {
     }
 
     /**
-     * Returns a cipher.
+     * Returns a symmetric cipher.
      *
      * @param key             the ciphering key
      * @param keyAlgorithm    the key's algorithm
      * @param cipherAlgorithm the cipher's algorithm
      * @param mode            the encryption mode
-     * @return the cipher
+     * @return the symmetric cipher
      */
     public static com.mirkocaserta.bruce.cipher.symmetric.Cipher cipher(byte[] key, String keyAlgorithm, String cipherAlgorithm, Mode mode) {
         return cipher(key, keyAlgorithm, cipherAlgorithm, BLANK, mode);
     }
 
+    /**
+     * Returns a symmetric cipher.
+     *
+     * @param key             the ciphering key
+     * @param keyAlgorithm    the key's algorithm
+     * @param cipherAlgorithm the cipher's algorithm
+     * @param provider        the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param mode            the encryption mode
+     * @return the symmetric cipher
+     */
     public static com.mirkocaserta.bruce.cipher.symmetric.Cipher cipher(byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode) {
         final CipherByKey cipher = cipher(keyAlgorithm, cipherAlgorithm, provider, mode);
         return (iv, message) -> cipher.encrypt(key, iv, message);
     }
 
+    /**
+     * Returns a symmetric cipher where the key is selectable at runtime
+     * through the returned interface.
+     *
+     * @param keyAlgorithm    the key's algorithm
+     * @param cipherAlgorithm the cipher's algorithm
+     * @param mode            the encryption mode
+     * @param charset         the message charset
+     * @return the symmetric cipher
+     */
     public static EncodingCipherByKey cipherByKey(String keyAlgorithm, String cipherAlgorithm, Mode mode, Charset charset) {
         return cipherByKey(keyAlgorithm, cipherAlgorithm, BLANK, mode, charset);
     }
 
+    /**
+     * Returns a symmetric cipher where the key is selectable at runtime
+     * through the returned interface.
+     *
+     * @param keyAlgorithm    the key's algorithm
+     * @param cipherAlgorithm the cipher's algorithm
+     * @param provider        the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param mode            the encryption mode
+     * @param charset         the message charset
+     * @return the symmetric cipher
+     */
     public static EncodingCipherByKey cipherByKey(String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode, Charset charset) {
         final CipherByKey cipher = cipher(keyAlgorithm, cipherAlgorithm, provider, mode);
 
@@ -761,19 +811,59 @@ public class Bruce {
         };
     }
 
+    /**
+     * Returns a symmetric cipher.
+     *
+     * @param key             the encryption/decryption key
+     * @param keyAlgorithm    the key's algorithm
+     * @param cipherAlgorithm the cipher's algorithm
+     * @param mode            the encryption mode
+     * @param charset         the message charset
+     * @param encoding        the message encoding
+     * @return the symmetric cipher
+     */
     public static EncodingCipher cipher(String key, String keyAlgorithm, String cipherAlgorithm, Mode mode, Charset charset, Encoding encoding) {
         return cipher(key, keyAlgorithm, cipherAlgorithm, BLANK, mode, charset, encoding);
     }
 
+    /**
+     * Returns a symmetric cipher.
+     *
+     * @param key             the encryption/decryption key
+     * @param keyAlgorithm    the key's algorithm
+     * @param cipherAlgorithm the cipher's algorithm
+     * @param provider        the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param mode            the encryption mode
+     * @param charset         the message charset
+     * @param encoding        the message encoding
+     * @return the symmetric cipher
+     */
     public static EncodingCipher cipher(String key, String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode, Charset charset, Encoding encoding) {
         final EncodingCipherByKey cipher = cipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode, charset);
         return (iv, message) -> cipher.encrypt(key, iv, message, encoding);
     }
 
+    /**
+     * Returns an asymmetric cipher.
+     *
+     * @param key       the ciphering key
+     * @param algorithm the algorithm
+     * @param mode      the encryption mode
+     * @return the asymmetric cipher
+     */
     public static Cipher cipher(Key key, String algorithm, Mode mode) {
         return cipher(key, algorithm, BLANK, mode);
     }
 
+    /**
+     * Returns an asymmetric cipher.
+     *
+     * @param key       the ciphering key
+     * @param algorithm the algorithm
+     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param mode      the encryption mode
+     * @return the asymmetric cipher
+     */
     public static Cipher cipher(Key key, String algorithm, String provider, Mode mode) {
         return message -> {
             try {
