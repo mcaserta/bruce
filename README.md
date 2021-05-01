@@ -1,3 +1,5 @@
+![logo](src/test/resources/logo.png)
+
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=alert_status)](https://sonarcloud.io/dashboard?id=mcaserta_bruce)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=security_rating)](https://sonarcloud.io/dashboard?id=mcaserta_bruce)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=mcaserta_bruce)
@@ -46,9 +48,9 @@ Bruce is an opinionated, ergonomic, lightweight, pure Java wrapper around the Ja
 
 TODO
 
-### Without Apache Maven
+### Old School
 
-Grab the latest release from [here](TODO).
+Download the latest jar release from [here](TODO).
 
 ## Keystore
 
