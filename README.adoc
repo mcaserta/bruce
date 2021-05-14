@@ -42,11 +42,9 @@ Bruce is an ergonomic, lightweight, pure Java wrapper around the Java Cryptograp
 
 * Java 15
 
-== How to Bruce
+== Setup
 
-=== Setup
-
-==== Apache Maven
+=== Apache Maven
 
 ```xml
 <dependency>
@@ -54,22 +52,22 @@ Bruce is an ergonomic, lightweight, pure Java wrapper around the Java Cryptograp
 </dependency>
 ```
 
-==== Gradle
+=== Gradle
 
 TODO
 
-==== Old School
+=== Old School
 
 Download the latest jar release from TODO.
 
-=== General Ideas
+== General Ideas
 
 Some general ideas apply to all functionalities in Bruce.
 
 Most methods allow choosing the most appropriate version
 through link:https://www.w3schools.com/java/java_methods_overloading.asp[overloading].
 
-==== Static Imports
+=== Static Imports
 
 Static imports are assumed through all examples here. Instead of:
 
@@ -92,8 +90,9 @@ Digester digester = digester("SHA1");
 You are of course free not to use static imports.
 I personally like them as the code looks a bit tidier.
 
-==== Encoding
+=== Encoding
 
+.Raw byte arrays
 At the most basic level, computers work with bits. In Java,
 you can work at the bit level, but the most basic form of storage
 for encrypted data is the byte. At low level, Java cryptography
@@ -118,6 +117,7 @@ You can easily see however how this is not always a
 very practical representation format. You cannot directly use
 this value in a text file, an email message or a JSON payload.
 
+.Encodings
 For these reasons all methods that work with raw byte arrays also
 have an overloaded version that supports different encodings.
 
@@ -132,12 +132,35 @@ base64 encoded: `"b5ua881ui4pzws3O03/p9ZIm4n0="`.
 
 .Base64, email and 7 bits
 NOTE: SMTP, the protocol the Internet uses for sending emails,
-      - in its original form - was designed to transport 7-bit
-      ASCII characters only. Base64 works around this limitation
-      by using characters that fit in a 7-bit space.
+- in its original form - was designed to transport 7-bit
+ASCII characters only. Base64 works around this limitation
+by using characters that fit in a 7-bit space.
+
+.Cipher encoding vs charset encoding
+WARNING: Please do not confuse the cipher encoding with the
+message character encoding. They are different things
+in the API parameters, and they are different Java types
+in Bruce so any confusion results in a compiler error.
 
 
-==== Providers
+=== Providers
+
+All methods allow specifying an optional JCA provider.
+
+For instance, to use the link:https://www.bouncycastle.org/java.html[Bouncy Castle]
+provider with a digester:
+
+[source,java]
+----
+// use the Bouncy Castle provider
+EncodingDigester digester = digester("SHA1", "BC", HEX);
+----
+
+IMPORTANT: Do not forget to add the appropriate provider jar
+           to the classpath for this to work.
+
+
+== API
 
 === Keystore
 
@@ -161,7 +184,7 @@ TODO
 
 TODO
 
-=== Symmetric Encription
+=== Symmetric Encryption
 
 TODO
 
