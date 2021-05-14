@@ -160,6 +160,15 @@ IMPORTANT: Do not forget to add the appropriate provider jar
            to the classpath for this to work.
 
 
+=== Error Handling
+
+There is a single exception in Bruce that wraps all kinds of errors: the
+`BruceException`. As it is a `RuntimeException`, you are not forced to catch
+it.
+
+Initialization and configuration errors are raised as soon as possible.
+
+
 == API
 
 === Keystore
