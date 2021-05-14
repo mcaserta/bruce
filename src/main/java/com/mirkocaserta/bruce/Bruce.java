@@ -7,6 +7,8 @@ import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipher;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherByKey;
 import com.mirkocaserta.bruce.digest.Digester;
 import com.mirkocaserta.bruce.digest.EncodingDigester;
+import com.mirkocaserta.bruce.mac.EncodingMac;
+import com.mirkocaserta.bruce.mac.Mac;
 import com.mirkocaserta.bruce.signature.Signer;
 import com.mirkocaserta.bruce.signature.*;
 import com.mirkocaserta.bruce.util.Hex;
@@ -44,6 +46,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class Bruce {
 
+    /**
+     * The default keystore format/type.
+     */
     public static final String DEFAULT_KEYSTORE_TYPE = "PKCS12";
 
     private static final Hex.Encoder HEX_ENCODER = Hex.getEncoder();
@@ -881,28 +886,83 @@ public class Bruce {
         };
     }
 
+    /**
+     * Returns an asymmetric cipher with a map of preconfigured keys.
+     *
+     * @param keys      a map of keys where the key is the key id and the value is the key
+     * @param algorithm the algorithm
+     * @return an asymmetric cipher with a map of preconfigured keys
+     */
     public static com.mirkocaserta.bruce.cipher.asymmetric.CipherByKey cipher(Map<String, Key> keys, String algorithm) {
         return cipher(keys, algorithm, BLANK);
     }
 
+    /**
+     * Returns an asymmetric cipher with a map of preconfigured keys.
+     *
+     * @param keys      a map of keys where the key is the key id and the value is the key
+     * @param algorithm the algorithm
+     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @return an asymmetric cipher with a map of preconfigured keys
+     */
     public static com.mirkocaserta.bruce.cipher.asymmetric.CipherByKey cipher(Map<String, Key> keys, String algorithm, String provider) {
         // we use a cipher cache here as getting a new one each time is a bit expensive
         return (keyId, mode, message) -> getCipher(keys, keyId, algorithm, provider, mode).encrypt(message);
     }
 
+    /**
+     * Returns an encoding asymmetric cipher.
+     *
+     * @param key       the cipher's key
+     * @param algorithm the algorithm
+     * @param mode      the cipher mode: encrypt/decrypt
+     * @param encoding  the message encoding
+     * @param charset   the message charset
+     * @return an encoding asymmetric cipher
+     */
     public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipher cipher(Key key, String algorithm, Mode mode, Encoding encoding, Charset charset) {
         return cipher(key, algorithm, BLANK, mode, encoding, charset);
     }
 
+    /**
+     * Returns an encoding asymmetric cipher.
+     *
+     * @param key       the cipher's key
+     * @param algorithm the algorithm
+     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param mode      the cipher mode: encrypt/decrypt
+     * @param encoding  the message encoding
+     * @param charset   the message charset
+     * @return an encoding asymmetric cipher
+     */
     public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipher cipher(Key key, String algorithm, String provider, Mode mode, Encoding encoding, Charset charset) {
         final Cipher cipher = cipher(key, algorithm, provider, mode);
         return message -> crypt(cipher, message, mode, encoding, charset);
     }
 
+    /**
+     * Returns an encoding asymmetric cipher with a map of preconfigured keys.
+     *
+     * @param keys      a map of keys where the key is the key id and the value is the key
+     * @param algorithm the algorithm
+     * @param encoding  the message encoding
+     * @param charset   the message charset
+     * @return an encoding asymmetric cipher with a map of preconfigured keys
+     */
     public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipherByKey cipher(Map<String, Key> keys, String algorithm, Encoding encoding, Charset charset) {
         return cipher(keys, algorithm, BLANK, encoding, charset);
     }
 
+    /**
+     * Returns an encoding asymmetric cipher with a map of preconfigured keys.
+     *
+     * @param keys      a map of keys where the key is the key id and the value is the key
+     * @param algorithm the algorithm
+     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param encoding  the message encoding
+     * @param charset   the message charset
+     * @return an encoding asymmetric cipher with a map of preconfigured keys
+     */
     public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipherByKey cipher(Map<String, Key> keys, String algorithm, String provider, Encoding encoding, Charset charset) {
         return (keyId, mode, message) -> {
             final Cipher cipher = getCipher(keys, keyId, algorithm, provider, mode);
@@ -910,6 +970,16 @@ public class Bruce {
         };
     }
 
+    /**
+     * Performs encryption or decryption based on the given mode.
+     *
+     * @param cipher   the encryption/decryption cipher
+     * @param message  the message
+     * @param mode     the cipher mode: encrypt/decrypt
+     * @param encoding the message encoding
+     * @param charset  the message charset
+     * @return the encrypted or decrypted message
+     */
     private static String crypt(Cipher cipher, String message, Mode mode, Encoding encoding, Charset charset) {
         return switch (mode) {
             case ENCRYPT -> encode(encoding, cipher.encrypt(message.getBytes(charset)));
@@ -917,6 +987,16 @@ public class Bruce {
         };
     }
 
+    /**
+     * Returns a cipher using an internal cache.
+     *
+     * @param keys      a map of keys where keyId is the map key and the cipher key is the value
+     * @param keyId     the key id
+     * @param algorithm the cipher algorithm
+     * @param provider  the provider
+     * @param mode      the cipher mode: encrypt/decrypt
+     * @return the cipher
+     */
     private static Cipher getCipher(Map<String, Key> keys, String keyId, String algorithm, String provider, Mode mode) {
         return cipherCache.computeIfAbsent(cipherCacheKey(keyId, algorithm, provider, mode), ignored -> {
             final Key key = keys.get(keyId);
@@ -928,7 +1008,7 @@ public class Bruce {
     }
 
     /**
-     * This is used to calculate the cipher cache key.
+     * This is used to generate the cipher cache key.
      *
      * @param keyId     the key id
      * @param algorithm the cypher algorithm
@@ -940,11 +1020,26 @@ public class Bruce {
         return keyId + "::" + algorithm + "::" + provider + "::" + mode;
     }
 
-    public static com.mirkocaserta.bruce.mac.Mac mac(Key key, String algorithm) {
+    /**
+     * Returns an interface for producing message authentication codes.
+     *
+     * @param key       the secret key for digesting the messages
+     * @param algorithm the signature algorithm
+     * @return the message authentication codes interface
+     */
+    public static Mac mac(Key key, String algorithm) {
         return mac(key, algorithm, BLANK);
     }
 
-    public static com.mirkocaserta.bruce.mac.Mac mac(Key key, String algorithm, String provider) {
+    /**
+     * Returns an interface for producing message authentication codes.
+     *
+     * @param key       the secret key for digesting the messages
+     * @param algorithm the signature algorithm
+     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @return the message authentication codes interface
+     */
+    public static Mac mac(Key key, String algorithm, String provider) {
         return message -> {
             try {
                 final javax.crypto.Mac mac = provider == null || provider.isBlank()
@@ -962,12 +1057,31 @@ public class Bruce {
         };
     }
 
-    public static com.mirkocaserta.bruce.mac.EncodingMac mac(Key key, String algorithm, Encoding encoding, Charset charset) {
+    /**
+     * Returns an interface for producing encoded message authentication codes.
+     *
+     * @param key       the secret key for digesting the messages
+     * @param algorithm the signature algorithm
+     * @param encoding  the signature encoding
+     * @param charset   the message charset
+     * @return the message authentication codes interface
+     */
+    public static EncodingMac mac(Key key, String algorithm, Encoding encoding, Charset charset) {
         return mac(key, algorithm, BLANK, encoding, charset);
     }
 
-    public static com.mirkocaserta.bruce.mac.EncodingMac mac(Key key, String algorithm, String provider, Encoding encoding, Charset charset) {
-        final com.mirkocaserta.bruce.mac.Mac mac = mac(key, algorithm, provider);
+    /**
+     * Returns an interface for producing encoded message authentication codes.
+     *
+     * @param key       the secret key for digesting the messages
+     * @param algorithm the signature algorithm
+     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param encoding  the signature encoding
+     * @param charset   the message charset
+     * @return the message authentication codes interface
+     */
+    public static EncodingMac mac(Key key, String algorithm, String provider, Encoding encoding, Charset charset) {
+        final Mac mac = mac(key, algorithm, provider);
         return message -> encode(encoding, mac.get(message.getBytes(charset)));
     }
 

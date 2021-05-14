@@ -4,6 +4,9 @@ import com.mirkocaserta.bruce.BruceException;
 
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Hexadecimal utilities for encoding/decoding bytes and strings.
+ */
 public class Hex {
 
     private static final byte[] HEX_ARRAY = "0123456789abcdef".getBytes(StandardCharsets.US_ASCII);
@@ -16,15 +19,34 @@ public class Hex {
         // utility class, users cannot make new instances
     }
 
+    /**
+     * Returns a hexadecimal encoder.
+     *
+     * @return a hexadecimal encoder
+     */
     public static Encoder getEncoder() {
         return ENCODER;
     }
 
+    /**
+     * Returns a hexadecimal decoder.
+     *
+     * @return a hexadecimal decoder
+     */
     public static Decoder getDecoder() {
         return DECODER;
     }
 
+    /**
+     * A hexadecimal encoder.
+     */
     public static final class Encoder {
+        /**
+         * Encodes the input using hexadecimal characters.
+         *
+         * @param bytes the bytes to encode
+         * @return the hexadecimal encoded bytes
+         */
         public String encodeToString(final byte[] bytes) {
             final byte[] hexChars = new byte[bytes.length * 2];
             for (int j = 0; j < bytes.length; j++) {
@@ -36,7 +58,16 @@ public class Hex {
         }
     }
 
+    /**
+     * A hexadecimal decoder.
+     */
     public static final class Decoder {
+        /**
+         * Decodes the input using hexadecimal characters.
+         *
+         * @param hex the hexadecimal string to decode
+         * @return the decoded bytes
+         */
         public byte[] decode(String hex) {
             if (!hex.matches("^[0-9a-fA-F]+$")) {
                 throw new BruceException(String.format("input is not a valid hexadecimal string: %s", hex));
