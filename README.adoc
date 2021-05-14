@@ -7,35 +7,35 @@
 
 image:src/test/resources/logo.png[logo]
 
-image:https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=alert_status["Quality Gate Status", link="https://sonarcloud.io/dashboard?id=mcaserta_bruce"]
-image:https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=security_rating["Security Rating", link="https://sonarcloud.io/dashboard?id=mcaserta_bruce"]
-image:https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=vulnerabilities["Vulnerabilities", link="https://sonarcloud.io/dashboard?id=mcaserta_bruce"]
+image:https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=alert_status["Quality Gate Status",link="https://sonarcloud.io/dashboard?id=mcaserta_bruce"]
+image:https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=security_rating["Security Rating",link="https://sonarcloud.io/dashboard?id=mcaserta_bruce"]
+image:https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=vulnerabilities["Vulnerabilities",link="https://sonarcloud.io/dashboard?id=mcaserta_bruce"]
 
 
-Bruce is an opinionated, ergonomic, lightweight, pure Java wrapper around the Java Cryptography API.
+Bruce is an ergonomic, lightweight, pure Java wrapper around the Java Cryptography API.
 
 
 == Features
 
-* All functionality is exposed through the `Bruce` entry point class. Just type `Bruce.` and let your IDE's autocomplete
-do the rest.
+* All functionality is exposed through the `Bruce` entry point class.
+  Just type `Bruce.` and let your IDE's autocomplete do the rest.
 * No checked exceptions cluttering your code.
 * No transitive dependencies. Zero. Zilch.
-* Support for different encodings:
-link:https://en.wikipedia.org/wiki/Base64[Base64],
-link:https://en.wikipedia.org/wiki/Percent-encoding[Url],
-link:https://en.wikipedia.org/wiki/MIME[Mime],
-link:https://en.wikipedia.org/wiki/Hexadecimal[Hex].
 * Out of the box support for:
-- key stores
-- public, private and secret keys
-- certificates
-- digital signatures
-- symmetric and asymmetric encryption
-- message digesters
-- message authentication codes
-- custom providers such as link:https://www.bouncycastle.org/java.html[Bouncy Castle]
-* Massively unit tested.
+  - key stores
+  - public, private and secret keys
+  - certificates
+  - digital signatures
+  - symmetric and asymmetric encryption
+  - message digesters
+  - message authentication codes
+  - different encodings:
+    link:https://en.wikipedia.org/wiki/Base64[Base64],
+    link:https://en.wikipedia.org/wiki/Percent-encoding[Url],
+    link:https://en.wikipedia.org/wiki/MIME[Mime],
+    link:https://en.wikipedia.org/wiki/Hexadecimal[Hex]
+  - custom providers such as link:https://www.bouncycastle.org/java.html[Bouncy Castle]
+* Massively unit tested and documented.
 * Open Source: you don't need to trust Bruce: you can see for yourself if you like what Bruce does.
 
 == Requirements
@@ -46,22 +46,98 @@ link:https://en.wikipedia.org/wiki/Hexadecimal[Hex].
 
 === Setup
 
-==== With Apache Maven
+==== Apache Maven
 
 ```xml
-
 <dependency>
     TODO
 </dependency>
 ```
 
-==== With Gradle
+==== Gradle
 
 TODO
 
 ==== Old School
 
-Download the latest jar release from link:TODO[here].
+Download the latest jar release from TODO.
+
+=== General Ideas
+
+Some general ideas apply to all functionalities in Bruce.
+
+Most methods allow choosing the most appropriate version
+through link:https://www.w3schools.com/java/java_methods_overloading.asp[overloading].
+
+==== Static Imports
+
+Static imports are assumed through all examples here. Instead of:
+
+[source,java]
+----
+import com.mirkocaserta.bruce.Bruce;
+
+Digester digester = Bruce.digester("SHA1");
+----
+
+the examples assume this:
+
+[source,java]
+----
+import static com.mirkocaserta.bruce.Bruce.digester;
+
+Digester digester = digester("SHA1");
+----
+
+You are of course free not to use static imports.
+I personally like them as the code looks a bit tidier.
+
+==== Encoding
+
+At the most basic level, computers work with bits. In Java,
+you can work at the bit level, but the most basic form of storage
+for encrypted data is the byte. At low level, Java cryptography
+usually works on arrays of bytes, such as:
+
+[source,java]
+----
+public static final byte[] MESSAGE_SHA1 = new byte[]{
+        (byte) 0x6f, (byte) 0x9b, (byte) 0x9a, (byte) 0xf3,
+        (byte) 0xcd, (byte) 0x6e, (byte) 0x8b, (byte) 0x8a,
+        (byte) 0x73, (byte) 0xc2, (byte) 0xcd, (byte) 0xce,
+        (byte) 0xd3, (byte) 0x7f, (byte) 0xe9, (byte) 0xf5,
+        (byte) 0x92, (byte) 0x26, (byte) 0xe2, (byte) 0x7d
+};
+
+Digester digester = digester("SHA1");
+byte[] hash = digester.digest("message".getBytes(StandardCharsets.UTF_8));
+----
+
+The `MESSAGE_SHA1` and `hash` byte arrays are identical.
+You can easily see however how this is not always a
+very practical representation format. You cannot directly use
+this value in a text file, an email message or a JSON payload.
+
+For these reasons all methods that work with raw byte arrays also
+have an overloaded version that supports different encodings.
+
+[source,java]
+----
+EncodingDigester digester = digester("SHA1", BASE64);
+String hash = digester.digest("message");
+----
+
+The hash String is going to look like this, as it gets
+base64 encoded: `"b5ua881ui4pzws3O03/p9ZIm4n0="`.
+
+.Base64, email and 7 bits
+NOTE: SMTP, the protocol the Internet uses for sending emails,
+      - in its original form - was designed to transport 7-bit
+      ASCII characters only. Base64 works around this limitation
+      by using characters that fit in a 7-bit space.
+
+
+==== Providers
 
 === Keystore
 
