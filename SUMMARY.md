@@ -10,7 +10,13 @@
 
 ## API
 
-* [Key Store](api/keystore.md)
-* [Certificate](api/certificate.md)
-* [Key](api/key.md)
+* [Key Stores](api/keystore.md)
+* [Certificates](api/certificate.md)
+* [Keys](api/key.md)
+* [Digests](api/digests.md)
+* [Sign](api/sign.md)
+* [Verify](api/verify.md)
+* [Symmetric Ciphers](api/symmetric-ciphers.md)
+* [Asymmetric Ciphers](api/asymmetric-ciphers.md)
+* [Message Authentication Codes](api/message-authentication-codes.md)
 
