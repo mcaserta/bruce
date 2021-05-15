@@ -1,6 +1,6 @@
 # Features
 
-* All functionality is exposed through the `Bruce` entry point class. Just type `Bruce.` and let your IDE’s autocomplete do the rest.
+* All functionality is exposed through the `Bruce` entry point class. Just type `Bruce.` and let autocomplete do the rest.
 * No checked exceptions cluttering your code.
 * No transitive dependencies. Zero. Zilch.
 * Out of the box support for:
