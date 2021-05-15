@@ -11,8 +11,8 @@ repositories {
 
 dependencies {
     testImplementation 'org.bouncycastle:bcprov-jdk15on:1.68'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.4.5'
 }
 
