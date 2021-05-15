@@ -11,5 +11,5 @@
 
 ## API
 
-* [Keystore](api/keystore.md)
+* [Key Store](api/keystore.md)
 
