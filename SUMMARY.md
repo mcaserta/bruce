@@ -9,3 +9,7 @@
 * [Setup](essentials/setup.md)
 * [General Ideas](essentials/general-ideas.md)
 
+## API
+
+* [Keystore](api/keystore.md)
+
