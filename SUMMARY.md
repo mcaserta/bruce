@@ -12,4 +12,5 @@
 ## API
 
 * [Key Store](api/keystore.md)
+* [Certificate](api/certificate.md)
 
