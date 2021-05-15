@@ -17,7 +17,7 @@ dependencies {
 }
 
 group = 'com.mirkocaserta'
-version = '1.0.0-SNAPSHOT'
+version = '1.0.0rc1'
 description = 'Bruce'
 
 java {
@@ -35,6 +35,11 @@ tasks.withType(JavaCompile) {
 }
 
 publishing {
+    publications {
+        myLibrary(MavenPublication) {
+            from components.java
+        }
+    }
     repositories {
         maven {
             name = "GitHubPackages"
