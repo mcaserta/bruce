@@ -1,6 +1,8 @@
-# General Ideas
+# General Concepts
 
-Some general ideas apply to all functionalities in Bruce.
+Some general concepts apply to all functionalities in Bruce.
+
+## Method Overloading
 
 Most methods allow choosing the most appropriate version through [overloading](https://www.w3schools.com/java/java_methods_overloading.asp).
 
@@ -8,7 +10,7 @@ Most methods allow choosing the most appropriate version through [overloading](h
 
 Static imports are assumed through all examples. Instead of:
 
-```text
+```java
 import com.mirkocaserta.bruce.Bruce;
 
 Digester digester = Bruce.digester("SHA1");
@@ -16,7 +18,7 @@ Digester digester = Bruce.digester("SHA1");
 
 the examples assume:
 
-```text
+```java
 import static com.mirkocaserta.bruce.Bruce.digester;
 
 Digester digester = digester("SHA1");
@@ -30,7 +32,7 @@ You are of course free not to use static imports. I personally like them as the 
 
 At the most basic level, computers work with bits. In Java, you can work at the bit level, but the most basic form of storage for encrypted data is the byte. At low level, Java cryptography usually works on arrays of bytes, such as:
 
-```text
+```java
 public static final byte[] MESSAGE_SHA1 = new byte[]{
         (byte) 0x6f, (byte) 0x9b, (byte) 0x9a, (byte) 0xf3,
         (byte) 0xcd, (byte) 0x6e, (byte) 0x8b, (byte) 0x8a,
@@ -49,7 +51,7 @@ The `MESSAGE_SHA1` and `hash` byte arrays are identical. You can easily see howe
 
 For these reasons all methods that work with raw byte arrays also have an overloaded version that supports different encodings.
 
-```text
+```java
 EncodingDigester digester = digester("SHA1", BASE64);
 String hash = digester.digest("message");
 ```
@@ -74,7 +76,7 @@ All methods allow specifying an optional JCA provider.
 
 For instance, to use the [Bouncy Castle](https://www.bouncycastle.org/java.html) provider with a digester:
 
-```text
+```java
 // use the Bouncy Castle provider
 EncodingDigester digester = digester("SHA1", "BC", HEX);
 ```

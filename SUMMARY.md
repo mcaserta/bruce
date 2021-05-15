@@ -5,9 +5,8 @@
 ## Essentials
 
 * [Features](essentials/features.md)
-* [Requirements](essentials/requirements.md)
-* [Setup](essentials/setup.md)
-* [General Ideas](essentials/general-ideas.md)
+* [Getting Started](essentials/requirements.md)
+* [General Concepts](essentials/general-ideas.md)
 
 ## API
 
