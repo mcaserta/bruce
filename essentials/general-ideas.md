@@ -58,6 +58,8 @@ String hash = digester.digest("message");
 
 The hash String is going to look like this, as it gets base64 encoded: `"b5ua881ui4pzws3O03/p9ZIm4n0="`.
 
+Supported encodings are [Base64](https://en.wikipedia.org/wiki/Base64), [Url](https://en.wikipedia.org/wiki/Percent-encoding), [Mime](https://en.wikipedia.org/wiki/MIME), [Hex](https://en.wikipedia.org/wiki/Hexadecimal).
+
 {% hint style="info" %}
 | Base64, email and 7 bits |
 | :--- |
