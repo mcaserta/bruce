@@ -10,6 +10,7 @@
 
 ## API
 
+* [Cheat Sheet](api/cheat-sheet.md)
 * [Key Stores](api/keystore.md)
 * [Certificates](api/certificate.md)
 * [Keys](api/key.md)
