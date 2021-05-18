@@ -19,5 +19,5 @@ EncodingSigner signer = signer(privateKey, "SHA512withRSA", BASE64);
 String signature = signer.sign("Hi Bob!");
 ```
 
-
+Bruce tries to reduce boilerplate to a minimum so you can focus on your code.
 
