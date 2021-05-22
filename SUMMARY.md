@@ -7,6 +7,7 @@
 * [Features](essentials/features.md)
 * [Getting Started](essentials/requirements.md)
 * [General Concepts](essentials/general-ideas.md)
+* [Roadmap](essentials/roadmap.md)
 
 ## API
 
