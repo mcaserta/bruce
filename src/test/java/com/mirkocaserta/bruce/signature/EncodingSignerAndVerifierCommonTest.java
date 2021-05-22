@@ -4,8 +4,11 @@ import com.mirkocaserta.bruce.BruceException;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.IntStream;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -39,16 +42,22 @@ abstract class EncodingSignerAndVerifierCommonTest {
     @Test
     void signAndVerifyConcurrently() {
         long start = currentTimeMillis();
+        CompletableFuture<?>[] futures = new CompletableFuture[100];
 
-        for (int i = 0; i < 100; i++) {
+        IntStream.range(0, futures.length).forEach(i -> {
             String message = UUID.randomUUID().toString();
             CompletableFuture<String> signatureFuture = supplyAsync(() -> signer.sign(message));
             assertNotNull(signatureFuture);
-            CompletableFuture<Boolean> verifierFuture = supplyAsync(() -> verifier.verify(message, signatureFuture.join()));
-            assertTrue(verifierFuture.join());
+            futures[i] = signatureFuture.thenApply(signature -> verifier.verify(message, signature));
+        });
+
+        CompletableFuture.allOf(futures); // let all threads do their job
+
+        for (CompletableFuture<?> future : futures) {
+            assertTrue((boolean) future.join());
         }
 
-        System.out.printf("100 sign and verify cycles completed concurrently in %d milliseconds\n", currentTimeMillis() - start);
+        System.out.printf("%d sign and verify cycles completed concurrently in %d milliseconds\n", futures.length, currentTimeMillis() - start);
     }
 
     @Test

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.IntStream;
 
 import static java.lang.System.currentTimeMillis;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -39,16 +40,23 @@ abstract class SignerAndVerifierCommonTest {
     @Test
     void signAndVerifyConcurrently() {
         long start = currentTimeMillis();
+        CompletableFuture<?>[] futures = new CompletableFuture[100];
 
-        for (int i = 0; i < 100; i++) {
+        IntStream.range(0, futures.length).forEach(i -> {
             final byte[] message = UUID.randomUUID().toString().getBytes(UTF_8);
             CompletableFuture<byte[]> signatureFuture = supplyAsync(() -> signer.sign(message));
             assertNotNull(signatureFuture);
-            CompletableFuture<Boolean> verifierFuture = supplyAsync(() -> verifier.verify(message, signatureFuture.join()));
-            assertTrue(verifierFuture.join());
+            CompletableFuture<Boolean> verifierFuture = signatureFuture.thenApply(signature -> verifier.verify(message, signature));
+            futures[i] = verifierFuture;
+        });
+
+        CompletableFuture.allOf(futures); // let all threads do their job
+
+        for (CompletableFuture<?> future : futures) {
+            assertTrue((boolean) future.join());
         }
 
-        System.out.printf("100 sign and verify cycles completed concurrently in %d milliseconds\n", currentTimeMillis() - start);
+        System.out.printf("%d sign and verify cycles completed concurrently in %d milliseconds\n", futures.length, currentTimeMillis() - start);
     }
 
     @Test
