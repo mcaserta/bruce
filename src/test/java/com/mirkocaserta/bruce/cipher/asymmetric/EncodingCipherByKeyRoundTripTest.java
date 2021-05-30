@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import java.security.Key;
 import java.security.KeyStore;
-import java.util.HashMap;
 import java.util.Map;
 
 import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
@@ -26,11 +25,12 @@ class EncodingCipherByKeyRoundTripTest {
 
     @Test
     void roundTrip() {
-        Map<String, Key> keys = new HashMap<>();
-        keys.put("alice-public", alicePublicKey);
-        keys.put("alice-private", alicePrivateKey);
-        keys.put("bob-public", bobPublicKey);
-        keys.put("bob-private", bobPrivateKey);
+        Map<String, Key> keys = Map.of(
+                "alice-public", alicePublicKey,
+                "alice-private", alicePrivateKey,
+                "bob-public", bobPublicKey,
+                "bob-private", bobPrivateKey
+        );
 
         EncodingCipherByKey cipher = cipher(keys, "RSA", BASE64, UTF_8);
 
