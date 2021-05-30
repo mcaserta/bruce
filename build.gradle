@@ -17,7 +17,7 @@ dependencies {
 }
 
 group = 'com.mirkocaserta'
-version = '1.0.0rc1'
+version = '1.0.0'
 description = 'Bruce'
 
 java {
