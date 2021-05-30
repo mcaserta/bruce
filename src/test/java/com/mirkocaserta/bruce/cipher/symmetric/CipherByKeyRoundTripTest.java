@@ -1,6 +1,5 @@
 package com.mirkocaserta.bruce.cipher.symmetric;
 
-import com.mirkocaserta.bruce.Bruce;
 import org.junit.jupiter.api.Test;
 
 import java.security.SecureRandom;
@@ -22,14 +21,14 @@ class CipherByKeyRoundTripTest {
         byte[] iv = new byte[8];
         rng.nextBytes(iv);
         byte[] key = symmetricKey("DESede");
-        CipherByKey encrypter = Bruce.cipher("DESede", "DESede/CBC/PKCS5Padding", ENCRYPT);
-        CipherByKey decrypter = Bruce.cipher("DESede", "DESede/CBC/PKCS5Padding", DECRYPT);
-        byte[] clearText = "Hi there".getBytes(UTF_8);
-        byte[] cypherText = encrypter.encrypt(key, iv, clearText);
+        CipherByKey encrypter = cipher("DESede", "DESede/CBC/PKCS5Padding", ENCRYPT);
+        CipherByKey decrypter = cipher("DESede", "DESede/CBC/PKCS5Padding", DECRYPT);
+        byte[] plainText = "Hi there".getBytes(UTF_8);
+        byte[] cypherText = encrypter.encrypt(key, iv, plainText);
         assertNotNull(cypherText);
         byte[] decryptedText = decrypter.encrypt(key, iv, cypherText);
         assertNotNull(decryptedText);
-        assertArrayEquals(clearText, decryptedText);
+        assertArrayEquals(plainText, decryptedText);
     }
 
 }

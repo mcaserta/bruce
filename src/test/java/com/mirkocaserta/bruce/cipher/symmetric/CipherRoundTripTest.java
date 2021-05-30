@@ -24,12 +24,12 @@ class CipherRoundTripTest {
         byte[] key = symmetricKey("DESede");
         Cipher encrypter = Bruce.cipher(key, "DESede", "DESede/CBC/PKCS5Padding", ENCRYPT);
         Cipher decrypter = Bruce.cipher(key, "DESede", "DESede/CBC/PKCS5Padding", DECRYPT);
-        byte[] clearText = "Hi there".getBytes(UTF_8);
-        byte[] cypherText = encrypter.encrypt(iv, clearText);
+        byte[] plainText = "Hi there".getBytes(UTF_8);
+        byte[] cypherText = encrypter.encrypt(iv, plainText);
         assertNotNull(cypherText);
         byte[] decryptedText = decrypter.encrypt(iv, cypherText);
         assertNotNull(decryptedText);
-        assertArrayEquals(clearText, decryptedText);
+        assertArrayEquals(plainText, decryptedText);
     }
 
 }

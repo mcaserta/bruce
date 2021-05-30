@@ -30,12 +30,12 @@ class CipherByKeyRoundTripWithCustomProviderTest {
         byte[] key = symmetricKey("DESede", "BC");
         CipherByKey encrypter = Bruce.cipher("DESede", "DESede/CBC/PKCS5Padding", "BC", ENCRYPT);
         CipherByKey decrypter = Bruce.cipher("DESede", "DESede/CBC/PKCS5Padding", "BC", DECRYPT);
-        byte[] clearText = "Hi there".getBytes(UTF_8);
-        byte[] cypherText = encrypter.encrypt(key, iv, clearText);
+        byte[] plainText = "Hi there".getBytes(UTF_8);
+        byte[] cypherText = encrypter.encrypt(key, iv, plainText);
         assertNotNull(cypherText);
         byte[] decryptedText = decrypter.encrypt(key, iv, cypherText);
         assertNotNull(decryptedText);
-        assertArrayEquals(clearText, decryptedText);
+        assertArrayEquals(plainText, decryptedText);
     }
 
 }

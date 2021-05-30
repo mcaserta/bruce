@@ -25,12 +25,12 @@ class EncodingCipherByKeyRoundTripTest {
         String key = symmetricKey("DESede", BASE64);
         EncodingCipherByKey encrypter = cipherByKey("DESede", "DESede/CBC/PKCS5Padding", ENCRYPT, UTF_8);
         EncodingCipherByKey decrypter = cipherByKey("DESede", "DESede/CBC/PKCS5Padding", DECRYPT, UTF_8);
-        String clearText = "Hi there";
-        String cypherText = encrypter.encrypt(key, iv, clearText, BASE64);
+        String plainText = "Hi there";
+        String cypherText = encrypter.encrypt(key, iv, plainText, BASE64);
         assertNotNull(cypherText);
         String decryptedText = decrypter.encrypt(key, iv, cypherText, BASE64);
         assertNotNull(decryptedText);
-        assertEquals(clearText, decryptedText);
+        assertEquals(plainText, decryptedText);
     }
 
 }
