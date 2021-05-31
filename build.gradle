@@ -17,7 +17,7 @@ dependencies {
 }
 
 group = 'com.github.mcaserta'
-version = '1.0.2'
+version = '1.0.3'
 description = 'An ergonomic wrapper around the JCA api'
 
 java {
@@ -32,6 +32,14 @@ test {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+}
+
+publishing {
+    publications {
+        myLibrary(MavenPublication) {
+            from components.java
+        }
+    }
 }
 
 sonarqube {
