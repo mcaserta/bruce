@@ -8,5 +8,5 @@ You also need to understand basic cryptography concepts. If you need a refresher
 
 ## Setup
 
-Grab the [latest package release](https://github.com/mcaserta?tab=packages&repo_name=bruce) from GitHub.
+Grab the [latest package release](https://jitpack.io/#mcaserta/bruce) from JitPack.
 
