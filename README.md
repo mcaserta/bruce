@@ -4,7 +4,7 @@ description: Java cryptography made easy
 
 # Welcome
 
-![](.gitbook/assets/logo.png)
+![](.gitbook/assets/logo%20%281%29.png)
 
 Bruce is an ergonomic, lightweight, pure Java wrapper around the Java Cryptography API.
 
