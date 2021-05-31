@@ -10,8 +10,10 @@ image:src/test/resources/logo.png[logo]
 image:https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=alert_status["Quality Gate Status",link="https://sonarcloud.io/dashboard?id=mcaserta_bruce"]
 image:https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=security_rating["Security Rating",link="https://sonarcloud.io/dashboard?id=mcaserta_bruce"]
 image:https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=vulnerabilities["Vulnerabilities",link="https://sonarcloud.io/dashboard?id=mcaserta_bruce"]
+image:https://jitpack.io/v/mcaserta/bruce.svg["Download",link="https://jitpack.io/#mcaserta/bruce"]
 
 
 Bruce is an ergonomic, lightweight, pure Java wrapper around the Java Cryptography API.
 
-link:https://bruce.mirkocaserta.com[Online documentation]
+- link:https://jitpack.io/#mcaserta/bruce[Download]
+- link:https://bruce.mirkocaserta.com[Online documentation]
