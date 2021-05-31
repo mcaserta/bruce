@@ -16,9 +16,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.0'
 }
 
-group = 'com.mirkocaserta'
+group = 'com.github.mcaserta'
 version = '1.0.0'
-description = 'Bruce'
+description = 'An ergonomic wrapper around the JCA api'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
