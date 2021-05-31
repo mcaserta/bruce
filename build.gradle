@@ -21,7 +21,7 @@ version = '1.0.0'
 description = 'Bruce'
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_15
+    sourceCompatibility = JavaVersion.VERSION_11
     withSourcesJar()
     withJavadocJar()
 }

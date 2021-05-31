@@ -739,8 +739,8 @@ public class Bruce {
                         ? javax.crypto.Cipher.getInstance(cipherAlgorithm)
                         : javax.crypto.Cipher.getInstance(cipherAlgorithm, provider);
                 switch (mode) {
-                    case ENCRYPT -> cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, spec, initializationVectorSpec);
-                    case DECRYPT -> cipher.init(javax.crypto.Cipher.DECRYPT_MODE, spec, initializationVectorSpec);
+                    case ENCRYPT: cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, spec, initializationVectorSpec); break;
+                    case DECRYPT: cipher.init(javax.crypto.Cipher.DECRYPT_MODE, spec, initializationVectorSpec); break;
                 }
                 return cipher.doFinal(message);
             } catch (NoSuchAlgorithmException | BadPaddingException | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException | NoSuchProviderException | IllegalBlockSizeException e) {
@@ -809,10 +809,11 @@ public class Bruce {
             final byte[] keyBA = decode(encoding, key);
             final byte[] ivBA = decode(encoding, iv);
 
-            return switch (mode) {
-                case ENCRYPT -> encode(encoding, cipher.encrypt(keyBA, ivBA, message.getBytes(charset)));
-                case DECRYPT -> new String(cipher.encrypt(keyBA, ivBA, decode(encoding, message)), charset);
-            };
+            switch (mode) {
+                case ENCRYPT: return encode(encoding, cipher.encrypt(keyBA, ivBA, message.getBytes(charset)));
+                case DECRYPT: return new String(cipher.encrypt(keyBA, ivBA, decode(encoding, message)), charset);
+                default: throw new BruceException("no such mode");
+            }
         };
     }
 
@@ -876,8 +877,8 @@ public class Bruce {
                         ? javax.crypto.Cipher.getInstance(algorithm)
                         : javax.crypto.Cipher.getInstance(algorithm, provider);
                 switch (mode) {
-                    case ENCRYPT -> cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, key);
-                    case DECRYPT -> cipher.init(javax.crypto.Cipher.DECRYPT_MODE, key);
+                    case ENCRYPT: cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, key); break;
+                    case DECRYPT: cipher.init(javax.crypto.Cipher.DECRYPT_MODE, key); break;
                 }
                 return cipher.doFinal(message);
             } catch (Exception e) {
@@ -981,10 +982,11 @@ public class Bruce {
      * @return the encrypted or decrypted message
      */
     private static String crypt(Cipher cipher, String message, Mode mode, Encoding encoding, Charset charset) {
-        return switch (mode) {
-            case ENCRYPT -> encode(encoding, cipher.encrypt(message.getBytes(charset)));
-            case DECRYPT -> new String(cipher.encrypt(decode(encoding, message)), charset);
-        };
+        switch (mode) {
+            case ENCRYPT: return encode(encoding, cipher.encrypt(message.getBytes(charset)));
+            case DECRYPT: return new String(cipher.encrypt(decode(encoding, message)), charset);
+            default: throw new BruceException("no such mode");
+        }
     }
 
     /**
@@ -1095,12 +1097,13 @@ public class Bruce {
      */
     private static byte[] decode(final Encoding encoding, final String input) {
         try {
-            return switch (encoding) {
-                case HEX -> HEX_DECODER.decode(input);
-                case BASE64 -> BASE_64_DECODER.decode(input);
-                case URL -> URL_DECODER.decode(input);
-                case MIME -> MIME_DECODER.decode(input);
-            };
+            switch (encoding) {
+                case HEX: return HEX_DECODER.decode(input);
+                case BASE64: return BASE_64_DECODER.decode(input);
+                case URL: return URL_DECODER.decode(input);
+                case MIME: return MIME_DECODER.decode(input);
+                default: throw new BruceException("invalid encoding");
+            }
         } catch (IllegalArgumentException e) {
             throw new BruceException(String.format("invalid input for encoding %s", encoding));
         }
@@ -1114,12 +1117,13 @@ public class Bruce {
      * @return a string representation of the encoded input
      */
     private static String encode(final Encoding encoding, final byte[] input) {
-        return switch (encoding) {
-            case HEX -> HEX_ENCODER.encodeToString(input);
-            case BASE64 -> BASE_64_ENCODER.encodeToString(input);
-            case URL -> URL_ENCODER.encodeToString(input);
-            case MIME -> MIME_ENCODER.encodeToString(input);
-        };
+        switch (encoding) {
+            case HEX: return HEX_ENCODER.encodeToString(input);
+            case BASE64: return BASE_64_ENCODER.encodeToString(input);
+            case URL: return URL_ENCODER.encodeToString(input);
+            case MIME: return MIME_ENCODER.encodeToString(input);
+            default: throw new BruceException("invalid encoding");
+        }
     }
 
     /**
