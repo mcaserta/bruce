@@ -187,6 +187,10 @@ public class Bruce {
      * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String location, String password, String type, String provider) {
+        if (location == null || location.isBlank()) {
+            throw new BruceException("please provide a valid key store location");
+        }
+
         try {
             final KeyStore keyStore = KeyStore.getInstance(type, provider);
             final InputStream inputStream;
