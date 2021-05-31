@@ -2,7 +2,6 @@ plugins {
     id 'java-library'
     id 'org.sonarqube' version '3.2.0'
     id 'jacoco'
-    id 'maven-publish'
 }
 
 repositories {
@@ -17,7 +16,7 @@ dependencies {
 }
 
 group = 'com.github.mcaserta'
-version = '1.0.0'
+version = '1.0.1'
 description = 'An ergonomic wrapper around the JCA api'
 
 java {
@@ -32,24 +31,6 @@ test {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
-}
-
-publishing {
-    publications {
-        myLibrary(MavenPublication) {
-            from components.java
-        }
-    }
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = "https://maven.pkg.github.com/mcaserta/bruce"
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
 }
 
 sonarqube {
