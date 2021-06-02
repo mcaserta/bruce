@@ -30,10 +30,10 @@ test {
     useJUnitPlatform()
 }
 
-tasks.withType(JavaCompile) {
+tasks.named('compileJava') {
     options.encoding = 'UTF-8'
+    options.javaModuleVersion = provider { project.version }
 }
-
 publishing {
     publications {
         myLibrary(MavenPublication) {
