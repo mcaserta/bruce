@@ -17,7 +17,7 @@ dependencies {
 }
 
 group = 'com.github.mcaserta'
-version = '1.0.4'
+version = '1.0.5-SNAPSHOT'
 description = 'An ergonomic wrapper around the JCA api'
 
 java {
