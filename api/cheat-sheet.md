@@ -29,6 +29,7 @@ String symmetricKey(String algorithm, String provider, Encoding encoding);
 Digester digester(String algorithm, String provider);
 Digester digester(String algorithm);
 EncodingDigester digester(String algorithm, Encoding encoding);
+EncodingDigester digester(String algorithm, Encoding encoding, Charset charset);
 EncodingDigester digester(String algorithm, String provider, Encoding encoding);
 EncodingDigester digester(String algorithm, String provider, Encoding encoding, Charset charset);
 

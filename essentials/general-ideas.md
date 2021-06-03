@@ -1,6 +1,14 @@
+---
+description: Some general concepts apply to all functionalities in Bruce.
+---
+
 # General Concepts
 
-Some general concepts apply to all functionalities in Bruce.
+## Algorithms
+
+Algorithms supported by the default JCA provider are listed [here](https://docs.oracle.com/javase/10/docs/specs/security/standard-names.html).
+
+Algorithms supported by the Bouncy Castle JCA provider are listed [here](https://www.bouncycastle.org/specifications.html).
 
 ## Method Overloading
 
@@ -83,6 +91,10 @@ For instance, to use the [Bouncy Castle](https://www.bouncycastle.org/java.html)
 EncodingDigester digester = digester("SHA1", "BC", HEX);
 ```
 
+{% hint style="info" %}
+I won't provide documentation for all overloaded methods that allow specifying a custom provider, otherwise the documentation would become even more verbose than it already is. Just know that the methods are there if you need them.
+{% endhint %}
+
 {% hint style="warning" %}
 Do not forget to add the appropriate provider jar to the classpath for this to work.
 {% endhint %}
@@ -92,4 +104,6 @@ Do not forget to add the appropriate provider jar to the classpath for this to w
 There is a single exception in Bruce that wraps all kinds of errors: the `BruceException`. As it is a `RuntimeException`, you are not forced to catch it.
 
 Initialization and configuration errors are raised as soon as possible.
+
+Wherever possible, the originating exception is wrapped and can be accessed through the `getCause()` method.
 
