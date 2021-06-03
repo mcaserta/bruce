@@ -14,10 +14,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CipherRoundTripTest {
 
-    private final KeyStore aliceKeystore = keystore("classpath:/keystore-alice.p12", "password", "PKCS12");
-    private final KeyStore bobKeystore = keystore("classpath:/keystore-bob.p12", "password", "PKCS12");
-    private final Key alicePrivateKey = privateKey(aliceKeystore, "alice", "password");
-    private final Key bobPrivateKey = privateKey(bobKeystore, "bob", "password");
+    private final KeyStore aliceKeystore = keystore("classpath:/keystore-alice.p12", "password".toCharArray(), "PKCS12");
+    private final KeyStore bobKeystore = keystore("classpath:/keystore-bob.p12", "password".toCharArray(), "PKCS12");
+    private final Key alicePrivateKey = privateKey(aliceKeystore, "alice", "password".toCharArray());
+    private final Key bobPrivateKey = privateKey(bobKeystore, "bob", "password".toCharArray());
     private final Key alicePublicKey = publicKey(aliceKeystore, "alice");
     private final Key bobPublicKey = publicKey(bobKeystore, "bob");
 

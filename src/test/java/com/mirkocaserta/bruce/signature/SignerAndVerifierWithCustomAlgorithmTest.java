@@ -8,13 +8,13 @@ class SignerAndVerifierWithCustomAlgorithmTest extends SignerAndVerifierCommonTe
 
     @Override
     protected Signer getSigner() {
-        final KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
-        return signer(privateKey(keystore, "test", "password"), "SHA1withRSA");
+        final KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+        return signer(privateKey(keystore, "test", "password".toCharArray()), "SHA1withRSA");
     }
 
     @Override
     protected Verifier getVerifier() {
-        final KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
+        final KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
         return verifier(publicKey(keystore, "test"), "SHA1withRSA");
     }
 

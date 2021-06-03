@@ -17,11 +17,11 @@ class SecretKeyTest {
     @Test
     @DisplayName("loads a secret key")
     void secretKeyTest() throws KeyStoreException {
-        KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
+        KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
         assertNotNull(keystore);
         assertEquals("PKCS12", keystore.getType(), "type");
         assertEquals(2, keystore.size(), "size");
-        Key key = secretKey(keystore, "hmac", "password");
+        Key key = secretKey(keystore, "hmac", "password".toCharArray());
         assertNotNull(key);
         assertTrue("HmacSHA256".equals(key.getAlgorithm()) || "1.2.840.113549.2.9".equals(key.getAlgorithm()), "algorithm");
         assertEquals("RAW", key.getFormat(), "format");
@@ -30,18 +30,18 @@ class SecretKeyTest {
     @Test
     @DisplayName("loading a non existing secret key should throw an error")
     void nonExistingKey() throws KeyStoreException {
-        KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
+        KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
         assertNotNull(keystore);
         assertEquals("PKCS12", keystore.getType(), "type");
         assertEquals(2, keystore.size(), "size");
-        assertThrows(BruceException.class, () -> secretKey(keystore, "sgiao belo", "foo"));
+        assertThrows(BruceException.class, () -> secretKey(keystore, "sgiao belo", "foo".toCharArray()));
     }
 
     @Test
     @DisplayName("an exception should be wrapped")
     void exceptionsShouldBeWrapped() {
         KeyStore keystore = mock(KeyStore.class);
-        assertThrows(BruceException.class, () -> secretKey(keystore, "hmac", "password"));
+        assertThrows(BruceException.class, () -> secretKey(keystore, "hmac", "password".toCharArray()));
     }
 
 }

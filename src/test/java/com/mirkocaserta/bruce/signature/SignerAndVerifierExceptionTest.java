@@ -14,8 +14,8 @@ class SignerAndVerifierExceptionTest {
 
     @Test
     void noSuchAlgorithm() {
-        final KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
-        final PrivateKey privateKey = privateKey(keystore, "test", "password");
+        final KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+        final PrivateKey privateKey = privateKey(keystore, "test", "password".toCharArray());
         assertThrows(BruceException.class, () -> signer(privateKey, "FOO512withBAR"));
     }
 

@@ -9,13 +9,13 @@ class EncodingSignerAndVerifierUrlTest extends EncodingSignerAndVerifierCommonTe
 
     @Override
     protected EncodingSigner getSigner() {
-        final KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
-        return signer(privateKey(keystore, "test", "password"), "SHA512withRSA", URL);
+        final KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+        return signer(privateKey(keystore, "test", "password".toCharArray()), "SHA512withRSA", URL);
     }
 
     @Override
     protected EncodingVerifier getVerifier() {
-        final KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
+        final KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
         return verifier(publicKey(keystore, "test"), "SHA512withRSA", URL);
     }
 

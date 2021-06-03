@@ -11,14 +11,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SignerAndVerifierByKeyTest {
 
-    private final KeyStore aliceKeystore = keystore("classpath:/keystore-alice.p12", "password", "PKCS12");
+    private final KeyStore aliceKeystore = keystore("classpath:/keystore-alice.p12", "password".toCharArray(), "PKCS12");
 
-    private final KeyStore bobKeystore = keystore("classpath:/keystore-bob.p12", "password", "PKCS12");
+    private final KeyStore bobKeystore = keystore("classpath:/keystore-bob.p12", "password".toCharArray(), "PKCS12");
 
     private final SignerByKey signer =
             signer(
-                    Map.of("alice", privateKey(aliceKeystore, "alice", "password"),
-                            "bob", privateKey(bobKeystore, "bob", "password")),
+                    Map.of("alice", privateKey(aliceKeystore, "alice", "password".toCharArray()),
+                            "bob", privateKey(bobKeystore, "bob", "password".toCharArray())),
                     "SHA512withRSA");
 
     private final VerifierByKey verifier =

@@ -15,13 +15,13 @@ class SignerAndVerifierWithCustomProviderTest extends SignerAndVerifierCommonTes
 
     @Override
     protected Signer getSigner() {
-        final KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
-        return signer(privateKey(keystore, "test", "password"), "RIPEMD256withRSA", "BC");
+        final KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+        return signer(privateKey(keystore, "test", "password".toCharArray()), "RIPEMD256withRSA", "BC");
     }
 
     @Override
     protected Verifier getVerifier() {
-        final KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
+        final KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
         return verifier(publicKey(keystore, "test"), "RIPEMD256withRSA", "BC");
     }
 

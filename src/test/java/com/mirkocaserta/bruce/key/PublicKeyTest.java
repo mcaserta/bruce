@@ -17,7 +17,7 @@ class PublicKeyTest {
     @Test
     @DisplayName("loads a public key")
     void publicKeyTest() throws KeyStoreException {
-        KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
+        KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
         assertNotNull(keystore);
         assertEquals("PKCS12", keystore.getType(), "type");
         assertEquals(2, keystore.size(), "size");
@@ -30,7 +30,7 @@ class PublicKeyTest {
     @Test
     @DisplayName("loading a non existing public key should throw an error")
     void nonExistingKey() throws KeyStoreException {
-        KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
+        KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
         assertNotNull(keystore);
         assertEquals("PKCS12", keystore.getType(), "type");
         assertEquals(2, keystore.size(), "size");

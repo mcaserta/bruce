@@ -11,9 +11,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MacRoundTripTest {
 
-    private final static KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
+    private final static KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
 
-    private final static Key key = secretKey(keystore, "hmac", "password");
+    private final static Key key = secretKey(keystore, "hmac", "password".toCharArray());
 
     @Test
     void roundTrip() {

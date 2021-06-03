@@ -31,6 +31,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -125,7 +126,7 @@ public class Bruce {
     public static KeyStore keystore(String type) {
         return keystore(
                 System.getProperty("javax.net.ssl.keyStore"),
-                System.getProperty("javax.net.ssl.keyStorePassword"),
+                Optional.ofNullable(System.getProperty("javax.net.ssl.keyStorePassword")).orElse(BLANK).toCharArray(),
                 type
         );
     }
@@ -145,7 +146,7 @@ public class Bruce {
      * @return a key store
      * @throws BruceException on loading errors
      */
-    public static KeyStore keystore(String location, String password) {
+    public static KeyStore keystore(String location, char[] password) {
         return keystore(location, password, DEFAULT_KEYSTORE_TYPE, "SUN");
     }
 
@@ -165,7 +166,7 @@ public class Bruce {
      * @return a key store
      * @throws BruceException on loading errors
      */
-    public static KeyStore keystore(String location, String password, String type) {
+    public static KeyStore keystore(String location, char[] password, String type) {
         return keystore(location, password, type, "SUN");
     }
 
@@ -186,7 +187,7 @@ public class Bruce {
      * @return a key store
      * @throws BruceException on loading errors
      */
-    public static KeyStore keystore(String location, String password, String type, String provider) {
+    public static KeyStore keystore(String location, char[] password, String type, String provider) {
         if (location == null || location.isBlank()) {
             throw new BruceException("please provide a valid key store location");
         }
@@ -201,7 +202,7 @@ public class Bruce {
             } else {
                 inputStream = Files.newInputStream(Path.of(location.replaceFirst("file:", BLANK)));
             }
-            keyStore.load(inputStream, password.toCharArray());
+            keyStore.load(inputStream, password);
             return keyStore;
         } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException e) {
             throw new BruceException(String.format("error loading keystore: location=%s", location), e);
@@ -255,9 +256,9 @@ public class Bruce {
      * @return the private key
      * @throws BruceException on loading errors
      */
-    public static PrivateKey privateKey(KeyStore keystore, String alias, String password) {
+    public static PrivateKey privateKey(KeyStore keystore, String alias, char[] password) {
         try {
-            final KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keystore.getEntry(alias, new KeyStore.PasswordProtection(password.toCharArray()));
+            final KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keystore.getEntry(alias, new KeyStore.PasswordProtection(password));
 
             if (privateKeyEntry == null) {
                 throw new BruceException(String.format("no such private key with alias: %s", alias));
@@ -278,9 +279,9 @@ public class Bruce {
      * @return the secret key
      * @throws BruceException on loading errors
      */
-    public static Key secretKey(KeyStore keystore, String alias, String password) {
+    public static Key secretKey(KeyStore keystore, String alias, char[] password) {
         try {
-            final Key key = keystore.getKey(alias, password.toCharArray());
+            final Key key = keystore.getKey(alias, password);
 
             if (key == null) {
                 throw new BruceException(String.format("no such secret key with alias: %s", alias));

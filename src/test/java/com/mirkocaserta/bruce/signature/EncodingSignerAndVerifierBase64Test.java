@@ -9,13 +9,13 @@ class EncodingSignerAndVerifierBase64Test extends EncodingSignerAndVerifierCommo
 
     @Override
     protected EncodingSigner getSigner() {
-        final KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
-        return signer(privateKey(keystore, "test", "password"), "SHA512withRSA", BASE64);
+        final KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+        return signer(privateKey(keystore, "test", "password".toCharArray()), "SHA512withRSA", BASE64);
     }
 
     @Override
     protected EncodingVerifier getVerifier() {
-        final KeyStore keystore = keystore("classpath:/keystore.p12", "password", "PKCS12");
+        final KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
         return verifier(publicKey(keystore, "test"), "SHA512withRSA", BASE64);
     }
 

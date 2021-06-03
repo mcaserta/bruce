@@ -31,7 +31,7 @@ class FileKeystoreTest {
     public static class Cfg {
         @Bean
         public KeyStore keystoreB() {
-            return keystore("file:src/test/resources/keystore.p12", "password");
+            return keystore("file:src/test/resources/keystore.p12", "password".toCharArray());
         }
     }
 

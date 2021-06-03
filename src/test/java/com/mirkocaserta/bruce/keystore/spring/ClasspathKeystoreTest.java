@@ -31,7 +31,7 @@ class ClasspathKeystoreTest {
     public static class Cfg {
         @Bean
         public KeyStore keystoreB() {
-            return keystore("classpath:keystore.p12", "password");
+            return keystore("classpath:keystore.p12", "password".toCharArray());
         }
     }
 

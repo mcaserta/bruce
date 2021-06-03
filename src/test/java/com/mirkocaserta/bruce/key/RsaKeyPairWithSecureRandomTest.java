@@ -16,6 +16,7 @@ public class RsaKeyPairWithSecureRandomTest {
     @Test
     void generateAndUse() throws NoSuchAlgorithmException {
         var random = SecureRandom.getInstanceStrong();
+        random.setSeed(new byte[]{0, 1, 2, 3, 4, 5});
         var keyPair = keyPair("RSA", 4096, random);
         var signer = signer(keyPair.getPrivate(), "SHA512withRSA");
         var verifier = verifier(keyPair.getPublic(), "SHA512withRSA");

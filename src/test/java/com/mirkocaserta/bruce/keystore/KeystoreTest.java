@@ -19,7 +19,7 @@ class KeystoreTest {
     @ParameterizedTest
     @ValueSource(strings = {"classpath:/keystore.p12", "file:src/test/resources/keystore.p12", "src/test/resources/keystore.p12"})
     void classpathKeystore(String location) throws KeyStoreException {
-        KeyStore keystore = keystore(location, "password");
+        KeyStore keystore = keystore(location, "password".toCharArray());
         assertNotNull(keystore);
         assertEquals(DEFAULT_KEYSTORE_TYPE, keystore.getType(), "type");
         assertEquals(2, keystore.size(), "size");
@@ -28,7 +28,7 @@ class KeystoreTest {
     @Test
     @DisplayName("loads a keystore from the classpath with the default provider")
     void classpathKeystoreWithDefaultProvider() throws KeyStoreException {
-        KeyStore keystore = keystore("classpath:/keystore.p12", "password", DEFAULT_KEYSTORE_TYPE);
+        KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), DEFAULT_KEYSTORE_TYPE);
         assertNotNull(keystore);
         assertEquals(DEFAULT_KEYSTORE_TYPE, keystore.getType(), "type");
         assertEquals(2, keystore.size(), "size");
@@ -37,7 +37,7 @@ class KeystoreTest {
     @Test
     @DisplayName("loads a keystore from the classpath with the default provider and type")
     void classpathKeystoreWithDefaultProviderAndType() throws KeyStoreException {
-        KeyStore keystore = keystore("classpath:/keystore.p12", "password");
+        KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray());
         assertNotNull(keystore);
         assertEquals(DEFAULT_KEYSTORE_TYPE, keystore.getType(), "type");
         assertEquals(2, keystore.size(), "size");
@@ -46,7 +46,7 @@ class KeystoreTest {
     @Test
     @DisplayName("loads a keystore from an https url")
     void httpsKeystore() throws KeyStoreException {
-        KeyStore keystore = keystore("https://github.com/mcaserta/spring-crypto-utils/raw/1.4/src/test/resources/keystore.jks", "password", "JKS", "SUN");
+        KeyStore keystore = keystore("https://github.com/mcaserta/spring-crypto-utils/raw/1.4/src/test/resources/keystore.jks", "password".toCharArray(), "JKS", "SUN");
         assertNotNull(keystore);
         assertEquals("JKS", keystore.getType(), "type");
         assertEquals(1, keystore.size(), "size");
@@ -55,19 +55,19 @@ class KeystoreTest {
     @Test
     @DisplayName("loading a non existent keystore should throw an exception")
     void nonExistent() {
-        assertThrows(BruceException.class, () -> keystore("foo", "bar"));
+        assertThrows(BruceException.class, () -> keystore("foo", "bar".toCharArray()));
     }
 
     @Test
     @DisplayName("loading a keystore with the wrong type should throw an exception")
     void noSuchType() {
-        assertThrows(BruceException.class, () -> keystore("classpath:keystore.jks", "password", "foo"));
+        assertThrows(BruceException.class, () -> keystore("classpath:keystore.jks", "password".toCharArray(), "foo"));
     }
 
     @Test
     @DisplayName("loading a keystore with the wrong provider should throw an exception")
     void noSuchProvider() {
-        assertThrows(BruceException.class, () -> keystore("classpath:keystore.jks", "password", "JKS", "foo"));
+        assertThrows(BruceException.class, () -> keystore("classpath:keystore.jks", "password".toCharArray(), "JKS", "foo"));
     }
 
 }
