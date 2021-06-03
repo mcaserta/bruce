@@ -488,7 +488,7 @@ public class Bruce {
     public static Signer signer(PrivateKey privateKey, String algorithm, String provider) {
         Signer signer = message -> {
             try {
-                final Signature signature = getSignature(algorithm, provider);
+                var signature = getSignature(algorithm, provider);
                 signature.initSign(privateKey);
                 signature.update(message);
                 return signature.sign();
@@ -964,7 +964,7 @@ public class Bruce {
      */
     public static Cipher cipher(Key key, String algorithm, String provider, Mode mode) {
         if (mode == null) {
-            throw new BruceException("mode cannot be null");
+            throw new BruceException(MODE_CANNOT_BE_NULL);
         }
 
         return message -> {

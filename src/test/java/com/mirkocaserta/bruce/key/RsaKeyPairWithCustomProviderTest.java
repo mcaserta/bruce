@@ -11,7 +11,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class RsaKeyPairWithCustomProviderTest {
+class RsaKeyPairWithCustomProviderTest {
 
     static {
         Security.addProvider(new BouncyCastleProvider());

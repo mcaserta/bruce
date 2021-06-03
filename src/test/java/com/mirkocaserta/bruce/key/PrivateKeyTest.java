@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.PrivateKey;
 
 import static com.mirkocaserta.bruce.Bruce.keystore;
 import static com.mirkocaserta.bruce.Bruce.privateKey;
@@ -18,11 +17,11 @@ class PrivateKeyTest {
     @Test
     @DisplayName("loads a private key")
     void privateKeyTest() throws KeyStoreException {
-        KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+        var keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
         assertNotNull(keystore);
         assertEquals("PKCS12", keystore.getType(), "type");
         assertEquals(2, keystore.size(), "size");
-        PrivateKey privateKey = privateKey(keystore, "test", "password".toCharArray());
+        var privateKey = privateKey(keystore, "test", "password".toCharArray());
         assertNotNull(privateKey);
         assertEquals("RSA", privateKey.getAlgorithm(), "algorithm");
         assertEquals("PKCS#8", privateKey.getFormat(), "format");
@@ -31,18 +30,20 @@ class PrivateKeyTest {
     @Test
     @DisplayName("loading a non existing private key should throw an error")
     void nonExistingKey() throws KeyStoreException {
-        KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+        var keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
         assertNotNull(keystore);
         assertEquals("PKCS12", keystore.getType(), "type");
         assertEquals(2, keystore.size(), "size");
-        assertThrows(BruceException.class, () -> privateKey(keystore, "sgiao belo", "foo".toCharArray()));
+        var password = "foo".toCharArray();
+        assertThrows(BruceException.class, () -> privateKey(keystore, "sgiao belo", password));
     }
 
     @Test
     @DisplayName("an exception thrown in getPrivateKey should be wrapped")
     void exceptionsShouldBeWrapped() {
-        KeyStore keystore = mock(KeyStore.class);
-        assertThrows(BruceException.class, () -> privateKey(keystore, "test", "password".toCharArray()));
+        var keystore = mock(KeyStore.class);
+        var password = "password".toCharArray();
+        assertThrows(BruceException.class, () -> privateKey(keystore, "test", password));
     }
 
 }

@@ -6,7 +6,7 @@ import static com.mirkocaserta.bruce.Bruce.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DsaKeyPairTest {
+class DsaKeyPairTest {
 
     private static final byte[] MESSAGE = "Hello".getBytes(UTF_8);
 
