@@ -293,6 +293,71 @@ public class Bruce {
     }
 
     /**
+     * Generates a key pair.
+     *
+     * @param algorithm the key algorithm
+     * @param keySize   the key size
+     * @return the key pair
+     */
+    public static KeyPair keyPair(String algorithm, int keySize) {
+        return keyPair(algorithm, null, keySize, null);
+    }
+
+    /**
+     * Generates a key pair.
+     *
+     * @param algorithm the key algorithm
+     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param keySize   the key size
+     * @return the key pair
+     */
+    public static KeyPair keyPair(String algorithm, String provider, int keySize) {
+        return keyPair(algorithm, provider, keySize, null);
+    }
+
+    /**
+     * Generates a key pair with the specified random number generator.
+     *
+     * @param algorithm the key algorithm
+     * @param keySize   the key size
+     * @param random    the random number generator
+     * @return the key pair
+     */
+    public static KeyPair keyPair(String algorithm, int keySize, SecureRandom random) {
+        return keyPair(algorithm, null, keySize, random);
+    }
+
+    /**
+     * Generates a key pair with the specified provider and random number generator.
+     *
+     * @param algorithm the key algorithm
+     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param keySize   the key size
+     * @param random    the random number generator
+     * @return the key pair
+     */
+    public static KeyPair keyPair(String algorithm, String provider, int keySize, SecureRandom random) {
+        try {
+            KeyPairGenerator keyGen = provider == null || provider.isBlank() ?
+                    KeyPairGenerator.getInstance(algorithm) :
+                    KeyPairGenerator.getInstance(algorithm, provider);
+
+            if (random == null) {
+                keyGen.initialize(keySize);
+            } else {
+                keyGen.initialize(keySize, random);
+            }
+            return keyGen.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            throw new BruceException(String.format("no such algorithm: %s", algorithm), e);
+        } catch (InvalidParameterException e) {
+            throw new BruceException(String.format("invalid key size: %d", keySize), e);
+        } catch (NoSuchProviderException e) {
+            throw new BruceException(String.format("no such provider: %s", provider), e);
+        }
+    }
+
+    /**
      * Returns an encoding message digester for the given algorithm.
      * <p>
      * This digester implementation assumes your input messages
@@ -743,8 +808,12 @@ public class Bruce {
                         ? javax.crypto.Cipher.getInstance(cipherAlgorithm)
                         : javax.crypto.Cipher.getInstance(cipherAlgorithm, provider);
                 switch (mode) {
-                    case ENCRYPT: cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, spec, initializationVectorSpec); break;
-                    case DECRYPT: cipher.init(javax.crypto.Cipher.DECRYPT_MODE, spec, initializationVectorSpec); break;
+                    case ENCRYPT:
+                        cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, spec, initializationVectorSpec);
+                        break;
+                    case DECRYPT:
+                        cipher.init(javax.crypto.Cipher.DECRYPT_MODE, spec, initializationVectorSpec);
+                        break;
                 }
                 return cipher.doFinal(message);
             } catch (NoSuchAlgorithmException | BadPaddingException | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException | NoSuchProviderException | IllegalBlockSizeException e) {
@@ -814,9 +883,12 @@ public class Bruce {
             final byte[] ivBA = decode(encoding, iv);
 
             switch (mode) {
-                case ENCRYPT: return encode(encoding, cipher.encrypt(keyBA, ivBA, message.getBytes(charset)));
-                case DECRYPT: return new String(cipher.encrypt(keyBA, ivBA, decode(encoding, message)), charset);
-                default: throw new BruceException("no such mode");
+                case ENCRYPT:
+                    return encode(encoding, cipher.encrypt(keyBA, ivBA, message.getBytes(charset)));
+                case DECRYPT:
+                    return new String(cipher.encrypt(keyBA, ivBA, decode(encoding, message)), charset);
+                default:
+                    throw new BruceException("no such mode");
             }
         };
     }
@@ -881,8 +953,12 @@ public class Bruce {
                         ? javax.crypto.Cipher.getInstance(algorithm)
                         : javax.crypto.Cipher.getInstance(algorithm, provider);
                 switch (mode) {
-                    case ENCRYPT: cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, key); break;
-                    case DECRYPT: cipher.init(javax.crypto.Cipher.DECRYPT_MODE, key); break;
+                    case ENCRYPT:
+                        cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, key);
+                        break;
+                    case DECRYPT:
+                        cipher.init(javax.crypto.Cipher.DECRYPT_MODE, key);
+                        break;
                 }
                 return cipher.doFinal(message);
             } catch (Exception e) {
@@ -987,9 +1063,12 @@ public class Bruce {
      */
     private static String crypt(Cipher cipher, String message, Mode mode, Encoding encoding, Charset charset) {
         switch (mode) {
-            case ENCRYPT: return encode(encoding, cipher.encrypt(message.getBytes(charset)));
-            case DECRYPT: return new String(cipher.encrypt(decode(encoding, message)), charset);
-            default: throw new BruceException("no such mode");
+            case ENCRYPT:
+                return encode(encoding, cipher.encrypt(message.getBytes(charset)));
+            case DECRYPT:
+                return new String(cipher.encrypt(decode(encoding, message)), charset);
+            default:
+                throw new BruceException("no such mode");
         }
     }
 
@@ -1102,11 +1181,16 @@ public class Bruce {
     private static byte[] decode(final Encoding encoding, final String input) {
         try {
             switch (encoding) {
-                case HEX: return HEX_DECODER.decode(input);
-                case BASE64: return BASE_64_DECODER.decode(input);
-                case URL: return URL_DECODER.decode(input);
-                case MIME: return MIME_DECODER.decode(input);
-                default: throw new BruceException("invalid encoding");
+                case HEX:
+                    return HEX_DECODER.decode(input);
+                case BASE64:
+                    return BASE_64_DECODER.decode(input);
+                case URL:
+                    return URL_DECODER.decode(input);
+                case MIME:
+                    return MIME_DECODER.decode(input);
+                default:
+                    throw new BruceException("invalid encoding");
             }
         } catch (IllegalArgumentException e) {
             throw new BruceException(String.format("invalid input for encoding %s", encoding));
@@ -1122,11 +1206,16 @@ public class Bruce {
      */
     private static String encode(final Encoding encoding, final byte[] input) {
         switch (encoding) {
-            case HEX: return HEX_ENCODER.encodeToString(input);
-            case BASE64: return BASE_64_ENCODER.encodeToString(input);
-            case URL: return URL_ENCODER.encodeToString(input);
-            case MIME: return MIME_ENCODER.encodeToString(input);
-            default: throw new BruceException("invalid encoding");
+            case HEX:
+                return HEX_ENCODER.encodeToString(input);
+            case BASE64:
+                return BASE_64_ENCODER.encodeToString(input);
+            case URL:
+                return URL_ENCODER.encodeToString(input);
+            case MIME:
+                return MIME_ENCODER.encodeToString(input);
+            default:
+                throw new BruceException("invalid encoding");
         }
     }
 
