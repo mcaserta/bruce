@@ -55,19 +55,22 @@ class KeystoreTest {
     @Test
     @DisplayName("loading a non existent keystore should throw an exception")
     void nonExistent() {
-        assertThrows(BruceException.class, () -> keystore("foo", "bar".toCharArray()));
+        var password = "bar".toCharArray();
+        assertThrows(BruceException.class, () -> keystore("foo", password));
     }
 
     @Test
     @DisplayName("loading a keystore with the wrong type should throw an exception")
     void noSuchType() {
-        assertThrows(BruceException.class, () -> keystore("classpath:keystore.jks", "password".toCharArray(), "foo"));
+        var password = "password".toCharArray();
+        assertThrows(BruceException.class, () -> keystore("classpath:keystore.jks", password, "foo"));
     }
 
     @Test
     @DisplayName("loading a keystore with the wrong provider should throw an exception")
     void noSuchProvider() {
-        assertThrows(BruceException.class, () -> keystore("classpath:keystore.jks", "password".toCharArray(), "JKS", "foo"));
+        var password = "password".toCharArray();
+        assertThrows(BruceException.class, () -> keystore("classpath:keystore.jks", password, "JKS", "foo"));
     }
 
 }

@@ -34,14 +34,16 @@ class SecretKeyTest {
         assertNotNull(keystore);
         assertEquals("PKCS12", keystore.getType(), "type");
         assertEquals(2, keystore.size(), "size");
-        assertThrows(BruceException.class, () -> secretKey(keystore, "sgiao belo", "foo".toCharArray()));
+        var password = "foo".toCharArray();
+        assertThrows(BruceException.class, () -> secretKey(keystore, "sgiao belo", password));
     }
 
     @Test
     @DisplayName("an exception should be wrapped")
     void exceptionsShouldBeWrapped() {
         KeyStore keystore = mock(KeyStore.class);
-        assertThrows(BruceException.class, () -> secretKey(keystore, "hmac", "password".toCharArray()));
+        var password = "password".toCharArray();
+        assertThrows(BruceException.class, () -> secretKey(keystore, "hmac", password));
     }
 
 }
