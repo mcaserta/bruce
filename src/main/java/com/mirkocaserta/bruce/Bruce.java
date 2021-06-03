@@ -373,6 +373,19 @@ public class Bruce {
     }
 
     /**
+     * Returns an encoding message digester for the given algorithm and character set.
+     *
+     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc)
+     * @param encoding  the encoding
+     * @param charset   the charset used for the input messages
+     * @return an encoding message digester
+     * @throws BruceException on no such algorithm or provider exceptions
+     */
+    public static EncodingDigester digester(String algorithm, Encoding encoding, Charset charset) {
+        return digester(algorithm, BLANK, encoding, charset);
+    }
+
+    /**
      * Returns an encoding message digester for the given algorithm and provider.
      * <p>
      * This digester implementation assumes your input messages
