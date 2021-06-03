@@ -9,17 +9,17 @@ public enum Encoding { HEX, BASE64, URL, MIME };
 // keystore methods
 KeyStore keystore();
 KeyStore keystore(String type);
-KeyStore keystore(String location, String password);
-KeyStore keystore(String location, String password, String type);
-KeyStore keystore(String location, String password, String type, String provider);
+KeyStore keystore(String location, char[] password);
+KeyStore keystore(String location, char[] password, String type);
+KeyStore keystore(String location, char[] password, String type, String provider);
 
 // certificate methods
 Certificate certificate(KeyStore keystore, String alias);
 
 // key methods
 PublicKey publicKey(KeyStore keystore, String alias);
-PrivateKey privateKey(KeyStore keystore, String alias, String password);
-Key secretKey(KeyStore keystore, String alias, String password);
+PrivateKey privateKey(KeyStore keystore, String alias, char[] password);
+Key secretKey(KeyStore keystore, String alias, String char[]);
 KeyPair keyPair(String algorithm, int keySize);
 KeyPair keyPair(String algorithm, String provider, int keySize);
 KeyPair keyPair(String algorithm, int keySize, SecureRandom random);
