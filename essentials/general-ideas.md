@@ -36,11 +36,11 @@ You are of course free not to use static imports. I personally like them as the 
 
 ## Passwords
 
-Passwords in the API are typed as a char array. There is a good reason for this: depending on implementation specifics, String instances might be stored in a permanent memory area.
+Passwords in the API are typed as a `char` array. There is a good reason for this: depending on implementation specifics, `String` instances might be stored in a permanent memory area.
 
 One might argue that accessing this memory area is not easy task for an attacker, but there's plenty of reasons why this is not always the case.
 
-So, Bruce only accepts passwords as char arrays. If you are working with passwords that are already arriving to you in a String instance, just call .toCharArray\(\) on it to perform the conversion where necessary.
+So, Bruce only accepts passwords as `char` arrays. If you are working with passwords that are already arriving to you in a `String` instance, just call `.toCharArray()` on it to perform the conversion where necessary.
 
 ## Encoding
 
