@@ -1,14 +1,12 @@
 package com.mirkocaserta.bruce.signature;
 
-import com.mirkocaserta.bruce.BruceException;
-
 /**
- * An interface for providing digital signatures where the private key
+ * An interface for providing encoded digital signatures where the private key
  * is configured in an underlying map using a logical name.
  *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
-public interface SignerByKey {
+public interface EncodingSignerByKey {
 
     /**
      * Signs a message.
@@ -16,9 +14,8 @@ public interface SignerByKey {
      * @param privateKeyId the logical name of the private key as configured
      *                     in the underlying map
      * @param message      the message to sign
-     * @return the signature
-     * @throws BruceException on key not found or signing errors
+     * @return an encoded version of the signature
      */
-    byte[] sign(String privateKeyId, byte[] message);
+    String sign(String privateKeyId, String message);
 
 }

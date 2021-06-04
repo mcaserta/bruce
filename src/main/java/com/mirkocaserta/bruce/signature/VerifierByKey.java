@@ -2,7 +2,7 @@ package com.mirkocaserta.bruce.signature;
 
 /**
  * An interface for verifying the authenticity of
- * messages using digital signatures when the public
+ * messages using digital signatures where the public
  * key is configured in an underlying map using a
  * logical name.
  *

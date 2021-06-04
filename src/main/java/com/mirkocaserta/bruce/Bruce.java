@@ -553,6 +553,64 @@ public class Bruce {
     }
 
     /**
+     * Returns an encoding signer where the private key can be chosen at runtime.
+     * The signing keys must be provided in a map where the map key is an
+     * alias to the signing key and the value is the corresponding signing key.
+     * <p>
+     * The implementation assumes your input messages use the <code>UTF-8</code> charset.
+     *
+     * @param privateKeyMap the signing key map
+     * @param algorithm     the signing algorithm
+     * @param encoding      the signature encoding
+     * @return the signer
+     * @throws BruceException on no such algorithm or provider exceptions
+     */
+    public static EncodingSignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm, Encoding encoding) {
+        return signer(privateKeyMap, algorithm, null, UTF_8, encoding);
+    }
+
+    /**
+     * Returns an encoding signer where the private key can be chosen at runtime.
+     * The signing keys must be provided in a map where the map key is an
+     * alias to the signing key and the value is the corresponding signing key.
+     *
+     * @param privateKeyMap the signing key map
+     * @param algorithm     the signing algorithm
+     * @param charset       the charset used in messages
+     * @param encoding      the signature encoding
+     * @return the signer
+     * @throws BruceException on no such algorithm or provider exceptions
+     */
+    public static EncodingSignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm, Charset charset, Encoding encoding) {
+        return signer(privateKeyMap, algorithm, null, charset, encoding);
+    }
+
+    /**
+     * Returns an encoding signer where the private key can be chosen at runtime.
+     * The signing keys must be provided in a map where the map key is an
+     * alias to the signing key and the value is the corresponding signing key.
+     *
+     * @param privateKeyMap the signing key map
+     * @param algorithm     the signing algorithm
+     * @param provider      the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param charset       the charset used in messages
+     * @param encoding      the signature encoding
+     * @return the signer
+     * @throws BruceException on no such algorithm or provider exceptions
+     */
+    public static EncodingSignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm, String provider, Charset charset, Encoding encoding) {
+        return (privateKeyId, message) -> {
+            var privateKey = privateKeyMap.get(privateKeyId);
+
+            if (privateKey == null) {
+                throw new BruceException(String.format("private key not found for id: %s", privateKeyId));
+            }
+
+            return signer(privateKey, algorithm, provider, charset, encoding).sign(message);
+        };
+    }
+
+    /**
      * Returns an encoding signer for the given private key using the
      * default provider and {@link StandardCharsets#UTF_8}
      * as the default charset used in messages.
@@ -737,6 +795,67 @@ public class Bruce {
 
         var verifier = verifier(publicKey, algorithm, provider);
         return (message, signature) -> verifier.verify(message.getBytes(charset), decode(encoding, signature));
+    }
+
+    /**
+     * Returns an encoding verifier where the public key can be chosen at runtime.
+     * The verification keys must be provided in a map where the map key is an
+     * alias to the verification key and the value is the corresponding
+     * verification key.
+     * <p>
+     * The implementation assumes your input messages use the <code>UTF-8</code> charset.
+     *
+     * @param publicKeyMap the verification key map
+     * @param algorithm    the verification algorithm
+     * @param encoding     the verification encoding
+     * @return the verifier
+     * @throws BruceException on no such algorithm or provider exceptions
+     */
+    public static EncodingVerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm, Encoding encoding) {
+        return verifier(publicKeyMap, algorithm, null, UTF_8, encoding);
+    }
+
+    /**
+     * Returns an encoding verifier where the public key can be chosen at runtime.
+     * The verification keys must be provided in a map where the map key is an
+     * alias to the verification key and the value is the corresponding
+     * verification key.
+     *
+     * @param publicKeyMap the verification key map
+     * @param algorithm    the verification algorithm
+     * @param charset      the charset used in messages
+     * @param encoding     the verification encoding
+     * @return the verifier
+     * @throws BruceException on no such algorithm or provider exceptions
+     */
+    public static EncodingVerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm, Charset charset, Encoding encoding) {
+        return verifier(publicKeyMap, algorithm, null, charset, encoding);
+    }
+
+    /**
+     * Returns an encoding verifier where the public key can be chosen at runtime.
+     * The verification keys must be provided in a map where the map key is an
+     * alias to the verification key and the value is the corresponding
+     * verification key.
+     *
+     * @param publicKeyMap the verification key map
+     * @param algorithm    the verification algorithm
+     * @param provider     the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param charset      the charset used in messages
+     * @param encoding     the verification encoding
+     * @return the verifier
+     * @throws BruceException on no such algorithm or provider exceptions
+     */
+    public static EncodingVerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm, String provider, Charset charset, Encoding encoding) {
+        return (publicKeyId, message, signature) -> {
+            var publicKey = publicKeyMap.get(publicKeyId);
+
+            if (publicKey == null) {
+                throw new BruceException(String.format("public key not found for id: %s", publicKeyId));
+            }
+
+            return verifier(publicKey, algorithm, provider, charset, encoding).verify(message, signature);
+        };
     }
 
     /**
