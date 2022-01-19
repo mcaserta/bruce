@@ -7,6 +7,7 @@ import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipher;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherByKey;
 import com.mirkocaserta.bruce.digest.Digester;
 import com.mirkocaserta.bruce.digest.EncodingDigester;
+import com.mirkocaserta.bruce.digest.FileDigester;
 import com.mirkocaserta.bruce.mac.EncodingMac;
 import com.mirkocaserta.bruce.mac.Mac;
 import com.mirkocaserta.bruce.signature.Signer;
@@ -19,6 +20,8 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -425,6 +428,70 @@ public class Bruce {
                 : digester(algorithm, provider);
 
         return message -> encode(encoding, rawDigester.digest(message.getBytes(charset)));
+    }
+
+    /**
+     * Returns an encoding file digester for the given algorithm.
+     *
+     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc)
+     * @param encoding  the encoding
+     * @return an encoding file digester
+     * @throws BruceException on no such algorithm or provider exceptions
+     */
+    public static FileDigester fileDigester(String algorithm, Encoding encoding) {
+        return fileDigester(algorithm, BLANK, encoding);
+    }
+
+    /**
+     * Returns an encoding file digester for the given algorithm and provider.
+     *
+     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc)
+     * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @param encoding  the encoding
+     * @return an encoding file digester
+     * @throws BruceException on no such algorithm or provider exceptions
+     */
+    public static FileDigester fileDigester(String algorithm, String provider, Encoding encoding) {
+        if (encoding == null) {
+            throw new BruceException(INVALID_ENCODING_NULL);
+        }
+
+        try { // fail fast
+            if (provider == null || provider.isBlank()) {
+                MessageDigest.getInstance(algorithm);
+            } else {
+                MessageDigest.getInstance(algorithm, provider);
+            }
+        } catch (NoSuchAlgorithmException e) {
+            throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
+        } catch (NoSuchProviderException e) {
+            throw new BruceException(String.format("No such provider: %s", provider), e);
+        }
+
+        return file -> {
+            try {
+                var digest = provider == null || provider.isBlank()
+                        ? MessageDigest.getInstance(algorithm)
+                        : MessageDigest.getInstance(algorithm, provider);
+                var inputStream = new FileInputStream(file);
+                var buffer = new byte[8192];
+                int read;
+
+                while ((read = inputStream.read(buffer)) > 0) {
+                    digest.update(buffer, 0, read);
+                }
+
+                return encode(encoding, digest.digest());
+            } catch (NoSuchAlgorithmException e) {
+                throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
+            } catch (NoSuchProviderException e) {
+                throw new BruceException(String.format("No such provider: %s", provider), e);
+            } catch (FileNotFoundException e) {
+                throw new BruceException(String.format("No such file: %s", file), e);
+            } catch (IOException e) {
+                throw new BruceException(String.format("I/O error reading file: %s", file), e);
+            }
+        };
     }
 
     /**
