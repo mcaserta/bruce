@@ -1,16 +1,16 @@
 package com.mirkocaserta.bruce.digest;
 
-import com.mirkocaserta.bruce.Bruce;
-import com.mirkocaserta.bruce.BruceException;
+import static com.mirkocaserta.bruce.Bruce.fileDigester;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.File;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
-
-import static com.mirkocaserta.bruce.Bruce.digester;
-import static com.mirkocaserta.bruce.Bruce.fileDigester;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import com.mirkocaserta.bruce.Bruce;
+import com.mirkocaserta.bruce.BruceException;
 
 @DisplayName("File digester tests")
 class FileDigesterTest {

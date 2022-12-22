@@ -1,20 +1,20 @@
 package com.mirkocaserta.bruce.cipher.symmetric;
 
-import com.mirkocaserta.bruce.Bruce;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.jupiter.api.Test;
-
-import java.security.SecureRandom;
-import java.security.Security;
-import java.util.Random;
-
-import static com.mirkocaserta.bruce.Bruce.cipher;
 import static com.mirkocaserta.bruce.Bruce.symmetricKey;
 import static com.mirkocaserta.bruce.cipher.Mode.DECRYPT;
 import static com.mirkocaserta.bruce.cipher.Mode.ENCRYPT;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.security.SecureRandom;
+import java.security.Security;
+import java.util.Random;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.jupiter.api.Test;
+
+import com.mirkocaserta.bruce.Bruce;
 
 class CipherByKeyRoundTripWithCustomProviderTest {
 

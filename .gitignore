@@ -1,5 +1,7 @@
 /.idea/
+/.vscode/
 /target/
 /*.iml
 .gradle/
 build/
+bin/

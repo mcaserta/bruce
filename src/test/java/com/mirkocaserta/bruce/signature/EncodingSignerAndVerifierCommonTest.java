@@ -1,18 +1,20 @@
 package com.mirkocaserta.bruce.signature;
 
-import com.mirkocaserta.bruce.BruceException;
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
+import static java.lang.System.currentTimeMillis;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
-import static java.lang.System.currentTimeMillis;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
+
+import com.mirkocaserta.bruce.BruceException;
 
 abstract class EncodingSignerAndVerifierCommonTest {
 

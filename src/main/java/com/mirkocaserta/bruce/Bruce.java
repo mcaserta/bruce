@@ -48,7 +48,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
-public class Bruce {
+public final class Bruce {
 
     /**
      * The default keystore format/type.
@@ -473,14 +473,14 @@ public class Bruce {
                 var digest = provider == null || provider.isBlank()
                         ? MessageDigest.getInstance(algorithm)
                         : MessageDigest.getInstance(algorithm, provider);
-                var inputStream = new FileInputStream(file);
-                var buffer = new byte[8192];
-                int read;
+                try (var inputStream = new FileInputStream(file)) {
+                    var buffer = new byte[8192];
+                    int read;
 
-                while ((read = inputStream.read(buffer)) > 0) {
-                    digest.update(buffer, 0, read);
+                    while ((read = inputStream.read(buffer)) > 0) {
+                        digest.update(buffer, 0, read);
+                    }
                 }
-
                 return encode(encoding, digest.digest());
             } catch (NoSuchAlgorithmException e) {
                 throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
@@ -565,8 +565,8 @@ public class Bruce {
         };
 
         /*
-        This is here so we can trigger exceptions at initialization time
-        rather then at runtime when invoking the sign method on the signer.
+        This is here in order to trigger exceptions at initialization time
+        rather than at runtime when invoking the sign method on the signer.
          */
         signer.sign("FAIL FAST".getBytes(UTF_8));
         return signer;
