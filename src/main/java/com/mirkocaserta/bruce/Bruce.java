@@ -13,6 +13,7 @@ import com.mirkocaserta.bruce.mac.Mac;
 import com.mirkocaserta.bruce.signature.Signer;
 import com.mirkocaserta.bruce.signature.*;
 import com.mirkocaserta.bruce.util.Hex;
+import com.mirkocaserta.bruce.util.Pair;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -24,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -32,12 +34,11 @@ import java.nio.file.Path;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.util.Base64;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static com.mirkocaserta.bruce.annotations.AnnotationUtils.isDefault;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -1020,7 +1021,9 @@ public final class Bruce {
                     cipher.init(javax.crypto.Cipher.DECRYPT_MODE, spec, initializationVectorSpec);
                 }
                 return cipher.doFinal(message);
-            } catch (NoSuchAlgorithmException | BadPaddingException | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException | NoSuchProviderException | IllegalBlockSizeException e) {
+            } catch (NoSuchAlgorithmException | BadPaddingException | InvalidKeyException |
+                     InvalidAlgorithmParameterException | NoSuchPaddingException | NoSuchProviderException |
+                     IllegalBlockSizeException e) {
                 throw new BruceException("error encrypting/decrypting message", e);
             }
         };
@@ -1454,4 +1457,43 @@ public final class Bruce {
         MIME
     }
 
+    public static void instrument(final List<Object> objects) {
+        for (final var object : objects) {
+            instrument(object);
+        }
+    }
+
+    public static void instrument(final Object object) {
+        final var fields = Arrays.stream(object.getClass().getDeclaredFields()).toList();
+        instrumentDigesters(fields, object);
+    }
+
+    private static void instrumentDigesters(final List<Field> fields, final Object object) {
+        fields.stream()
+                .filter(field -> field.isAnnotationPresent(com.mirkocaserta.bruce.annotations.Digester.class))
+                .map(field -> Pair.of(field, field.getDeclaredAnnotation(com.mirkocaserta.bruce.annotations.Digester.class)))
+                .forEach(pair -> {
+                    pair.key().setAccessible(true);
+                    final String provider = isDefault(pair.val().provider()) ? null : pair.val().provider();
+
+                    if (EncodingDigester.class.equals(pair.key().getType())) {
+                        final Encoding encoding = isDefault(pair.val().encoding()) ? Encoding.HEX : Encoding.valueOf(pair.val().encoding());
+                        final Charset charset = isDefault(pair.val().charsetName()) ? Charset.defaultCharset() : Charset.forName(pair.val().charsetName());
+                        final var digester = digester(pair.val().algorithm(), provider, encoding, charset);
+                        set(pair.key(), object, digester);
+                    } else {
+                        final var digester = digester(pair.val().algorithm(), provider);
+                        set(pair.key(), object, digester);
+                    }
+                });
+    }
+
+    private static void set(final Field field, final Object instance, final Object fieldValue) {
+        try {
+            field.set(instance, fieldValue);
+        } catch (IllegalAccessException e) {
+            throw new BruceException(String.format("could not instrument field: %s.%s", instance.getClass().getSimpleName(), field.getName()), e);
+        }
+
+    }
 }
