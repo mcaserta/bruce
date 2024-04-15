@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import com.mirkocaserta.bruce.BruceException;
 
-abstract class EncodingSignerAndVerifierCommonTest {
+public abstract class EncodingSignerAndVerifierCommonTest {
 
     private final EncodingSigner signer = getSigner();
     private final EncodingVerifier verifier = getVerifier();

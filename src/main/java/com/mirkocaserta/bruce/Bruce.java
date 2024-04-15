@@ -1419,6 +1419,100 @@ public final class Bruce {
         throw new BruceException("invalid encoding");
     }
 
+    public static void instrument(final List<Object> objects) {
+        for (final var object : objects) {
+            instrument(object);
+        }
+    }
+
+    public static void instrument(final Object object) {
+        final var fields = Arrays.stream(object.getClass().getDeclaredFields()).toList();
+        instrumentDigesters(fields, object);
+        instrumentSigners(fields, object);
+        instrumentVerifiers(fields, object);
+    }
+
+    private static void instrumentSigners(final List<Field> fields, final Object object) {
+        fields.stream()
+                .filter(field -> field.isAnnotationPresent(com.mirkocaserta.bruce.annotations.Signer.class))
+                .map(field -> Pair.of(field, field.getDeclaredAnnotation(com.mirkocaserta.bruce.annotations.Signer.class)))
+                .forEach(pair -> {
+                    pair.key().setAccessible(true);
+                    final var signerAnnotation = pair.val();
+                    final var privateKeyAnnotation = signerAnnotation.privateKey();
+                    final var keyStoreAnnotation = privateKeyAnnotation.keystore();
+                    final var keystoreProvider = isDefault(keyStoreAnnotation.provider()) ? null : keyStoreAnnotation.provider();
+                    final var keystore = keystore(keyStoreAnnotation.location(), keyStoreAnnotation.password(), keyStoreAnnotation.type(), keystoreProvider);
+                    final var privateKey = privateKey(keystore, privateKeyAnnotation.alias(), privateKeyAnnotation.password());
+                    final var provider = isDefault(signerAnnotation.provider()) ? null : signerAnnotation.provider();
+
+                    if (EncodingSigner.class.equals(pair.key().getType())) {
+                        final Encoding encoding = isDefault(signerAnnotation.encoding()) ? Encoding.HEX : Encoding.valueOf(signerAnnotation.encoding());
+                        final Charset charset = isDefault(signerAnnotation.charset()) ? Charset.defaultCharset() : Charset.forName(signerAnnotation.charset());
+                        final var signer = signer(privateKey, signerAnnotation.algorithm(), provider, charset, encoding);
+                        set(pair.key(), object, signer);
+                    } else {
+                        final var signer = signer(privateKey, signerAnnotation.algorithm(), provider);
+                        set(pair.key(), object, signer);
+                    }
+                });
+    }
+
+    private static void instrumentVerifiers(final List<Field> fields, final Object object) {
+        fields.stream()
+                .filter(field -> field.isAnnotationPresent(com.mirkocaserta.bruce.annotations.Verifier.class))
+                .map(field -> Pair.of(field, field.getDeclaredAnnotation(com.mirkocaserta.bruce.annotations.Verifier.class)))
+                .forEach(pair -> {
+                    pair.key().setAccessible(true);
+                    final var verifierAnnotation = pair.val();
+                    final var publicKeyAnnotation = verifierAnnotation.publicKey();
+                    final var keyStoreAnnotation = publicKeyAnnotation.keystore();
+                    final var keystoreProvider = isDefault(keyStoreAnnotation.provider()) ? null : keyStoreAnnotation.provider();
+                    final var keystore = keystore(keyStoreAnnotation.location(), keyStoreAnnotation.password(), keyStoreAnnotation.type(), keystoreProvider);
+                    final var publicKey = publicKey(keystore, publicKeyAnnotation.alias());
+                    final var provider = isDefault(verifierAnnotation.provider()) ? null : verifierAnnotation.provider();
+
+                    if (EncodingVerifier.class.equals(pair.key().getType())) {
+                        final Encoding encoding = isDefault(verifierAnnotation.encoding()) ? Encoding.HEX : Encoding.valueOf(verifierAnnotation.encoding());
+                        final Charset charset = isDefault(verifierAnnotation.charset()) ? Charset.defaultCharset() : Charset.forName(verifierAnnotation.charset());
+                        final var verifier = verifier(publicKey, verifierAnnotation.algorithm(), provider, charset, encoding);
+                        set(pair.key(), object, verifier);
+                    } else {
+                        final var verifier = verifier(publicKey, verifierAnnotation.algorithm(), provider);
+                        set(pair.key(), object, verifier);
+                    }
+                });
+    }
+
+    private static void instrumentDigesters(final List<Field> fields, final Object object) {
+        fields.stream()
+                .filter(field -> field.isAnnotationPresent(com.mirkocaserta.bruce.annotations.Digester.class))
+                .map(field -> Pair.of(field, field.getDeclaredAnnotation(com.mirkocaserta.bruce.annotations.Digester.class)))
+                .forEach(pair -> {
+                    pair.key().setAccessible(true);
+                    final String provider = isDefault(pair.val().provider()) ? null : pair.val().provider();
+
+                    if (EncodingDigester.class.equals(pair.key().getType())) {
+                        final Encoding encoding = isDefault(pair.val().encoding()) ? Encoding.HEX : Encoding.valueOf(pair.val().encoding());
+                        final Charset charset = isDefault(pair.val().charsetName()) ? Charset.defaultCharset() : Charset.forName(pair.val().charsetName());
+                        final var digester = digester(pair.val().algorithm(), provider, encoding, charset);
+                        set(pair.key(), object, digester);
+                    } else {
+                        final var digester = digester(pair.val().algorithm(), provider);
+                        set(pair.key(), object, digester);
+                    }
+                });
+    }
+
+    private static void set(final Field field, final Object instance, final Object fieldValue) {
+        try {
+            field.set(instance, fieldValue);
+        } catch (IllegalAccessException e) {
+            throw new BruceException(String.format("could not instrument field: %s.%s", instance.getClass().getSimpleName(), field.getName()), e);
+        }
+
+    }
+
     /**
      * Bruce supports these encodings. Encodings are used
      * in cryptography as a wire safe representation of raw
@@ -1455,45 +1549,5 @@ public final class Bruce {
          * MD5 hash is <code>eOcxAn2P1Q7WQjQLfJpjsw==</code>.
          */
         MIME
-    }
-
-    public static void instrument(final List<Object> objects) {
-        for (final var object : objects) {
-            instrument(object);
-        }
-    }
-
-    public static void instrument(final Object object) {
-        final var fields = Arrays.stream(object.getClass().getDeclaredFields()).toList();
-        instrumentDigesters(fields, object);
-    }
-
-    private static void instrumentDigesters(final List<Field> fields, final Object object) {
-        fields.stream()
-                .filter(field -> field.isAnnotationPresent(com.mirkocaserta.bruce.annotations.Digester.class))
-                .map(field -> Pair.of(field, field.getDeclaredAnnotation(com.mirkocaserta.bruce.annotations.Digester.class)))
-                .forEach(pair -> {
-                    pair.key().setAccessible(true);
-                    final String provider = isDefault(pair.val().provider()) ? null : pair.val().provider();
-
-                    if (EncodingDigester.class.equals(pair.key().getType())) {
-                        final Encoding encoding = isDefault(pair.val().encoding()) ? Encoding.HEX : Encoding.valueOf(pair.val().encoding());
-                        final Charset charset = isDefault(pair.val().charsetName()) ? Charset.defaultCharset() : Charset.forName(pair.val().charsetName());
-                        final var digester = digester(pair.val().algorithm(), provider, encoding, charset);
-                        set(pair.key(), object, digester);
-                    } else {
-                        final var digester = digester(pair.val().algorithm(), provider);
-                        set(pair.key(), object, digester);
-                    }
-                });
-    }
-
-    private static void set(final Field field, final Object instance, final Object fieldValue) {
-        try {
-            field.set(instance, fieldValue);
-        } catch (IllegalAccessException e) {
-            throw new BruceException(String.format("could not instrument field: %s.%s", instance.getClass().getSimpleName(), field.getName()), e);
-        }
-
     }
 }

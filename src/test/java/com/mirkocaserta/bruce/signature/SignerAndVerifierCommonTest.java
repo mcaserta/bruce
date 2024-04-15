@@ -12,7 +12,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.junit.jupiter.api.Assertions.*;
 
-abstract class SignerAndVerifierCommonTest {
+public abstract class SignerAndVerifierCommonTest {
 
     private final Signer signer = getSigner();
     private final Verifier verifier = getVerifier();
