@@ -1,8 +1,6 @@
 package com.mirkocaserta.bruce.annotations;
 
-import com.mirkocaserta.bruce.signature.EncodingSigner;
 import com.mirkocaserta.bruce.signature.EncodingSignerAndVerifierCommonTest;
-import com.mirkocaserta.bruce.signature.EncodingVerifier;
 import org.junit.jupiter.api.BeforeAll;
 
 import static com.mirkocaserta.bruce.Bruce.instrument;
@@ -16,27 +14,27 @@ class EncodingSignerAndVerifierAnnotationsTest extends EncodingSignerAndVerifier
     }
 
     @Override
-    protected EncodingSigner getSigner() {
+    protected com.mirkocaserta.bruce.signature.Signer getSigner() {
         return pojo.signer;
     }
 
     @Override
-    protected EncodingVerifier getVerifier() {
+    protected com.mirkocaserta.bruce.signature.Verifier getVerifier() {
         return pojo.verifier;
     }
 
     @SuppressWarnings("unused")
     static class Pojo {
         @Verifier(publicKey = @PublicKey(keystore = @KeyStore(location = "classpath:/keystore.p12", password = {'p', 'a', 's', 's', 'w', 'o', 'r', 'd'}, type = "PKCS12"), alias = "test"), algorithm = "SHA512withRSA")
-        private EncodingVerifier verifier;
+        private com.mirkocaserta.bruce.signature.Verifier verifier;
         @Signer(privateKey = @PrivateKey(keystore = @KeyStore(location = "classpath:/keystore.p12", password = {'p', 'a', 's', 's', 'w', 'o', 'r', 'd'}, type = "PKCS12"), alias = "test", password = {'p', 'a', 's', 's', 'w', 'o', 'r', 'd'}), algorithm = "SHA512withRSA")
-        private EncodingSigner signer;
+        private com.mirkocaserta.bruce.signature.Signer signer;
 
-        public EncodingVerifier verifier() {
+        public com.mirkocaserta.bruce.signature.Verifier verifier() {
             return verifier;
         }
 
-        public EncodingSigner signer() {
+        public com.mirkocaserta.bruce.signature.Signer signer() {
             return signer;
         }
     }

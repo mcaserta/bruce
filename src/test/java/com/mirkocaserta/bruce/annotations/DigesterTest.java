@@ -1,6 +1,5 @@
 package com.mirkocaserta.bruce.annotations;
 
-import com.mirkocaserta.bruce.digest.EncodingDigester;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,8 +24,8 @@ class DigesterTest {
     void encodingDigesterWithDefaults() {
         final var class1 = new Class1();
         instrument(class1);
-        assertEquals("6f9b9af3cd6e8b8a73c2cdced37fe9f59226e27d", class1.digest("message"));
-        assertEquals("da39a3ee5e6b4b0d3255bfef95601890afd80709", class1.digest(""));
+        assertEquals("b5ua881ui4pzws3O03/p9ZIm4n0=", class1.digest("message"));
+        assertEquals("2jmj7l5rSw0yVb/vlWAYkK/YBwk=", class1.digest(""));
     }
 
     @Test
@@ -59,7 +58,7 @@ class DigesterTest {
     static class Class1 {
         @SuppressWarnings("unused")
         @Digester(algorithm = "SHA1")
-        private EncodingDigester digester;
+        private com.mirkocaserta.bruce.digest.Digester digester;
 
         public String digest(String message) {
             return digester.digest(message);
@@ -79,7 +78,7 @@ class DigesterTest {
     static class Class3 {
         @SuppressWarnings("unused")
         @Digester(algorithm = "SHA1", provider = "BC", encoding = "BASE64", charsetName = "UTF-8")
-        private EncodingDigester digester;
+        private com.mirkocaserta.bruce.digest.Digester digester;
 
         public String digest(String message) {
             return digester.digest(message);

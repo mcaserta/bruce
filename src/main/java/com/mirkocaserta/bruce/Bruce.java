@@ -6,7 +6,6 @@ import com.mirkocaserta.bruce.cipher.symmetric.CipherByKey;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipher;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherByKey;
 import com.mirkocaserta.bruce.digest.Digester;
-import com.mirkocaserta.bruce.digest.EncodingDigester;
 import com.mirkocaserta.bruce.digest.FileDigester;
 import com.mirkocaserta.bruce.mac.EncodingMac;
 import com.mirkocaserta.bruce.mac.Mac;
@@ -28,7 +27,6 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.*;
@@ -39,7 +37,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static com.mirkocaserta.bruce.annotations.AnnotationUtils.isDefault;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * <p>This class is the main entrypoint for all cryptographic operations.</p>
@@ -129,11 +126,7 @@ public final class Bruce {
      * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String type) {
-        return keystore(
-                System.getProperty("javax.net.ssl.keyStore"),
-                Optional.ofNullable(System.getProperty("javax.net.ssl.keyStorePassword")).orElse(BLANK).toCharArray(),
-                type
-        );
+        return keystore(System.getProperty("javax.net.ssl.keyStore"), Optional.ofNullable(System.getProperty("javax.net.ssl.keyStorePassword")).orElse(BLANK).toCharArray(), type);
     }
 
     /**
@@ -198,9 +191,7 @@ public final class Bruce {
         }
 
         try {
-            var keyStore = provider == null || provider.isBlank() ?
-                    KeyStore.getInstance(type) :
-                    KeyStore.getInstance(type, provider);
+            var keyStore = provider == null || provider.isBlank() ? KeyStore.getInstance(type) : KeyStore.getInstance(type, provider);
             InputStream inputStream;
             if (location.startsWith("classpath:")) {
                 inputStream = Bruce.class.getResourceAsStream(location.replaceFirst("classpath:", BLANK));
@@ -346,9 +337,7 @@ public final class Bruce {
      */
     public static KeyPair keyPair(String algorithm, String provider, int keySize, SecureRandom random) {
         try {
-            var keyGen = provider == null || provider.isBlank() ?
-                    KeyPairGenerator.getInstance(algorithm) :
-                    KeyPairGenerator.getInstance(algorithm, provider);
+            var keyGen = provider == null || provider.isBlank() ? KeyPairGenerator.getInstance(algorithm) : KeyPairGenerator.getInstance(algorithm, provider);
 
             if (random == null) {
                 keyGen.initialize(keySize);
@@ -369,15 +358,15 @@ public final class Bruce {
      * Returns an encoding message digester for the given algorithm.
      * <p>
      * This digester implementation assumes your input messages
-     * are using the <code>UTF-8</code> charset.
+     * are using the {@link Charset#defaultCharset()}.
      *
      * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
      * @param encoding  the encoding
      * @return an encoding message digester
      * @throws BruceException on no such algorithm or provider exceptions
      */
-    public static EncodingDigester digester(String algorithm, Encoding encoding) {
-        return digester(algorithm, BLANK, encoding, UTF_8);
+    public static Digester digester(String algorithm, Encoding encoding) {
+        return digester(algorithm, BLANK, encoding, Charset.defaultCharset());
     }
 
     /**
@@ -389,7 +378,7 @@ public final class Bruce {
      * @return an encoding message digester
      * @throws BruceException on no such algorithm or provider exceptions
      */
-    public static EncodingDigester digester(String algorithm, Encoding encoding, Charset charset) {
+    public static Digester digester(String algorithm, Encoding encoding, Charset charset) {
         return digester(algorithm, BLANK, encoding, charset);
     }
 
@@ -397,7 +386,7 @@ public final class Bruce {
      * Returns an encoding message digester for the given algorithm and provider.
      * <p>
      * This digester implementation assumes your input messages
-     * are using the <code>UTF-8</code> charset.
+     * are using the {@link Charset#defaultCharset()}.
      *
      * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
      * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
@@ -405,8 +394,8 @@ public final class Bruce {
      * @return an encoding message digester
      * @throws BruceException on no such algorithm or provider exceptions
      */
-    public static EncodingDigester digester(String algorithm, String provider, Encoding encoding) {
-        return digester(algorithm, provider, encoding, UTF_8);
+    public static Digester digester(String algorithm, String provider, Encoding encoding) {
+        return digester(algorithm, provider, encoding, Charset.defaultCharset());
     }
 
     /**
@@ -419,16 +408,24 @@ public final class Bruce {
      * @return an encoding message digester
      * @throws BruceException on no such algorithm or provider exceptions
      */
-    public static EncodingDigester digester(String algorithm, String provider, Encoding encoding, Charset charset) {
+    public static Digester digester(String algorithm, String provider, Encoding encoding, Charset charset) {
         if (encoding == null) {
             throw new BruceException(INVALID_ENCODING_NULL);
         }
 
-        var rawDigester = provider == null || provider.isBlank()
-                ? digester(algorithm)
-                : digester(algorithm, provider);
+        var rawDigester = provider == null || provider.isBlank() ? digester(algorithm) : digester(algorithm, provider);
 
-        return message -> encode(encoding, rawDigester.digest(message.getBytes(charset)));
+        return new Digester() {
+            @Override
+            public byte[] digest(byte[] message) {
+                return rawDigester.digest(message);
+            }
+
+            @Override
+            public String digest(String message) {
+                return encode(encoding, rawDigester.digest(message.getBytes(charset)));
+            }
+        };
     }
 
     /**
@@ -471,9 +468,7 @@ public final class Bruce {
 
         return file -> {
             try {
-                var digest = provider == null || provider.isBlank()
-                        ? MessageDigest.getInstance(algorithm)
-                        : MessageDigest.getInstance(algorithm, provider);
+                var digest = provider == null || provider.isBlank() ? MessageDigest.getInstance(algorithm) : MessageDigest.getInstance(algorithm, provider);
                 try (var inputStream = new FileInputStream(file)) {
                     var buffer = new byte[8192];
                     int read;
@@ -507,16 +502,24 @@ public final class Bruce {
         MessageDigest digester;
 
         try {
-            digester = provider == null || provider.isBlank()
-                    ? MessageDigest.getInstance(algorithm)
-                    : MessageDigest.getInstance(algorithm, provider);
+            digester = provider == null || provider.isBlank() ? MessageDigest.getInstance(algorithm) : MessageDigest.getInstance(algorithm, provider);
         } catch (NoSuchAlgorithmException e) {
             throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
         } catch (NoSuchProviderException e) {
             throw new BruceException(String.format("No such provider: %s", provider), e);
         }
 
-        return digester::digest;
+        return new Digester() {
+            @Override
+            public byte[] digest(byte[] message) {
+                return digester.digest(message);
+            }
+
+            @Override
+            public String digest(String message) {
+                return encode(Encoding.defaultEncoding(), digester.digest(message.getBytes(Charset.defaultCharset())));
+            }
+        };
     }
 
     /**
@@ -554,30 +557,35 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static Signer signer(PrivateKey privateKey, String algorithm, String provider) {
-        Signer signer = message -> {
-            try {
-                var signature = getSignature(algorithm, provider);
-                signature.initSign(privateKey);
-                signature.update(message);
-                return signature.sign();
-            } catch (SignatureException | InvalidKeyException e) {
-                throw new BruceException(String.format("error generating the signature: algorithm=%s, provider=%s", algorithm, provider), e);
+        final var signer = new Signer() {
+            @Override
+            public byte[] sign(byte[] message) {
+                try {
+                    var signature = getSignature(algorithm, provider);
+                    signature.initSign(privateKey);
+                    signature.update(message);
+                    return signature.sign();
+                } catch (SignatureException | InvalidKeyException e) {
+                    throw new BruceException(String.format("error generating the signature: algorithm=%s, provider=%s", algorithm, provider), e);
+                }
+            }
+
+            @Override
+            public String sign(String message) {
+                return encode(Encoding.defaultEncoding(), message.getBytes(Charset.defaultCharset()));
             }
         };
-
         /*
         This is here in order to trigger exceptions at initialization time
         rather than at runtime when invoking the sign method on the signer.
          */
-        signer.sign("FAIL FAST".getBytes(UTF_8));
+        signer.sign("FAIL FAST".getBytes(Charset.defaultCharset()));
         return signer;
     }
 
     private static Signature getSignature(String algorithm, String provider) {
         try {
-            return provider == null || provider.isBlank()
-                    ? Signature.getInstance(algorithm)
-                    : Signature.getInstance(algorithm, provider);
+            return provider == null || provider.isBlank() ? Signature.getInstance(algorithm) : Signature.getInstance(algorithm, provider);
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             throw new BruceException(String.format("error getting signer: algorithm=%s, provider=%s", algorithm, provider), e);
         }
@@ -634,7 +642,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static EncodingSignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm, Encoding encoding) {
-        return signer(privateKeyMap, algorithm, null, UTF_8, encoding);
+        return signer(privateKeyMap, algorithm, null, Charset.defaultCharset(), encoding);
     }
 
     /**
@@ -680,7 +688,7 @@ public final class Bruce {
 
     /**
      * Returns an encoding signer for the given private key using the
-     * default provider and {@link StandardCharsets#UTF_8}
+     * default provider and {@link Charset#defaultCharset()}
      * as the default charset used in messages.
      *
      * @param privateKey the signing key
@@ -689,8 +697,8 @@ public final class Bruce {
      * @return the signer
      * @throws BruceException on initialization exceptions
      */
-    public static EncodingSigner signer(PrivateKey privateKey, String algorithm, Encoding encoding) {
-        return signer(privateKey, algorithm, BLANK, UTF_8, encoding);
+    public static Signer signer(PrivateKey privateKey, String algorithm, Encoding encoding) {
+        return signer(privateKey, algorithm, BLANK, Charset.defaultCharset(), encoding);
     }
 
     /**
@@ -704,7 +712,7 @@ public final class Bruce {
      * @return the signer
      * @throws BruceException on initialization exceptions
      */
-    public static EncodingSigner signer(PrivateKey privateKey, String algorithm, Charset charset, Encoding encoding) {
+    public static Signer signer(PrivateKey privateKey, String algorithm, Charset charset, Encoding encoding) {
         return signer(privateKey, algorithm, BLANK, charset, encoding);
     }
 
@@ -719,7 +727,7 @@ public final class Bruce {
      * @return the signer
      * @throws BruceException on initialization exceptions
      */
-    public static EncodingSigner signer(PrivateKey privateKey, String algorithm, String provider, Charset charset, Encoding encoding) {
+    public static Signer signer(PrivateKey privateKey, String algorithm, String provider, Charset charset, Encoding encoding) {
         if (encoding == null) {
             throw new BruceException(INVALID_ENCODING_NULL);
         }
@@ -728,8 +736,19 @@ public final class Bruce {
             throw new BruceException("Invalid charset: null");
         }
 
-        var signer = signer(privateKey, algorithm, provider);
-        return message -> encode(encoding, signer.sign(message.getBytes(charset)));
+        final var signer = signer(privateKey, algorithm, provider);
+
+        return new Signer() {
+            @Override
+            public byte[] sign(byte[] message) {
+                return signer.sign(message);
+            }
+
+            @Override
+            public String sign(String message) {
+                return encode(encoding, signer.sign(message.getBytes(charset)));
+            }
+        };
     }
 
     /**
@@ -756,16 +775,24 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static Verifier verifier(PublicKey publicKey, String algorithm, String provider) {
-        return (message, signature) -> {
-            try {
-                var signatureInstance = getSignature(algorithm, provider);
-                signatureInstance.initVerify(publicKey);
-                signatureInstance.update(message);
-                return signatureInstance.verify(signature);
-            } catch (InvalidKeyException e) {
-                throw new BruceException(String.format("error verifying the signature: algorithm=%s, provider=%s", algorithm, provider), e);
-            } catch (SignatureException e) {
-                return false;
+        return new Verifier() {
+            @Override
+            public boolean verify(byte[] message, byte[] signature) {
+                try {
+                    var signatureInstance = getSignature(algorithm, provider);
+                    signatureInstance.initVerify(publicKey);
+                    signatureInstance.update(message);
+                    return signatureInstance.verify(signature);
+                } catch (InvalidKeyException e) {
+                    throw new BruceException(String.format("error verifying the signature: algorithm=%s, provider=%s", algorithm, provider), e);
+                } catch (SignatureException e) {
+                    return false;
+                }
+            }
+
+            @Override
+            public boolean verify(String message, String signature) {
+                return verify(message.getBytes(Charset.defaultCharset()), decode(Encoding.defaultEncoding(), signature));
             }
         };
     }
@@ -812,7 +839,7 @@ public final class Bruce {
     /**
      * Returns an encoding verifier for the given public key.
      * This method assumes the default messages charset is
-     * {@link StandardCharsets#UTF_8}. The default provider
+     * {@link Charset#defaultCharset()}. The default provider
      * is used.
      *
      * @param publicKey the verification key
@@ -821,14 +848,14 @@ public final class Bruce {
      * @return the verifier
      * @throws BruceException on initialization exceptions
      */
-    public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, Encoding encoding) {
+    public static Verifier verifier(PublicKey publicKey, String algorithm, Encoding encoding) {
         return verifier(publicKey, algorithm, BLANK, encoding);
     }
 
     /**
      * Returns an encoding verifier for the given public key.
      * This method assumes the default messages charset is
-     * {@link StandardCharsets#UTF_8}.
+     * {@link Charset#defaultCharset()}.
      *
      * @param publicKey the verification key
      * @param algorithm the verification algorithm
@@ -837,8 +864,8 @@ public final class Bruce {
      * @return the verifier
      * @throws BruceException on initialization exceptions
      */
-    public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, String provider, Encoding encoding) {
-        return verifier(publicKey, algorithm, provider, UTF_8, encoding);
+    public static Verifier verifier(PublicKey publicKey, String algorithm, String provider, Encoding encoding) {
+        return verifier(publicKey, algorithm, provider, Charset.defaultCharset(), encoding);
     }
 
     /**
@@ -852,7 +879,7 @@ public final class Bruce {
      * @return the verifier
      * @throws BruceException on initialization exceptions
      */
-    public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, String provider, Charset charset, Encoding encoding) {
+    public static Verifier verifier(PublicKey publicKey, String algorithm, String provider, Charset charset, Encoding encoding) {
         if (encoding == null) {
             throw new BruceException(INVALID_ENCODING_NULL);
         }
@@ -861,8 +888,18 @@ public final class Bruce {
             throw new BruceException("Invalid charset: null");
         }
 
-        var verifier = verifier(publicKey, algorithm, provider);
-        return (message, signature) -> verifier.verify(message.getBytes(charset), decode(encoding, signature));
+        final var verifier = verifier(publicKey, algorithm, provider);
+        return new Verifier() {
+            @Override
+            public boolean verify(byte[] message, byte[] signature) {
+                return verifier.verify(message, signature);
+            }
+
+            @Override
+            public boolean verify(String message, String signature) {
+                return verifier.verify(message.getBytes(charset), decode(encoding, signature));
+            }
+        };
     }
 
     /**
@@ -871,7 +908,7 @@ public final class Bruce {
      * alias to the verification key and the value is the corresponding
      * verification key.
      * <p>
-     * The implementation assumes your input messages use the <code>UTF-8</code> charset.
+     * The implementation assumes your input messages use the {@link Charset#defaultCharset()}.
      *
      * @param publicKeyMap the verification key map
      * @param algorithm    the verification algorithm
@@ -880,7 +917,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static EncodingVerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm, Encoding encoding) {
-        return verifier(publicKeyMap, algorithm, null, UTF_8, encoding);
+        return verifier(publicKeyMap, algorithm, null, Charset.defaultCharset(), encoding);
     }
 
     /**
@@ -946,9 +983,7 @@ public final class Bruce {
      */
     public static byte[] symmetricKey(String algorithm, String provider) {
         try {
-            var generator = provider == null || provider.isBlank()
-                    ? KeyGenerator.getInstance(algorithm)
-                    : KeyGenerator.getInstance(algorithm, provider);
+            var generator = provider == null || provider.isBlank() ? KeyGenerator.getInstance(algorithm) : KeyGenerator.getInstance(algorithm, provider);
             generator.init(new SecureRandom());
             return generator.generateKey().getEncoded();
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
@@ -1012,9 +1047,7 @@ public final class Bruce {
             try {
                 var initializationVectorSpec = new IvParameterSpec(iv);
                 var spec = new SecretKeySpec(key, keyAlgorithm);
-                var cipher = provider == null || provider.isBlank()
-                        ? javax.crypto.Cipher.getInstance(cipherAlgorithm)
-                        : javax.crypto.Cipher.getInstance(cipherAlgorithm, provider);
+                var cipher = provider == null || provider.isBlank() ? javax.crypto.Cipher.getInstance(cipherAlgorithm) : javax.crypto.Cipher.getInstance(cipherAlgorithm, provider);
                 switch (mode) {
                     case ENCRYPT -> cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, spec, initializationVectorSpec);
                     case DECRYPT -> cipher.init(javax.crypto.Cipher.DECRYPT_MODE, spec, initializationVectorSpec);
@@ -1155,9 +1188,7 @@ public final class Bruce {
 
         return message -> {
             try {
-                var cipher = provider == null || provider.isBlank()
-                        ? javax.crypto.Cipher.getInstance(algorithm)
-                        : javax.crypto.Cipher.getInstance(algorithm, provider);
+                var cipher = provider == null || provider.isBlank() ? javax.crypto.Cipher.getInstance(algorithm) : javax.crypto.Cipher.getInstance(algorithm, provider);
                 switch (mode) {
                     case ENCRYPT -> cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, key);
                     case DECRYPT -> cipher.init(javax.crypto.Cipher.DECRYPT_MODE, key);
@@ -1325,9 +1356,7 @@ public final class Bruce {
     public static Mac mac(Key key, String algorithm, String provider) {
         return message -> {
             try {
-                var mac = provider == null || provider.isBlank()
-                        ? javax.crypto.Mac.getInstance(algorithm)
-                        : javax.crypto.Mac.getInstance(algorithm, provider);
+                var mac = provider == null || provider.isBlank() ? javax.crypto.Mac.getInstance(algorithm) : javax.crypto.Mac.getInstance(algorithm, provider);
                 mac.init(key);
                 return mac.doFinal(message);
             } catch (NoSuchAlgorithmException e) {
@@ -1419,75 +1448,57 @@ public final class Bruce {
     }
 
     private static void instrumentSigners(final List<Field> fields, final Object object) {
-        fields.stream()
-                .filter(field -> field.isAnnotationPresent(com.mirkocaserta.bruce.annotations.Signer.class))
-                .map(field -> Pair.of(field, field.getDeclaredAnnotation(com.mirkocaserta.bruce.annotations.Signer.class)))
-                .forEach(pair -> {
-                    pair.key().setAccessible(true);
-                    final var signerAnnotation = pair.val();
-                    final var privateKeyAnnotation = signerAnnotation.privateKey();
-                    final var keyStoreAnnotation = privateKeyAnnotation.keystore();
-                    final var keystoreProvider = isDefault(keyStoreAnnotation.provider()) ? null : keyStoreAnnotation.provider();
-                    final var keystore = keystore(keyStoreAnnotation.location(), keyStoreAnnotation.password(), keyStoreAnnotation.type(), keystoreProvider);
-                    final var privateKey = privateKey(keystore, privateKeyAnnotation.alias(), privateKeyAnnotation.password());
-                    final var provider = isDefault(signerAnnotation.provider()) ? null : signerAnnotation.provider();
+        fields.stream().filter(field -> field.isAnnotationPresent(com.mirkocaserta.bruce.annotations.Signer.class)).map(field -> Pair.of(field, field.getDeclaredAnnotation(com.mirkocaserta.bruce.annotations.Signer.class))).forEach(pair -> {
+            pair.key().setAccessible(true);
+            final var signerAnnotation = pair.val();
+            final var privateKeyAnnotation = signerAnnotation.privateKey();
+            final var keyStoreAnnotation = privateKeyAnnotation.keystore();
+            final var keystoreProvider = isDefault(keyStoreAnnotation.provider()) ? null : keyStoreAnnotation.provider();
+            final var keystore = keystore(keyStoreAnnotation.location(), keyStoreAnnotation.password(), keyStoreAnnotation.type(), keystoreProvider);
+            final var privateKey = privateKey(keystore, privateKeyAnnotation.alias(), privateKeyAnnotation.password());
+            final var provider = isDefault(signerAnnotation.provider()) ? null : signerAnnotation.provider();
 
-                    if (EncodingSigner.class.equals(pair.key().getType())) {
-                        final var encoding = isDefault(signerAnnotation.encoding()) ? Encoding.HEX : Encoding.valueOf(signerAnnotation.encoding());
-                        final var charset = isDefault(signerAnnotation.charset()) ? Charset.defaultCharset() : Charset.forName(signerAnnotation.charset());
-                        final var signer = signer(privateKey, signerAnnotation.algorithm(), provider, charset, encoding);
-                        set(pair.key(), object, signer);
-                    } else {
-                        final var signer = signer(privateKey, signerAnnotation.algorithm(), provider);
-                        set(pair.key(), object, signer);
-                    }
-                });
+            if (Signer.class.equals(pair.key().getType())) {
+                final var encoding = isDefault(signerAnnotation.encoding()) ? Encoding.defaultEncoding() : Encoding.valueOf(signerAnnotation.encoding());
+                final var charset = isDefault(signerAnnotation.charset()) ? Charset.defaultCharset() : Charset.forName(signerAnnotation.charset());
+                final var signer = signer(privateKey, signerAnnotation.algorithm(), provider, charset, encoding);
+                set(pair.key(), object, signer);
+            }
+        });
     }
 
     private static void instrumentVerifiers(final List<Field> fields, final Object object) {
-        fields.stream()
-                .filter(field -> field.isAnnotationPresent(com.mirkocaserta.bruce.annotations.Verifier.class))
-                .map(field -> Pair.of(field, field.getDeclaredAnnotation(com.mirkocaserta.bruce.annotations.Verifier.class)))
-                .forEach(pair -> {
-                    pair.key().setAccessible(true);
-                    final var verifierAnnotation = pair.val();
-                    final var publicKeyAnnotation = verifierAnnotation.publicKey();
-                    final var keyStoreAnnotation = publicKeyAnnotation.keystore();
-                    final var keystoreProvider = isDefault(keyStoreAnnotation.provider()) ? null : keyStoreAnnotation.provider();
-                    final var keystore = keystore(keyStoreAnnotation.location(), keyStoreAnnotation.password(), keyStoreAnnotation.type(), keystoreProvider);
-                    final var publicKey = publicKey(keystore, publicKeyAnnotation.alias());
-                    final var provider = isDefault(verifierAnnotation.provider()) ? null : verifierAnnotation.provider();
+        fields.stream().filter(field -> field.isAnnotationPresent(com.mirkocaserta.bruce.annotations.Verifier.class)).map(field -> Pair.of(field, field.getDeclaredAnnotation(com.mirkocaserta.bruce.annotations.Verifier.class))).forEach(pair -> {
+            pair.key().setAccessible(true);
+            final var verifierAnnotation = pair.val();
+            final var publicKeyAnnotation = verifierAnnotation.publicKey();
+            final var keyStoreAnnotation = publicKeyAnnotation.keystore();
+            final var keystoreProvider = isDefault(keyStoreAnnotation.provider()) ? null : keyStoreAnnotation.provider();
+            final var keystore = keystore(keyStoreAnnotation.location(), keyStoreAnnotation.password(), keyStoreAnnotation.type(), keystoreProvider);
+            final var publicKey = publicKey(keystore, publicKeyAnnotation.alias());
+            final var provider = isDefault(verifierAnnotation.provider()) ? null : verifierAnnotation.provider();
 
-                    if (EncodingVerifier.class.equals(pair.key().getType())) {
-                        final var encoding = isDefault(verifierAnnotation.encoding()) ? Encoding.HEX : Encoding.valueOf(verifierAnnotation.encoding());
-                        final var charset = isDefault(verifierAnnotation.charset()) ? Charset.defaultCharset() : Charset.forName(verifierAnnotation.charset());
-                        final var verifier = verifier(publicKey, verifierAnnotation.algorithm(), provider, charset, encoding);
-                        set(pair.key(), object, verifier);
-                    } else {
-                        final var verifier = verifier(publicKey, verifierAnnotation.algorithm(), provider);
-                        set(pair.key(), object, verifier);
-                    }
-                });
+            if (Verifier.class.equals(pair.key().getType())) {
+                final var encoding = isDefault(verifierAnnotation.encoding()) ? Encoding.defaultEncoding() : Encoding.valueOf(verifierAnnotation.encoding());
+                final var charset = isDefault(verifierAnnotation.charset()) ? Charset.defaultCharset() : Charset.forName(verifierAnnotation.charset());
+                final var verifier = verifier(publicKey, verifierAnnotation.algorithm(), provider, charset, encoding);
+                set(pair.key(), object, verifier);
+            }
+        });
     }
 
     private static void instrumentDigesters(final List<Field> fields, final Object object) {
-        fields.stream()
-                .filter(field -> field.isAnnotationPresent(com.mirkocaserta.bruce.annotations.Digester.class))
-                .map(field -> Pair.of(field, field.getDeclaredAnnotation(com.mirkocaserta.bruce.annotations.Digester.class)))
-                .forEach(pair -> {
-                    pair.key().setAccessible(true);
-                    final var provider = isDefault(pair.val().provider()) ? null : pair.val().provider();
+        fields.stream().filter(field -> field.isAnnotationPresent(com.mirkocaserta.bruce.annotations.Digester.class)).map(field -> Pair.of(field, field.getDeclaredAnnotation(com.mirkocaserta.bruce.annotations.Digester.class))).forEach(pair -> {
+            pair.key().setAccessible(true);
+            final var provider = isDefault(pair.val().provider()) ? null : pair.val().provider();
 
-                    if (EncodingDigester.class.equals(pair.key().getType())) {
-                        final var encoding = isDefault(pair.val().encoding()) ? Encoding.HEX : Encoding.valueOf(pair.val().encoding());
-                        final var charset = isDefault(pair.val().charsetName()) ? Charset.defaultCharset() : Charset.forName(pair.val().charsetName());
-                        final var digester = digester(pair.val().algorithm(), provider, encoding, charset);
-                        set(pair.key(), object, digester);
-                    } else {
-                        final var digester = digester(pair.val().algorithm(), provider);
-                        set(pair.key(), object, digester);
-                    }
-                });
+            if (Digester.class.equals(pair.key().getType())) {
+                final var encoding = isDefault(pair.val().encoding()) ? Encoding.defaultEncoding() : Encoding.valueOf(pair.val().encoding());
+                final var charset = isDefault(pair.val().charsetName()) ? Charset.defaultCharset() : Charset.forName(pair.val().charsetName());
+                final var digester = digester(pair.val().algorithm(), provider, encoding, charset);
+                set(pair.key(), object, digester);
+            }
+        });
     }
 
     private static void set(final Field field, final Object instance, final Object fieldValue) {
@@ -1533,6 +1544,10 @@ public final class Bruce {
          * MIME encoding. For instance, the MIME encoding of a random
          * MD5 hash is <code>eOcxAn2P1Q7WQjQLfJpjsw==</code>.
          */
-        MIME
+        MIME;
+
+        public static Encoding defaultEncoding() {
+            return BASE64;
+        }
     }
 }

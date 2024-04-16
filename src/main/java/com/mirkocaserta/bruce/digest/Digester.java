@@ -19,4 +19,13 @@ public interface Digester {
      */
     byte[] digest(byte[] message);
 
+    /**
+     * Returns the message digest in encoded format.
+     *
+     * @param message the message
+     * @return the message digest in encoded format
+     * @throws BruceException on digesting errors
+     */
+    String digest(String message);
+
 }

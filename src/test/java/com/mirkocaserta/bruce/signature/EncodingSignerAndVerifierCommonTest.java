@@ -1,29 +1,25 @@
 package com.mirkocaserta.bruce.signature;
 
-import static java.lang.System.currentTimeMillis;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import com.mirkocaserta.bruce.BruceException;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
-
-import com.mirkocaserta.bruce.BruceException;
+import static java.lang.System.currentTimeMillis;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class EncodingSignerAndVerifierCommonTest {
 
-    private final EncodingSigner signer = getSigner();
-    private final EncodingVerifier verifier = getVerifier();
+    private final Signer signer = getSigner();
+    private final Verifier verifier = getVerifier();
 
-    protected abstract EncodingSigner getSigner();
+    protected abstract Signer getSigner();
 
-    protected abstract EncodingVerifier getVerifier();
+    protected abstract Verifier getVerifier();
 
     @Test
     void signAndVerify() {
