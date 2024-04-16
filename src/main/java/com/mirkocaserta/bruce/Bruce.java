@@ -371,7 +371,7 @@ public final class Bruce {
      * This digester implementation assumes your input messages
      * are using the <code>UTF-8</code> charset.
      *
-     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc)
+     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
      * @param encoding  the encoding
      * @return an encoding message digester
      * @throws BruceException on no such algorithm or provider exceptions
@@ -383,7 +383,7 @@ public final class Bruce {
     /**
      * Returns an encoding message digester for the given algorithm and character set.
      *
-     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc)
+     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
      * @param encoding  the encoding
      * @param charset   the charset used for the input messages
      * @return an encoding message digester
@@ -399,7 +399,7 @@ public final class Bruce {
      * This digester implementation assumes your input messages
      * are using the <code>UTF-8</code> charset.
      *
-     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc)
+     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
      * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
      * @param encoding  the encoding
      * @return an encoding message digester
@@ -412,7 +412,7 @@ public final class Bruce {
     /**
      * Returns an encoding message digester for the given algorithm and provider.
      *
-     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc)
+     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
      * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
      * @param encoding  the encoding
      * @param charset   the charset used for the input messages
@@ -434,7 +434,7 @@ public final class Bruce {
     /**
      * Returns an encoding file digester for the given algorithm.
      *
-     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc)
+     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
      * @param encoding  the encoding
      * @return an encoding file digester
      * @throws BruceException on no such algorithm or provider exceptions
@@ -446,7 +446,7 @@ public final class Bruce {
     /**
      * Returns an encoding file digester for the given algorithm and provider.
      *
-     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc)
+     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
      * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
      * @param encoding  the encoding
      * @return an encoding file digester
@@ -498,7 +498,7 @@ public final class Bruce {
     /**
      * Returns a raw byte array message digester for the given algorithm and provider.
      *
-     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc)
+     * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
      * @param provider  the provider (hint: Bouncy Castle is <code>BC</code>)
      * @return a raw byte array message digester
      * @throws BruceException on no such algorithm or provider exceptions
@@ -522,7 +522,7 @@ public final class Bruce {
     /**
      * Returns a raw byte array message digester for the given algorithm.
      *
-     * @param algorithm the algorithm (ex: SHA1, MD5, etc)
+     * @param algorithm the algorithm (ex: SHA1, MD5, etc.)
      * @return a raw byte array message digester
      * @throws BruceException on no such algorithm exception
      */
@@ -1015,10 +1015,9 @@ public final class Bruce {
                 var cipher = provider == null || provider.isBlank()
                         ? javax.crypto.Cipher.getInstance(cipherAlgorithm)
                         : javax.crypto.Cipher.getInstance(cipherAlgorithm, provider);
-                if (mode == Mode.ENCRYPT) {
-                    cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, spec, initializationVectorSpec);
-                } else if (mode == Mode.DECRYPT) {
-                    cipher.init(javax.crypto.Cipher.DECRYPT_MODE, spec, initializationVectorSpec);
+                switch (mode) {
+                    case ENCRYPT -> cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, spec, initializationVectorSpec);
+                    case DECRYPT -> cipher.init(javax.crypto.Cipher.DECRYPT_MODE, spec, initializationVectorSpec);
                 }
                 return cipher.doFinal(message);
             } catch (NoSuchAlgorithmException | BadPaddingException | InvalidKeyException |
@@ -1089,12 +1088,10 @@ public final class Bruce {
             var keyBA = decode(encoding, key);
             var ivBA = decode(encoding, iv);
 
-            if (mode == Mode.ENCRYPT) {
-                return encode(encoding, cipher.encrypt(keyBA, ivBA, message.getBytes(charset)));
-            } else if (mode == Mode.DECRYPT) {
-                return new String(cipher.encrypt(keyBA, ivBA, decode(encoding, message)), charset);
-            }
-            throw new BruceException("no such mode");
+            return switch (mode) {
+                case ENCRYPT -> encode(encoding, cipher.encrypt(keyBA, ivBA, message.getBytes(charset)));
+                case DECRYPT -> new String(cipher.encrypt(keyBA, ivBA, decode(encoding, message)), charset);
+            };
         };
     }
 
@@ -1161,10 +1158,9 @@ public final class Bruce {
                 var cipher = provider == null || provider.isBlank()
                         ? javax.crypto.Cipher.getInstance(algorithm)
                         : javax.crypto.Cipher.getInstance(algorithm, provider);
-                if (mode == Mode.ENCRYPT) {
-                    cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, key);
-                } else if (mode == Mode.DECRYPT) {
-                    cipher.init(javax.crypto.Cipher.DECRYPT_MODE, key);
+                switch (mode) {
+                    case ENCRYPT -> cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, key);
+                    case DECRYPT -> cipher.init(javax.crypto.Cipher.DECRYPT_MODE, key);
                 }
                 return cipher.doFinal(message);
             } catch (Exception e) {
@@ -1268,12 +1264,10 @@ public final class Bruce {
      * @return the encrypted or decrypted message
      */
     private static String crypt(Cipher cipher, String message, Mode mode, Encoding encoding, Charset charset) {
-        if (mode == Mode.ENCRYPT) {
-            return encode(encoding, cipher.encrypt(message.getBytes(charset)));
-        } else if (mode == Mode.DECRYPT) {
-            return new String(cipher.encrypt(decode(encoding, message)), charset);
-        }
-        throw new BruceException("no such mode");
+        return switch (mode) {
+            case ENCRYPT -> encode(encoding, cipher.encrypt(message.getBytes(charset)));
+            case DECRYPT -> new String(cipher.encrypt(decode(encoding, message)), charset);
+        };
     }
 
     /**
@@ -1384,16 +1378,12 @@ public final class Bruce {
      */
     private static byte[] decode(final Encoding encoding, final String input) {
         try {
-            if (encoding == Encoding.HEX) {
-                return HEX_DECODER.decode(input);
-            } else if (encoding == Encoding.BASE64) {
-                return BASE_64_DECODER.decode(input);
-            } else if (encoding == Encoding.URL) {
-                return URL_DECODER.decode(input);
-            } else if (encoding == Encoding.MIME) {
-                return MIME_DECODER.decode(input);
-            }
-            throw new BruceException("invalid encoding");
+            return switch (encoding) {
+                case HEX -> HEX_DECODER.decode(input);
+                case BASE64 -> BASE_64_DECODER.decode(input);
+                case URL -> URL_DECODER.decode(input);
+                case MIME -> MIME_DECODER.decode(input);
+            };
         } catch (IllegalArgumentException e) {
             throw new BruceException(String.format("invalid input for encoding %s", encoding));
         }
@@ -1407,16 +1397,12 @@ public final class Bruce {
      * @return a string representation of the encoded input
      */
     private static String encode(final Encoding encoding, final byte[] input) {
-        if (encoding == Encoding.HEX) {
-            return HEX_ENCODER.encodeToString(input);
-        } else if (encoding == Encoding.BASE64) {
-            return BASE_64_ENCODER.encodeToString(input);
-        } else if (encoding == Encoding.URL) {
-            return URL_ENCODER.encodeToString(input);
-        } else if (encoding == Encoding.MIME) {
-            return MIME_ENCODER.encodeToString(input);
-        }
-        throw new BruceException("invalid encoding");
+        return switch (encoding) {
+            case HEX -> HEX_ENCODER.encodeToString(input);
+            case BASE64 -> BASE_64_ENCODER.encodeToString(input);
+            case URL -> URL_ENCODER.encodeToString(input);
+            case MIME -> MIME_ENCODER.encodeToString(input);
+        };
     }
 
     public static void instrument(final List<Object> objects) {
@@ -1447,8 +1433,8 @@ public final class Bruce {
                     final var provider = isDefault(signerAnnotation.provider()) ? null : signerAnnotation.provider();
 
                     if (EncodingSigner.class.equals(pair.key().getType())) {
-                        final Encoding encoding = isDefault(signerAnnotation.encoding()) ? Encoding.HEX : Encoding.valueOf(signerAnnotation.encoding());
-                        final Charset charset = isDefault(signerAnnotation.charset()) ? Charset.defaultCharset() : Charset.forName(signerAnnotation.charset());
+                        final var encoding = isDefault(signerAnnotation.encoding()) ? Encoding.HEX : Encoding.valueOf(signerAnnotation.encoding());
+                        final var charset = isDefault(signerAnnotation.charset()) ? Charset.defaultCharset() : Charset.forName(signerAnnotation.charset());
                         final var signer = signer(privateKey, signerAnnotation.algorithm(), provider, charset, encoding);
                         set(pair.key(), object, signer);
                     } else {
@@ -1473,8 +1459,8 @@ public final class Bruce {
                     final var provider = isDefault(verifierAnnotation.provider()) ? null : verifierAnnotation.provider();
 
                     if (EncodingVerifier.class.equals(pair.key().getType())) {
-                        final Encoding encoding = isDefault(verifierAnnotation.encoding()) ? Encoding.HEX : Encoding.valueOf(verifierAnnotation.encoding());
-                        final Charset charset = isDefault(verifierAnnotation.charset()) ? Charset.defaultCharset() : Charset.forName(verifierAnnotation.charset());
+                        final var encoding = isDefault(verifierAnnotation.encoding()) ? Encoding.HEX : Encoding.valueOf(verifierAnnotation.encoding());
+                        final var charset = isDefault(verifierAnnotation.charset()) ? Charset.defaultCharset() : Charset.forName(verifierAnnotation.charset());
                         final var verifier = verifier(publicKey, verifierAnnotation.algorithm(), provider, charset, encoding);
                         set(pair.key(), object, verifier);
                     } else {
@@ -1490,11 +1476,11 @@ public final class Bruce {
                 .map(field -> Pair.of(field, field.getDeclaredAnnotation(com.mirkocaserta.bruce.annotations.Digester.class)))
                 .forEach(pair -> {
                     pair.key().setAccessible(true);
-                    final String provider = isDefault(pair.val().provider()) ? null : pair.val().provider();
+                    final var provider = isDefault(pair.val().provider()) ? null : pair.val().provider();
 
                     if (EncodingDigester.class.equals(pair.key().getType())) {
-                        final Encoding encoding = isDefault(pair.val().encoding()) ? Encoding.HEX : Encoding.valueOf(pair.val().encoding());
-                        final Charset charset = isDefault(pair.val().charsetName()) ? Charset.defaultCharset() : Charset.forName(pair.val().charsetName());
+                        final var encoding = isDefault(pair.val().encoding()) ? Encoding.HEX : Encoding.valueOf(pair.val().encoding());
+                        final var charset = isDefault(pair.val().charsetName()) ? Charset.defaultCharset() : Charset.forName(pair.val().charsetName());
                         final var digester = digester(pair.val().algorithm(), provider, encoding, charset);
                         set(pair.key(), object, digester);
                     } else {
@@ -1510,7 +1496,6 @@ public final class Bruce {
         } catch (IllegalAccessException e) {
             throw new BruceException(String.format("could not instrument field: %s.%s", instance.getClass().getSimpleName(), field.getName()), e);
         }
-
     }
 
     /**
