@@ -3,7 +3,6 @@ package com.mirkocaserta.bruce.signature;
 import static com.mirkocaserta.bruce.Bruce.*;
 
 import com.mirkocaserta.bruce.Encoding;
-
 import java.security.KeyStore;
 
 class EncodingSignerAndVerifierMimeTest extends EncodingSignerAndVerifierCommonTest {

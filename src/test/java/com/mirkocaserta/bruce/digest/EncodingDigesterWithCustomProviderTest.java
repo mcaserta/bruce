@@ -4,9 +4,8 @@ import static com.mirkocaserta.bruce.Bruce.digester;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.mirkocaserta.bruce.BruceException;
-import java.security.Security;
-
 import com.mirkocaserta.bruce.Encoding;
+import java.security.Security;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;

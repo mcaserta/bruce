@@ -45,8 +45,6 @@ class FileDigesterTest {
   @DisplayName("Digester for an invalid algorithm should throw a DigesterException")
   void invalidAlgorithm1() {
     Assertions.assertThrows(
-        BruceException.class,
-        () -> fileDigester("foo", Encoding.HEX),
-        "No such algorithm: foo");
+        BruceException.class, () -> fileDigester("foo", Encoding.HEX), "No such algorithm: foo");
   }
 }

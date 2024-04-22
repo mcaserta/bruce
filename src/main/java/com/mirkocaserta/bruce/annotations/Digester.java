@@ -1,7 +1,6 @@
 package com.mirkocaserta.bruce.annotations;
 
 import com.mirkocaserta.bruce.Encoding;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
