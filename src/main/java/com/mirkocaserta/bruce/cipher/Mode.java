@@ -6,14 +6,8 @@ package com.mirkocaserta.bruce.cipher;
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
 public enum Mode {
-
-    /**
-     * Encryption mode.
-     */
-    ENCRYPT,
-    /**
-     * Decryption mode.
-     */
-    DECRYPT
-
+  /** Encryption mode. */
+  ENCRYPT,
+  /** Decryption mode. */
+  DECRYPT
 }

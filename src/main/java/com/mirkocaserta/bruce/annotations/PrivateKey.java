@@ -8,9 +8,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface PrivateKey {
-    KeyStore keystore();
+  KeyStore keystore();
 
-    String alias();
+  String alias();
 
-    char[] password();
+  char[] password();
 }
