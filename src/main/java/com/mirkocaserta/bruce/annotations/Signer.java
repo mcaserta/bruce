@@ -1,7 +1,6 @@
 package com.mirkocaserta.bruce.annotations;
 
-import static com.mirkocaserta.bruce.annotations.AnnotationUtils.DEFAULT;
-
+import com.mirkocaserta.bruce.Encoding;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -14,9 +13,9 @@ public @interface Signer {
 
   String algorithm();
 
-  String provider() default DEFAULT;
+  String provider() default "";
 
-  String charset() default DEFAULT;
+  String charset() default "UTF-8";
 
-  String encoding() default DEFAULT;
+  Encoding encoding() default Encoding.BASE64;
 }

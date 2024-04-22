@@ -1,6 +1,6 @@
 package com.mirkocaserta.bruce.annotations;
 
-import static com.mirkocaserta.bruce.annotations.AnnotationUtils.DEFAULT;
+import com.mirkocaserta.bruce.Encoding;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -12,9 +12,9 @@ import java.lang.annotation.Target;
 public @interface Digester {
   String algorithm();
 
-  String provider() default DEFAULT;
+  String provider() default "";
 
-  String encoding() default DEFAULT;
+  Encoding encoding() default Encoding.BASE64;
 
-  String charsetName() default DEFAULT;
+  String charsetName() default "UTF-8";
 }

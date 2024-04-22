@@ -1,7 +1,7 @@
 package com.mirkocaserta.bruce.cipher.asymmetric;
 
 import static com.mirkocaserta.bruce.Bruce.*;
-import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
+import static com.mirkocaserta.bruce.Encoding.BASE64;
 import static com.mirkocaserta.bruce.cipher.Mode.DECRYPT;
 import static com.mirkocaserta.bruce.cipher.Mode.ENCRYPT;
 import static java.nio.charset.StandardCharsets.UTF_8;

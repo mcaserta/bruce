@@ -1,7 +1,7 @@
 package com.mirkocaserta.bruce.mac;
 
 import static com.mirkocaserta.bruce.Bruce.*;
-import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
+import static com.mirkocaserta.bruce.Encoding.BASE64;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 

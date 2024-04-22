@@ -1,7 +1,7 @@
 package com.mirkocaserta.bruce.signature;
 
 import static com.mirkocaserta.bruce.Bruce.*;
-import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
+import static com.mirkocaserta.bruce.Encoding.BASE64;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.security.KeyStore;

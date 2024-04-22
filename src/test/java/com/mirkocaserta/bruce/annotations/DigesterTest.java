@@ -6,6 +6,7 @@ import static com.mirkocaserta.bruce.digest.DigesterConsts.MESSAGE_SHA1;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.mirkocaserta.bruce.Encoding;
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -76,7 +77,7 @@ class DigesterTest {
 
   static class Class3 {
     @SuppressWarnings("unused")
-    @Digester(algorithm = "SHA1", provider = "BC", encoding = "BASE64", charsetName = "UTF-8")
+    @Digester(algorithm = "SHA1", provider = "BC", encoding = Encoding.BASE64)
     private com.mirkocaserta.bruce.digest.Digester digester;
 
     public String digest(String message) {

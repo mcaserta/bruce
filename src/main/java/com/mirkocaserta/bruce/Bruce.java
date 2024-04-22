@@ -1,7 +1,5 @@
 package com.mirkocaserta.bruce;
 
-import static com.mirkocaserta.bruce.annotations.AnnotationUtils.isDefault;
-
 import com.mirkocaserta.bruce.cipher.Mode;
 import com.mirkocaserta.bruce.cipher.asymmetric.Cipher;
 import com.mirkocaserta.bruce.cipher.symmetric.CipherByKey;
@@ -1556,31 +1554,24 @@ public final class Bruce {
               final var signerAnnotation = pair.val();
               final var privateKeyAnnotation = signerAnnotation.privateKey();
               final var keyStoreAnnotation = privateKeyAnnotation.keystore();
-              final var keystoreProvider =
-                  isDefault(keyStoreAnnotation.provider()) ? null : keyStoreAnnotation.provider();
               final var keystore =
                   keystore(
                       keyStoreAnnotation.location(),
                       keyStoreAnnotation.password(),
                       keyStoreAnnotation.type(),
-                      keystoreProvider);
+                      keyStoreAnnotation.provider());
               final var privateKey =
                   privateKey(
                       keystore, privateKeyAnnotation.alias(), privateKeyAnnotation.password());
-              final var provider =
-                  isDefault(signerAnnotation.provider()) ? null : signerAnnotation.provider();
 
               if (Signer.class.equals(pair.key().getType())) {
-                final var encoding =
-                    isDefault(signerAnnotation.encoding())
-                        ? Encoding.defaultEncoding()
-                        : Encoding.valueOf(signerAnnotation.encoding());
-                final var charset =
-                    isDefault(signerAnnotation.charset())
-                        ? Charset.defaultCharset()
-                        : Charset.forName(signerAnnotation.charset());
                 final var signer =
-                    signer(privateKey, signerAnnotation.algorithm(), provider, charset, encoding);
+                    signer(
+                        privateKey,
+                        signerAnnotation.algorithm(),
+                        signerAnnotation.provider(),
+                        Charset.forName(signerAnnotation.charset()),
+                        signerAnnotation.encoding());
                 set(pair.key(), object, signer);
               }
             });
@@ -1601,30 +1592,22 @@ public final class Bruce {
               final var verifierAnnotation = pair.val();
               final var publicKeyAnnotation = verifierAnnotation.publicKey();
               final var keyStoreAnnotation = publicKeyAnnotation.keystore();
-              final var keystoreProvider =
-                  isDefault(keyStoreAnnotation.provider()) ? null : keyStoreAnnotation.provider();
               final var keystore =
                   keystore(
                       keyStoreAnnotation.location(),
                       keyStoreAnnotation.password(),
                       keyStoreAnnotation.type(),
-                      keystoreProvider);
+                      keyStoreAnnotation.provider());
               final var publicKey = publicKey(keystore, publicKeyAnnotation.alias());
-              final var provider =
-                  isDefault(verifierAnnotation.provider()) ? null : verifierAnnotation.provider();
 
               if (Verifier.class.equals(pair.key().getType())) {
-                final var encoding =
-                    isDefault(verifierAnnotation.encoding())
-                        ? Encoding.defaultEncoding()
-                        : Encoding.valueOf(verifierAnnotation.encoding());
-                final var charset =
-                    isDefault(verifierAnnotation.charset())
-                        ? Charset.defaultCharset()
-                        : Charset.forName(verifierAnnotation.charset());
                 final var verifier =
                     verifier(
-                        publicKey, verifierAnnotation.algorithm(), provider, charset, encoding);
+                        publicKey,
+                        verifierAnnotation.algorithm(),
+                        verifierAnnotation.provider(),
+                        Charset.forName(verifierAnnotation.charset()),
+                        verifierAnnotation.encoding());
                 set(pair.key(), object, verifier);
               }
             });
@@ -1642,18 +1625,14 @@ public final class Bruce {
         .forEach(
             pair -> {
               pair.key().setAccessible(true);
-              final var provider = isDefault(pair.val().provider()) ? null : pair.val().provider();
 
               if (Digester.class.equals(pair.key().getType())) {
-                final var encoding =
-                    isDefault(pair.val().encoding())
-                        ? Encoding.defaultEncoding()
-                        : Encoding.valueOf(pair.val().encoding());
-                final var charset =
-                    isDefault(pair.val().charsetName())
-                        ? Charset.defaultCharset()
-                        : Charset.forName(pair.val().charsetName());
-                final var digester = digester(pair.val().algorithm(), provider, encoding, charset);
+                final var digester =
+                    digester(
+                        pair.val().algorithm(),
+                        pair.val().provider(),
+                        pair.val().encoding(),
+                        Charset.forName(pair.val().charsetName()));
                 set(pair.key(), object, digester);
               }
             });
@@ -1668,43 +1647,6 @@ public final class Bruce {
               "could not instrument field: %s.%s",
               instance.getClass().getSimpleName(), field.getName()),
           e);
-    }
-  }
-
-  /**
-   * Bruce supports these encodings. Encodings are used in cryptography as a wire safe
-   * representation of raw bytes which would otherwise get screwed-up in all sort of possible ways
-   * while traversing networks or, more generally, while exchanging hands.
-   *
-   * <p>Have you ever played the <a href="https://en.wikipedia.org/wiki/Chinese_whispers">telephone
-   * game</a>? Computers do that with raw bytes as different architectures internally encode bytes
-   * in different ways. Unless you use a standard encoding, messages get lost in translation with
-   * catastrophic consequences.
-   */
-  public enum Encoding {
-    /**
-     * Hexadecimal encoding. For instance, the hexadecimal encoding of a random MD5 hash is <code>
-     * 78e731027d8fd50ed642340b7c9a63b3</code>.
-     */
-    HEX,
-    /**
-     * Base64 encoding. For instance, the Base64 encoding of a random MD5 hash is <code>
-     * eOcxAn2P1Q7WQjQLfJpjsw==</code>.
-     */
-    BASE64,
-    /**
-     * URL encoding. For instance, the URL encoding of a random MD5 hash is <code>
-     * eOcxAn2P1Q7WQjQLfJpjsw==</code>.
-     */
-    URL,
-    /**
-     * MIME encoding. For instance, the MIME encoding of a random MD5 hash is <code>
-     * eOcxAn2P1Q7WQjQLfJpjsw==</code>.
-     */
-    MIME;
-
-    public static Encoding defaultEncoding() {
-      return BASE64;
     }
   }
 }

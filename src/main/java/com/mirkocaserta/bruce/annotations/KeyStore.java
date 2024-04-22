@@ -1,7 +1,5 @@
 package com.mirkocaserta.bruce.annotations;
 
-import static com.mirkocaserta.bruce.annotations.AnnotationUtils.DEFAULT;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -14,7 +12,7 @@ public @interface KeyStore {
 
   char[] password();
 
-  String type() default DEFAULT;
+  String type() default "";
 
-  String provider() default DEFAULT;
+  String provider() default "";
 }

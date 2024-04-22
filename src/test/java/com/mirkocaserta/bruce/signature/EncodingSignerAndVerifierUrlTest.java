@@ -1,7 +1,7 @@
 package com.mirkocaserta.bruce.signature;
 
 import static com.mirkocaserta.bruce.Bruce.*;
-import static com.mirkocaserta.bruce.Bruce.Encoding.URL;
+import static com.mirkocaserta.bruce.Encoding.URL;
 
 import java.security.KeyStore;
 

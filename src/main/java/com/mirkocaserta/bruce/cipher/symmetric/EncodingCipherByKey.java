@@ -1,6 +1,6 @@
 package com.mirkocaserta.bruce.cipher.symmetric;
 
-import com.mirkocaserta.bruce.Bruce.Encoding;
+import com.mirkocaserta.bruce.Encoding;
 
 /**
  * Interface for performing symmetric encryption with strings containing encoded versions of raw
