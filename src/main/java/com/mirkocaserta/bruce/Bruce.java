@@ -117,7 +117,7 @@ public final class Bruce {
    * @return the default keystore
    * @throws BruceException on loading errors
    */
-  public static KeyStore keystore(String type) {
+  public static KeyStore keystore(final String type) {
     return keystore(
         System.getProperty("javax.net.ssl.keyStore"),
         Optional.ofNullable(System.getProperty("javax.net.ssl.keyStorePassword"))
@@ -141,7 +141,7 @@ public final class Bruce {
    * @return a key store
    * @throws BruceException on loading errors
    */
-  public static KeyStore keystore(String location, char[] password) {
+  public static KeyStore keystore(final String location, final char[] password) {
     return keystore(location, password, DEFAULT_KEYSTORE_TYPE, BLANK);
   }
 
@@ -161,7 +161,7 @@ public final class Bruce {
    * @return a key store
    * @throws BruceException on loading errors
    */
-  public static KeyStore keystore(String location, char[] password, String type) {
+  public static KeyStore keystore(final String location, final char[] password, final String type) {
     return keystore(location, password, type, BLANK);
   }
 
@@ -182,17 +182,18 @@ public final class Bruce {
    * @return a key store
    * @throws BruceException on loading errors
    */
-  public static KeyStore keystore(String location, char[] password, String type, String provider) {
+  public static KeyStore keystore(
+      final String location, final char[] password, final String type, final String provider) {
     if (location == null || location.isBlank()) {
       throw new BruceException("please provide a valid key store location");
     }
 
     try {
-      var keyStore =
+      final var keyStore =
           provider == null || provider.isBlank()
               ? KeyStore.getInstance(type)
               : KeyStore.getInstance(type, provider);
-      InputStream inputStream;
+      final InputStream inputStream;
       if (location.startsWith("classpath:")) {
         inputStream = Bruce.class.getResourceAsStream(location.replaceFirst("classpath:", BLANK));
       } else if (location.matches("^https*://.*$")) {
@@ -220,9 +221,9 @@ public final class Bruce {
    * @return the certificate
    * @throws BruceException on loading errors
    */
-  public static Certificate certificate(KeyStore keystore, String alias) {
+  public static Certificate certificate(final KeyStore keystore, final String alias) {
     try {
-      var certificate = keystore.getCertificate(alias);
+      final var certificate = keystore.getCertificate(alias);
 
       if (certificate == null) {
         throw new BruceException(String.format("certificate not found for alias: %s", alias));
@@ -242,7 +243,7 @@ public final class Bruce {
    * @return the public key
    * @throws BruceException on loading errors
    */
-  public static PublicKey publicKey(KeyStore keystore, String alias) {
+  public static PublicKey publicKey(final KeyStore keystore, final String alias) {
     return certificate(keystore, alias).getPublicKey();
   }
 
@@ -255,9 +256,10 @@ public final class Bruce {
    * @return the private key
    * @throws BruceException on loading errors
    */
-  public static PrivateKey privateKey(KeyStore keystore, String alias, char[] password) {
+  public static PrivateKey privateKey(
+      final KeyStore keystore, final String alias, final char[] password) {
     try {
-      var privateKeyEntry =
+      final var privateKeyEntry =
           (KeyStore.PrivateKeyEntry)
               keystore.getEntry(alias, new KeyStore.PasswordProtection(password));
 
@@ -280,9 +282,9 @@ public final class Bruce {
    * @return the secret key
    * @throws BruceException on loading errors
    */
-  public static Key secretKey(KeyStore keystore, String alias, char[] password) {
+  public static Key secretKey(final KeyStore keystore, final String alias, final char[] password) {
     try {
-      var key = keystore.getKey(alias, password);
+      final var key = keystore.getKey(alias, password);
 
       if (key == null) {
         throw new BruceException(String.format("no such secret key with alias: %s", alias));
@@ -301,7 +303,7 @@ public final class Bruce {
    * @param keySize the key size
    * @return the key pair
    */
-  public static KeyPair keyPair(String algorithm, int keySize) {
+  public static KeyPair keyPair(final String algorithm, final int keySize) {
     return keyPair(algorithm, null, keySize, null);
   }
 
@@ -313,7 +315,7 @@ public final class Bruce {
    * @param keySize the key size
    * @return the key pair
    */
-  public static KeyPair keyPair(String algorithm, String provider, int keySize) {
+  public static KeyPair keyPair(final String algorithm, final String provider, final int keySize) {
     return keyPair(algorithm, provider, keySize, null);
   }
 
@@ -325,7 +327,8 @@ public final class Bruce {
    * @param random the random number generator
    * @return the key pair
    */
-  public static KeyPair keyPair(String algorithm, int keySize, SecureRandom random) {
+  public static KeyPair keyPair(
+      final String algorithm, final int keySize, final SecureRandom random) {
     return keyPair(algorithm, null, keySize, random);
   }
 
@@ -339,9 +342,9 @@ public final class Bruce {
    * @return the key pair
    */
   public static KeyPair keyPair(
-      String algorithm, String provider, int keySize, SecureRandom random) {
+      final String algorithm, final String provider, final int keySize, final SecureRandom random) {
     try {
-      var keyGen =
+      final var keyGen =
           provider == null || provider.isBlank()
               ? KeyPairGenerator.getInstance(algorithm)
               : KeyPairGenerator.getInstance(algorithm, provider);
@@ -372,7 +375,7 @@ public final class Bruce {
    * @return a message digester
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static <T> Function<T, String> digester(String algorithm, Encoding encoding) {
+  public static <T> Function<T, String> digester(final String algorithm, final Encoding encoding) {
     return digester(algorithm, BLANK, encoding, Charset.defaultCharset(), String.class);
   }
 
@@ -386,7 +389,10 @@ public final class Bruce {
    * @throws BruceException on no such algorithm or provider exceptions
    */
   public static <T, R> Function<T, R> digester(
-      String algorithm, Encoding encoding, Charset charset, Class<R> outputType) {
+      final String algorithm,
+      final Encoding encoding,
+      final Charset charset,
+      final Class<R> outputType) {
     return digester(algorithm, BLANK, encoding, charset, outputType);
   }
 
@@ -403,7 +409,10 @@ public final class Bruce {
    * @throws BruceException on no such algorithm or provider exceptions
    */
   public static <T, R> Function<T, R> digester(
-      String algorithm, String provider, Encoding encoding, Class<R> outputType) {
+      final String algorithm,
+      final String provider,
+      final Encoding encoding,
+      final Class<R> outputType) {
     return digester(algorithm, provider, encoding, Charset.defaultCharset(), outputType);
   }
 
@@ -421,7 +430,11 @@ public final class Bruce {
    * @throws BruceException on no such algorithm or provider exceptions
    */
   public static <T, R> Function<T, R> digester(
-      String algorithm, String provider, Encoding encoding, Charset charset, Class<R> outputType) {
+      final String algorithm,
+      final String provider,
+      final Encoding encoding,
+      final Charset charset,
+      final Class<R> outputType) {
     if (encoding == null) {
       throw new BruceException(INVALID_ENCODING_NULL);
     }
@@ -461,7 +474,7 @@ public final class Bruce {
     }
   }
 
-  public static <T> Function<T, byte[]> digester(String algorithm) {
+  public static <T> Function<T, byte[]> digester(final String algorithm) {
     return digester(algorithm, byte[].class);
   }
 
@@ -473,7 +486,7 @@ public final class Bruce {
    * @return an encoding file digester
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static FileDigester fileDigester(String algorithm, Encoding encoding) {
+  public static FileDigester fileDigester(final String algorithm, final Encoding encoding) {
     return fileDigester(algorithm, BLANK, encoding);
   }
 
@@ -486,7 +499,8 @@ public final class Bruce {
    * @return an encoding file digester
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static FileDigester fileDigester(String algorithm, String provider, Encoding encoding) {
+  public static FileDigester fileDigester(
+      final String algorithm, final String provider, final Encoding encoding) {
     if (encoding == null) {
       throw new BruceException(INVALID_ENCODING_NULL);
     }
@@ -510,7 +524,7 @@ public final class Bruce {
                 ? MessageDigest.getInstance(algorithm)
                 : MessageDigest.getInstance(algorithm, provider);
         try (var inputStream = new FileInputStream(file)) {
-          var buffer = new byte[8192];
+          final var buffer = new byte[8192];
           int read;
 
           while ((read = inputStream.read(buffer)) > 0) {
@@ -539,7 +553,7 @@ public final class Bruce {
    * @throws BruceException on no such algorithm or provider exceptions
    */
   public static <T, R> Function<T, R> digester(
-      String algorithm, String provider, Class<R> outputType) {
+      final String algorithm, final String provider, final Class<R> outputType) {
     return digester(algorithm, provider, Encoding.HEX, Charset.defaultCharset(), outputType);
   }
 
@@ -550,7 +564,7 @@ public final class Bruce {
    * @return a message digester
    * @throws BruceException on no such algorithm exception
    */
-  public static <T, R> Function<T, R> digester(String algorithm, Class<R> outputType) {
+  public static <T, R> Function<T, R> digester(final String algorithm, final Class<R> outputType) {
     return digester(algorithm, BLANK, outputType);
   }
 
@@ -562,7 +576,7 @@ public final class Bruce {
    * @return the signer
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static Signer signer(PrivateKey privateKey, String algorithm) {
+  public static Signer signer(final PrivateKey privateKey, final String algorithm) {
     return signer(privateKey, algorithm, BLANK);
   }
 
@@ -575,13 +589,14 @@ public final class Bruce {
    * @return the signer
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static Signer signer(PrivateKey privateKey, String algorithm, String provider) {
+  public static Signer signer(
+      final PrivateKey privateKey, final String algorithm, final String provider) {
     final var signer =
         new Signer() {
           @Override
           public byte[] sign(byte[] message) {
             try {
-              var signature = getSignature(algorithm, provider);
+              final var signature = getSignature(algorithm, provider);
               signature.initSign(privateKey);
               signature.update(message);
               return signature.sign();
@@ -607,7 +622,7 @@ public final class Bruce {
     return signer;
   }
 
-  private static Signature getSignature(String algorithm, String provider) {
+  private static Signature getSignature(final String algorithm, final String provider) {
     try {
       return provider == null || provider.isBlank()
           ? Signature.getInstance(algorithm)
@@ -628,7 +643,8 @@ public final class Bruce {
    * @return the signer
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static SignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm) {
+  public static SignerByKey signer(
+      final Map<String, PrivateKey> privateKeyMap, final String algorithm) {
     return signer(privateKeyMap, algorithm, BLANK);
   }
 
@@ -644,9 +660,9 @@ public final class Bruce {
    * @throws BruceException on no such algorithm or provider exceptions
    */
   public static SignerByKey signer(
-      Map<String, PrivateKey> privateKeyMap, String algorithm, String provider) {
+      final Map<String, PrivateKey> privateKeyMap, final String algorithm, final String provider) {
     return (privateKeyId, message) -> {
-      var privateKey = privateKeyMap.get(privateKeyId);
+      final var privateKey = privateKeyMap.get(privateKeyId);
 
       if (privateKey == null) {
         throw new BruceException(String.format("private key not found for id: %s", privateKeyId));
@@ -670,7 +686,9 @@ public final class Bruce {
    * @throws BruceException on no such algorithm or provider exceptions
    */
   public static EncodingSignerByKey signer(
-      Map<String, PrivateKey> privateKeyMap, String algorithm, Encoding encoding) {
+      final Map<String, PrivateKey> privateKeyMap,
+      final String algorithm,
+      final Encoding encoding) {
     return signer(privateKeyMap, algorithm, null, Charset.defaultCharset(), encoding);
   }
 
@@ -687,7 +705,10 @@ public final class Bruce {
    * @throws BruceException on no such algorithm or provider exceptions
    */
   public static EncodingSignerByKey signer(
-      Map<String, PrivateKey> privateKeyMap, String algorithm, Charset charset, Encoding encoding) {
+      final Map<String, PrivateKey> privateKeyMap,
+      final String algorithm,
+      final Charset charset,
+      final Encoding encoding) {
     return signer(privateKeyMap, algorithm, null, charset, encoding);
   }
 
@@ -705,13 +726,13 @@ public final class Bruce {
    * @throws BruceException on no such algorithm or provider exceptions
    */
   public static EncodingSignerByKey signer(
-      Map<String, PrivateKey> privateKeyMap,
-      String algorithm,
-      String provider,
-      Charset charset,
-      Encoding encoding) {
+      final Map<String, PrivateKey> privateKeyMap,
+      final String algorithm,
+      final String provider,
+      final Charset charset,
+      final Encoding encoding) {
     return (privateKeyId, message) -> {
-      var privateKey = privateKeyMap.get(privateKeyId);
+      final var privateKey = privateKeyMap.get(privateKeyId);
 
       if (privateKey == null) {
         throw new BruceException(String.format("private key not found for id: %s", privateKeyId));
@@ -731,7 +752,8 @@ public final class Bruce {
    * @return the signer
    * @throws BruceException on initialization exceptions
    */
-  public static Signer signer(PrivateKey privateKey, String algorithm, Encoding encoding) {
+  public static Signer signer(
+      final PrivateKey privateKey, final String algorithm, final Encoding encoding) {
     return signer(privateKey, algorithm, BLANK, Charset.defaultCharset(), encoding);
   }
 
@@ -746,7 +768,10 @@ public final class Bruce {
    * @throws BruceException on initialization exceptions
    */
   public static Signer signer(
-      PrivateKey privateKey, String algorithm, Charset charset, Encoding encoding) {
+      final PrivateKey privateKey,
+      final String algorithm,
+      final Charset charset,
+      final Encoding encoding) {
     return signer(privateKey, algorithm, BLANK, charset, encoding);
   }
 
@@ -762,11 +787,11 @@ public final class Bruce {
    * @throws BruceException on initialization exceptions
    */
   public static Signer signer(
-      PrivateKey privateKey,
-      String algorithm,
-      String provider,
-      Charset charset,
-      Encoding encoding) {
+      final PrivateKey privateKey,
+      final String algorithm,
+      final String provider,
+      final Charset charset,
+      final Encoding encoding) {
     if (encoding == null) {
       throw new BruceException(INVALID_ENCODING_NULL);
     }
@@ -798,7 +823,7 @@ public final class Bruce {
    * @return the verifier
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static Verifier verifier(PublicKey publicKey, String algorithm) {
+  public static Verifier verifier(final PublicKey publicKey, final String algorithm) {
     return verifier(publicKey, algorithm, BLANK);
   }
 
@@ -811,12 +836,13 @@ public final class Bruce {
    * @return the verifier
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static Verifier verifier(PublicKey publicKey, String algorithm, String provider) {
+  public static Verifier verifier(
+      final PublicKey publicKey, final String algorithm, final String provider) {
     return new Verifier() {
       @Override
       public boolean verify(byte[] message, byte[] signature) {
         try {
-          var signatureInstance = getSignature(algorithm, provider);
+          final var signatureInstance = getSignature(algorithm, provider);
           signatureInstance.initVerify(publicKey);
           signatureInstance.update(message);
           return signatureInstance.verify(signature);
@@ -849,7 +875,8 @@ public final class Bruce {
    * @return the verifier
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static VerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm) {
+  public static VerifierByKey verifier(
+      final Map<String, PublicKey> publicKeyMap, final String algorithm) {
     return verifier(publicKeyMap, algorithm, BLANK);
   }
 
@@ -865,9 +892,9 @@ public final class Bruce {
    * @throws BruceException on no such algorithm or provider exceptions
    */
   public static VerifierByKey verifier(
-      Map<String, PublicKey> publicKeyMap, String algorithm, String provider) {
+      final Map<String, PublicKey> publicKeyMap, final String algorithm, final String provider) {
     return (publicKeyId, message, signature) -> {
-      var publicKey = publicKeyMap.get(publicKeyId);
+      final var publicKey = publicKeyMap.get(publicKeyId);
 
       if (publicKey == null) {
         throw new BruceException(String.format("public key not found for id: %s", publicKeyId));
@@ -887,7 +914,8 @@ public final class Bruce {
    * @return the verifier
    * @throws BruceException on initialization exceptions
    */
-  public static Verifier verifier(PublicKey publicKey, String algorithm, Encoding encoding) {
+  public static Verifier verifier(
+      final PublicKey publicKey, final String algorithm, final Encoding encoding) {
     return verifier(publicKey, algorithm, BLANK, encoding);
   }
 
@@ -903,7 +931,10 @@ public final class Bruce {
    * @throws BruceException on initialization exceptions
    */
   public static Verifier verifier(
-      PublicKey publicKey, String algorithm, String provider, Encoding encoding) {
+      final PublicKey publicKey,
+      final String algorithm,
+      final String provider,
+      final Encoding encoding) {
     return verifier(publicKey, algorithm, provider, Charset.defaultCharset(), encoding);
   }
 
@@ -919,7 +950,11 @@ public final class Bruce {
    * @throws BruceException on initialization exceptions
    */
   public static Verifier verifier(
-      PublicKey publicKey, String algorithm, String provider, Charset charset, Encoding encoding) {
+      final PublicKey publicKey,
+      final String algorithm,
+      final String provider,
+      final Charset charset,
+      final Encoding encoding) {
     if (encoding == null) {
       throw new BruceException(INVALID_ENCODING_NULL);
     }
@@ -956,7 +991,7 @@ public final class Bruce {
    * @throws BruceException on no such algorithm or provider exceptions
    */
   public static EncodingVerifierByKey verifier(
-      Map<String, PublicKey> publicKeyMap, String algorithm, Encoding encoding) {
+      final Map<String, PublicKey> publicKeyMap, final String algorithm, final Encoding encoding) {
     return verifier(publicKeyMap, algorithm, null, Charset.defaultCharset(), encoding);
   }
 
@@ -973,7 +1008,10 @@ public final class Bruce {
    * @throws BruceException on no such algorithm or provider exceptions
    */
   public static EncodingVerifierByKey verifier(
-      Map<String, PublicKey> publicKeyMap, String algorithm, Charset charset, Encoding encoding) {
+      final Map<String, PublicKey> publicKeyMap,
+      final String algorithm,
+      final Charset charset,
+      final Encoding encoding) {
     return verifier(publicKeyMap, algorithm, null, charset, encoding);
   }
 
@@ -991,13 +1029,13 @@ public final class Bruce {
    * @throws BruceException on no such algorithm or provider exceptions
    */
   public static EncodingVerifierByKey verifier(
-      Map<String, PublicKey> publicKeyMap,
-      String algorithm,
-      String provider,
-      Charset charset,
-      Encoding encoding) {
+      final Map<String, PublicKey> publicKeyMap,
+      final String algorithm,
+      final String provider,
+      final Charset charset,
+      final Encoding encoding) {
     return (publicKeyId, message, signature) -> {
-      var publicKey = publicKeyMap.get(publicKeyId);
+      final var publicKey = publicKeyMap.get(publicKeyId);
 
       if (publicKey == null) {
         throw new BruceException(String.format("public key not found for id: %s", publicKeyId));
@@ -1013,7 +1051,7 @@ public final class Bruce {
    * @param algorithm the key algorithm
    * @return a newly generated symmetric key
    */
-  public static byte[] symmetricKey(String algorithm) {
+  public static byte[] symmetricKey(final String algorithm) {
     return symmetricKey(algorithm, BLANK);
   }
 
@@ -1024,9 +1062,9 @@ public final class Bruce {
    * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
    * @return a newly generated symmetric key
    */
-  public static byte[] symmetricKey(String algorithm, String provider) {
+  public static byte[] symmetricKey(final String algorithm, final String provider) {
     try {
-      var generator =
+      final var generator =
           provider == null || provider.isBlank()
               ? KeyGenerator.getInstance(algorithm)
               : KeyGenerator.getInstance(algorithm, provider);
@@ -1045,7 +1083,7 @@ public final class Bruce {
    * @param encoding the key encoding
    * @return a newly generated symmetric key
    */
-  public static String symmetricKey(String algorithm, Encoding encoding) {
+  public static String symmetricKey(final String algorithm, final Encoding encoding) {
     return symmetricKey(algorithm, BLANK, encoding);
   }
 
@@ -1057,7 +1095,8 @@ public final class Bruce {
    * @param encoding the key encoding
    * @return a newly generated symmetric key
    */
-  public static String symmetricKey(String algorithm, String provider, Encoding encoding) {
+  public static String symmetricKey(
+      final String algorithm, final String provider, final Encoding encoding) {
     return encode(encoding, symmetricKey(algorithm, provider));
   }
 
@@ -1070,7 +1109,8 @@ public final class Bruce {
    * @param mode the encryption mode
    * @return the symmetric cipher
    */
-  public static CipherByKey cipher(String keyAlgorithm, String cipherAlgorithm, Mode mode) {
+  public static CipherByKey cipher(
+      final String keyAlgorithm, final String cipherAlgorithm, final Mode mode) {
     return cipher(keyAlgorithm, cipherAlgorithm, BLANK, mode);
   }
 
@@ -1085,16 +1125,19 @@ public final class Bruce {
    * @return the symmetric cipher
    */
   public static CipherByKey cipher(
-      String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode) {
+      final String keyAlgorithm,
+      final String cipherAlgorithm,
+      final String provider,
+      final Mode mode) {
     if (mode == null) {
       throw new BruceException(MODE_CANNOT_BE_NULL);
     }
 
     return (key, iv, message) -> {
       try {
-        var initializationVectorSpec = new IvParameterSpec(iv);
-        var spec = new SecretKeySpec(key, keyAlgorithm);
-        var cipher =
+        final var initializationVectorSpec = new IvParameterSpec(iv);
+        final var spec = new SecretKeySpec(key, keyAlgorithm);
+        final var cipher =
             provider == null || provider.isBlank()
                 ? javax.crypto.Cipher.getInstance(cipherAlgorithm)
                 : javax.crypto.Cipher.getInstance(cipherAlgorithm, provider);
@@ -1127,7 +1170,7 @@ public final class Bruce {
    * @return the symmetric cipher
    */
   public static com.mirkocaserta.bruce.cipher.symmetric.Cipher cipher(
-      byte[] key, String keyAlgorithm, String cipherAlgorithm, Mode mode) {
+      final byte[] key, final String keyAlgorithm, final String cipherAlgorithm, final Mode mode) {
     return cipher(key, keyAlgorithm, cipherAlgorithm, BLANK, mode);
   }
 
@@ -1142,8 +1185,12 @@ public final class Bruce {
    * @return the symmetric cipher
    */
   public static com.mirkocaserta.bruce.cipher.symmetric.Cipher cipher(
-      byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode) {
-    var cipher = cipher(keyAlgorithm, cipherAlgorithm, provider, mode);
+      final byte[] key,
+      final String keyAlgorithm,
+      final String cipherAlgorithm,
+      final String provider,
+      final Mode mode) {
+    final var cipher = cipher(keyAlgorithm, cipherAlgorithm, provider, mode);
     return (iv, message) -> cipher.encrypt(key, iv, message);
   }
 
@@ -1158,7 +1205,10 @@ public final class Bruce {
    * @return the symmetric cipher
    */
   public static EncodingCipherByKey cipherByKey(
-      String keyAlgorithm, String cipherAlgorithm, Mode mode, Charset charset) {
+      final String keyAlgorithm,
+      final String cipherAlgorithm,
+      final Mode mode,
+      final Charset charset) {
     return cipherByKey(keyAlgorithm, cipherAlgorithm, BLANK, mode, charset);
   }
 
@@ -1174,12 +1224,16 @@ public final class Bruce {
    * @return the symmetric cipher
    */
   public static EncodingCipherByKey cipherByKey(
-      String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode, Charset charset) {
-    var cipher = cipher(keyAlgorithm, cipherAlgorithm, provider, mode);
+      final String keyAlgorithm,
+      final String cipherAlgorithm,
+      final String provider,
+      final Mode mode,
+      final Charset charset) {
+    final var cipher = cipher(keyAlgorithm, cipherAlgorithm, provider, mode);
 
     return (key, iv, message, encoding) -> {
-      var keyBA = decode(encoding, key);
-      var ivBA = decode(encoding, iv);
+      final var keyBA = decode(encoding, key);
+      final var ivBA = decode(encoding, iv);
 
       return switch (mode) {
         case ENCRYPT -> encode(encoding, cipher.encrypt(keyBA, ivBA, message.getBytes(charset)));
@@ -1200,12 +1254,12 @@ public final class Bruce {
    * @return the symmetric cipher
    */
   public static EncodingCipher cipher(
-      String key,
-      String keyAlgorithm,
-      String cipherAlgorithm,
-      Mode mode,
-      Charset charset,
-      Encoding encoding) {
+      final String key,
+      final String keyAlgorithm,
+      final String cipherAlgorithm,
+      final Mode mode,
+      final Charset charset,
+      final Encoding encoding) {
     return cipher(key, keyAlgorithm, cipherAlgorithm, BLANK, mode, charset, encoding);
   }
 
@@ -1222,14 +1276,14 @@ public final class Bruce {
    * @return the symmetric cipher
    */
   public static EncodingCipher cipher(
-      String key,
-      String keyAlgorithm,
-      String cipherAlgorithm,
-      String provider,
-      Mode mode,
-      Charset charset,
-      Encoding encoding) {
-    var cipher = cipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode, charset);
+      final String key,
+      final String keyAlgorithm,
+      final String cipherAlgorithm,
+      final String provider,
+      final Mode mode,
+      final Charset charset,
+      final Encoding encoding) {
+    final var cipher = cipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode, charset);
     return (iv, message) -> cipher.encrypt(key, iv, message, encoding);
   }
 
@@ -1241,7 +1295,7 @@ public final class Bruce {
    * @param mode the encryption mode
    * @return the asymmetric cipher
    */
-  public static Cipher cipher(Key key, String algorithm, Mode mode) {
+  public static Cipher cipher(final Key key, final String algorithm, final Mode mode) {
     return cipher(key, algorithm, BLANK, mode);
   }
 
@@ -1254,14 +1308,15 @@ public final class Bruce {
    * @param mode the encryption mode
    * @return the asymmetric cipher
    */
-  public static Cipher cipher(Key key, String algorithm, String provider, Mode mode) {
+  public static Cipher cipher(
+      final Key key, final String algorithm, final String provider, final Mode mode) {
     if (mode == null) {
       throw new BruceException(MODE_CANNOT_BE_NULL);
     }
 
     return message -> {
       try {
-        var cipher =
+        final var cipher =
             provider == null || provider.isBlank()
                 ? javax.crypto.Cipher.getInstance(algorithm)
                 : javax.crypto.Cipher.getInstance(algorithm, provider);
@@ -1285,7 +1340,7 @@ public final class Bruce {
    * @return an asymmetric cipher with a map of preconfigured keys
    */
   public static com.mirkocaserta.bruce.cipher.asymmetric.CipherByKey cipher(
-      Map<String, Key> keys, String algorithm) {
+      final Map<String, Key> keys, final String algorithm) {
     return cipher(keys, algorithm, BLANK);
   }
 
@@ -1298,7 +1353,7 @@ public final class Bruce {
    * @return an asymmetric cipher with a map of preconfigured keys
    */
   public static com.mirkocaserta.bruce.cipher.asymmetric.CipherByKey cipher(
-      Map<String, Key> keys, String algorithm, String provider) {
+      final Map<String, Key> keys, final String algorithm, final String provider) {
     // we use a cipher cache here as getting a new one each time is a bit expensive
     return (keyId, mode, message) ->
         getCipher(keys, keyId, algorithm, provider, mode).encrypt(message);
@@ -1315,7 +1370,11 @@ public final class Bruce {
    * @return an encoding asymmetric cipher
    */
   public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipher cipher(
-      Key key, String algorithm, Mode mode, Encoding encoding, Charset charset) {
+      final Key key,
+      final String algorithm,
+      final Mode mode,
+      final Encoding encoding,
+      final Charset charset) {
     return cipher(key, algorithm, BLANK, mode, encoding, charset);
   }
 
@@ -1331,8 +1390,13 @@ public final class Bruce {
    * @return an encoding asymmetric cipher
    */
   public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipher cipher(
-      Key key, String algorithm, String provider, Mode mode, Encoding encoding, Charset charset) {
-    var cipher = cipher(key, algorithm, provider, mode);
+      final Key key,
+      final String algorithm,
+      final String provider,
+      final Mode mode,
+      final Encoding encoding,
+      final Charset charset) {
+    final var cipher = cipher(key, algorithm, provider, mode);
     return message -> crypt(cipher, message, mode, encoding, charset);
   }
 
@@ -1346,7 +1410,10 @@ public final class Bruce {
    * @return an encoding asymmetric cipher with a map of preconfigured keys
    */
   public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipherByKey cipher(
-      Map<String, Key> keys, String algorithm, Encoding encoding, Charset charset) {
+      final Map<String, Key> keys,
+      final String algorithm,
+      final Encoding encoding,
+      final Charset charset) {
     return cipher(keys, algorithm, BLANK, encoding, charset);
   }
 
@@ -1361,13 +1428,13 @@ public final class Bruce {
    * @return an encoding asymmetric cipher with a map of preconfigured keys
    */
   public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipherByKey cipher(
-      Map<String, Key> keys,
-      String algorithm,
-      String provider,
-      Encoding encoding,
-      Charset charset) {
+      final Map<String, Key> keys,
+      final String algorithm,
+      final String provider,
+      final Encoding encoding,
+      final Charset charset) {
     return (keyId, mode, message) -> {
-      var cipher = getCipher(keys, keyId, algorithm, provider, mode);
+      final var cipher = getCipher(keys, keyId, algorithm, provider, mode);
       return crypt(cipher, message, mode, encoding, charset);
     };
   }
@@ -1383,7 +1450,11 @@ public final class Bruce {
    * @return the encrypted or decrypted message
    */
   private static String crypt(
-      Cipher cipher, String message, Mode mode, Encoding encoding, Charset charset) {
+      final Cipher cipher,
+      final String message,
+      final Mode mode,
+      final Encoding encoding,
+      final Charset charset) {
     return switch (mode) {
       case ENCRYPT -> encode(encoding, cipher.encrypt(message.getBytes(charset)));
       case DECRYPT -> new String(cipher.encrypt(decode(encoding, message)), charset);
@@ -1401,11 +1472,15 @@ public final class Bruce {
    * @return the cipher
    */
   private static Cipher getCipher(
-      Map<String, Key> keys, String keyId, String algorithm, String provider, Mode mode) {
+      final Map<String, Key> keys,
+      final String keyId,
+      final String algorithm,
+      final String provider,
+      final Mode mode) {
     return cipherCache.computeIfAbsent(
         cipherCacheKey(keyId, algorithm, provider, mode),
         ignored -> {
-          var key = keys.get(keyId);
+          final var key = keys.get(keyId);
           if (key == null) {
             throw new BruceException(String.format("no such key: %s", keyId));
           }
@@ -1422,7 +1497,8 @@ public final class Bruce {
    * @param mode the cyphering mode: encrypt/decrypt
    * @return the cache key
    */
-  private static String cipherCacheKey(String keyId, String algorithm, String provider, Mode mode) {
+  private static String cipherCacheKey(
+      final String keyId, final String algorithm, final String provider, final Mode mode) {
     return keyId + "::" + algorithm + "::" + provider + "::" + mode;
   }
 
@@ -1433,7 +1509,7 @@ public final class Bruce {
    * @param algorithm the signature algorithm
    * @return the message authentication codes interface
    */
-  public static Mac mac(Key key, String algorithm) {
+  public static Mac mac(final Key key, final String algorithm) {
     return mac(key, algorithm, BLANK);
   }
 
@@ -1445,10 +1521,10 @@ public final class Bruce {
    * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
    * @return the message authentication codes interface
    */
-  public static Mac mac(Key key, String algorithm, String provider) {
+  public static Mac mac(final Key key, final String algorithm, final String provider) {
     return message -> {
       try {
-        var mac =
+        final var mac =
             provider == null || provider.isBlank()
                 ? javax.crypto.Mac.getInstance(algorithm)
                 : javax.crypto.Mac.getInstance(algorithm, provider);
@@ -1473,7 +1549,8 @@ public final class Bruce {
    * @param charset the message charset
    * @return the message authentication codes interface
    */
-  public static EncodingMac mac(Key key, String algorithm, Encoding encoding, Charset charset) {
+  public static EncodingMac mac(
+      final Key key, final String algorithm, final Encoding encoding, final Charset charset) {
     return mac(key, algorithm, BLANK, encoding, charset);
   }
 
@@ -1488,8 +1565,12 @@ public final class Bruce {
    * @return the message authentication codes interface
    */
   public static EncodingMac mac(
-      Key key, String algorithm, String provider, Encoding encoding, Charset charset) {
-    var mac = mac(key, algorithm, provider);
+      final Key key,
+      final String algorithm,
+      final String provider,
+      final Encoding encoding,
+      final Charset charset) {
+    final var mac = mac(key, algorithm, provider);
     return message -> encode(encoding, mac.get(message.getBytes(charset)));
   }
 
