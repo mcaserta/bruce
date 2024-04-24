@@ -20,21 +20,21 @@ class DigesterWithCustomProviderTest {
   @Test
   @DisplayName("Digester for the SHA1 algorithm")
   void sha1() {
-    Digester digester = digester("SHA1", "BC"); // use Bouncy Castle provider
+    final var digester = digester("SHA1", "BC", byte[].class); // use Bouncy Castle provider
     Assertions.assertArrayEquals(
-        DigesterConsts.MESSAGE_SHA1, digester.digest("message".getBytes(StandardCharsets.UTF_8)));
+        DigesterConsts.MESSAGE_SHA1, digester.apply("message".getBytes(StandardCharsets.UTF_8)));
     Assertions.assertArrayEquals(
-        DigesterConsts.EMPTY_SHA1, digester.digest("".getBytes(StandardCharsets.UTF_8)));
+        DigesterConsts.EMPTY_SHA1, digester.apply("".getBytes(StandardCharsets.UTF_8)));
   }
 
   @Test
   @DisplayName("Digester for the MD5 algorithm")
   void md5() {
-    Digester digester = digester("MD5", "BC"); // use Bouncy Castle provider
+    final var digester = digester("MD5", "BC", byte[].class); // use Bouncy Castle provider
     Assertions.assertArrayEquals(
-        DigesterConsts.MESSAGE_MD5, digester.digest("message".getBytes(StandardCharsets.UTF_8)));
+        DigesterConsts.MESSAGE_MD5, digester.apply("message".getBytes(StandardCharsets.UTF_8)));
     Assertions.assertArrayEquals(
-        DigesterConsts.EMPTY_MD5, digester.digest("".getBytes(StandardCharsets.UTF_8)));
+        DigesterConsts.EMPTY_MD5, digester.apply("".getBytes(StandardCharsets.UTF_8)));
   }
 
   @Test
@@ -42,7 +42,7 @@ class DigesterWithCustomProviderTest {
   void invalidAlgorithm1() {
     Assertions.assertThrows(
         BruceException.class,
-        () -> digester("foo", "BC"), // use Bouncy Castle provider
+        () -> digester("foo", "BC", byte[].class), // use Bouncy Castle provider
         "No such algorithm: foo");
   }
 }

@@ -5,7 +5,6 @@ import com.mirkocaserta.bruce.cipher.asymmetric.Cipher;
 import com.mirkocaserta.bruce.cipher.symmetric.CipherByKey;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipher;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherByKey;
-import com.mirkocaserta.bruce.digest.Digester;
 import com.mirkocaserta.bruce.digest.FileDigester;
 import com.mirkocaserta.bruce.mac.EncodingMac;
 import com.mirkocaserta.bruce.mac.Mac;
@@ -28,6 +27,7 @@ import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
@@ -56,7 +56,8 @@ public final class Bruce {
   private static final Base64.Decoder MIME_DECODER = Base64.getMimeDecoder();
 
   private static final String BLANK = "";
-  private static final String INVALID_ENCODING_NULL = "Invalid encoding: null";
+  private static final String INVALID_ENCODING_NULL = "invalid encoding: null";
+  private static final String INVALID_OUTPUT_TYPE_NULL = "invalid outputType: null";
   private static final String MODE_CANNOT_BE_NULL = "mode cannot be null";
 
   private static final ConcurrentMap<String, Cipher> cipherCache = new ConcurrentHashMap<>();
@@ -361,35 +362,36 @@ public final class Bruce {
   }
 
   /**
-   * Returns an encoding message digester for the given algorithm.
+   * Returns a message digester for the given parameters.
    *
    * <p>This digester implementation assumes your input messages are using the {@link
    * Charset#defaultCharset()}.
    *
    * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
    * @param encoding the encoding
-   * @return an encoding message digester
+   * @return a message digester
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static Digester digester(String algorithm, Encoding encoding) {
-    return digester(algorithm, BLANK, encoding, Charset.defaultCharset());
+  public static <T> Function<T, String> digester(String algorithm, Encoding encoding) {
+    return digester(algorithm, BLANK, encoding, Charset.defaultCharset(), String.class);
   }
 
   /**
-   * Returns an encoding message digester for the given algorithm and character set.
+   * Returns a message digester for the given parameters.
    *
    * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
    * @param encoding the encoding
    * @param charset the charset used for the input messages
-   * @return an encoding message digester
+   * @return a message digester
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static Digester digester(String algorithm, Encoding encoding, Charset charset) {
-    return digester(algorithm, BLANK, encoding, charset);
+  public static <T, R> Function<T, R> digester(
+      String algorithm, Encoding encoding, Charset charset, Class<R> outputType) {
+    return digester(algorithm, BLANK, encoding, charset, outputType);
   }
 
   /**
-   * Returns an encoding message digester for the given algorithm and provider.
+   * Returns a message digester for the given parameters.
    *
    * <p>This digester implementation assumes your input messages are using the {@link
    * Charset#defaultCharset()}.
@@ -397,45 +399,70 @@ public final class Bruce {
    * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
    * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
    * @param encoding the encoding
-   * @return an encoding message digester
+   * @return a message digester
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static Digester digester(String algorithm, String provider, Encoding encoding) {
-    return digester(algorithm, provider, encoding, Charset.defaultCharset());
+  public static <T, R> Function<T, R> digester(
+      String algorithm, String provider, Encoding encoding, Class<R> outputType) {
+    return digester(algorithm, provider, encoding, Charset.defaultCharset(), outputType);
   }
 
   /**
-   * Returns an encoding message digester for the given algorithm and provider.
+   * Returns a message digester for the given parameters.
    *
+   * @param <T> input type parameter
+   * @param <R> output type parameter
    * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
    * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
    * @param encoding the encoding
    * @param charset the charset used for the input messages
-   * @return an encoding message digester
+   * @param outputType the output type class
+   * @return a message digester
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static Digester digester(
-      String algorithm, String provider, Encoding encoding, Charset charset) {
+  public static <T, R> Function<T, R> digester(
+      String algorithm, String provider, Encoding encoding, Charset charset, Class<R> outputType) {
     if (encoding == null) {
       throw new BruceException(INVALID_ENCODING_NULL);
     }
+    if (outputType == null) {
+      throw new BruceException(INVALID_OUTPUT_TYPE_NULL);
+    }
+    try {
+      final var rawDigester =
+          provider == null || provider.isBlank()
+              ? MessageDigest.getInstance(algorithm)
+              : MessageDigest.getInstance(algorithm, provider);
 
-    var rawDigester =
-        provider == null || provider.isBlank()
-            ? digester(algorithm)
-            : digester(algorithm, provider);
+      return message -> {
+        final byte[] input;
+        if (message instanceof byte[] bytes) {
+          input = bytes;
+        } else if (message instanceof String s) {
+          input = s.getBytes(charset);
+        } else {
+          throw new BruceException(
+              String.format("unsupported input message class: %s", message.getClass().getName()));
+        }
+        final var output = rawDigester.digest(input);
+        if (byte[].class.equals(outputType)) {
+          return outputType.cast(output);
+        } else if (String.class.equals(outputType)) {
+          return outputType.cast(encode(encoding, output));
+        } else {
+          throw new BruceException(
+              String.format("unsupported output message class: %s", outputType.getName()));
+        }
+      };
+    } catch (NoSuchAlgorithmException e) {
+      throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
+    } catch (NoSuchProviderException e) {
+      throw new BruceException(String.format("No such provider: %s", provider), e);
+    }
+  }
 
-    return new Digester() {
-      @Override
-      public byte[] digest(byte[] message) {
-        return rawDigester.digest(message);
-      }
-
-      @Override
-      public String digest(String message) {
-        return encode(encoding, rawDigester.digest(message.getBytes(charset)));
-      }
-    };
+  public static <T> Function<T, byte[]> digester(String algorithm) {
+    return digester(algorithm, byte[].class);
   }
 
   /**
@@ -478,7 +505,7 @@ public final class Bruce {
 
     return file -> {
       try {
-        var digest =
+        final var digest =
             provider == null || provider.isBlank()
                 ? MessageDigest.getInstance(algorithm)
                 : MessageDigest.getInstance(algorithm, provider);
@@ -504,51 +531,27 @@ public final class Bruce {
   }
 
   /**
-   * Returns a raw byte array message digester for the given algorithm and provider.
+   * Returns a message digester for the given parameters.
    *
    * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
    * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
-   * @return a raw byte array message digester
+   * @return a message digester
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static Digester digester(String algorithm, String provider) {
-    MessageDigest digester;
-
-    try {
-      digester =
-          provider == null || provider.isBlank()
-              ? MessageDigest.getInstance(algorithm)
-              : MessageDigest.getInstance(algorithm, provider);
-    } catch (NoSuchAlgorithmException e) {
-      throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
-    } catch (NoSuchProviderException e) {
-      throw new BruceException(String.format("No such provider: %s", provider), e);
-    }
-
-    return new Digester() {
-      @Override
-      public byte[] digest(byte[] message) {
-        return digester.digest(message);
-      }
-
-      @Override
-      public String digest(String message) {
-        return encode(
-            Encoding.defaultEncoding(),
-            digester.digest(message.getBytes(Charset.defaultCharset())));
-      }
-    };
+  public static <T, R> Function<T, R> digester(
+      String algorithm, String provider, Class<R> outputType) {
+    return digester(algorithm, provider, Encoding.HEX, Charset.defaultCharset(), outputType);
   }
 
   /**
-   * Returns a raw byte array message digester for the given algorithm.
+   * Returns a message digester for the given parameters.
    *
    * @param algorithm the algorithm (ex: SHA1, MD5, etc.)
-   * @return a raw byte array message digester
+   * @return a message digester
    * @throws BruceException on no such algorithm exception
    */
-  public static Digester digester(String algorithm) {
-    return digester(algorithm, BLANK);
+  public static <T, R> Function<T, R> digester(String algorithm, Class<R> outputType) {
+    return digester(algorithm, BLANK, outputType);
   }
 
   /**
@@ -1626,15 +1629,14 @@ public final class Bruce {
             pair -> {
               pair.key().setAccessible(true);
 
-              if (Digester.class.equals(pair.key().getType())) {
-                final var digester =
-                    digester(
-                        pair.val().algorithm(),
-                        pair.val().provider(),
-                        pair.val().encoding(),
-                        Charset.forName(pair.val().charsetName()));
-                set(pair.key(), object, digester);
-              }
+              final var digester =
+                  digester(
+                      pair.val().algorithm(),
+                      pair.val().provider(),
+                      pair.val().encoding(),
+                      Charset.forName(pair.val().charsetName()),
+                      pair.val().outputType());
+              set(pair.key(), object, digester);
             });
   }
 

@@ -16,4 +16,6 @@ public @interface Digester {
   Encoding encoding() default Encoding.BASE64;
 
   String charsetName() default "UTF-8";
+
+  Class<?> outputType() default String.class;
 }

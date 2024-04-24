@@ -61,7 +61,8 @@ jacocoTestReport {
 
 spotless {
     java {
-        googleJavaFormat('1.22.0').reflowLongStrings()
+        googleJavaFormat('1.22.0').reflowLongStrings().formatJavadoc(true)
+        removeUnusedImports()
         formatAnnotations()
     }
 }

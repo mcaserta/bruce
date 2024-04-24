@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.mirkocaserta.bruce.Encoding;
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
+import java.util.function.Function;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -55,43 +56,83 @@ class DigesterTest {
     assertArrayEquals(EMPTY_SHA1, class4.digest("".getBytes(StandardCharsets.UTF_8)));
   }
 
+  @Test
+  @DisplayName("Digester for the SHA1 algorithm, byte array input and string output")
+  void digesterWithByteArrayInputAndStringOutput() {
+    final var class5 = new Class5();
+    instrument(class5);
+    assertEquals(
+        "b5ua881ui4pzws3O03/p9ZIm4n0=", class5.digest("message".getBytes(StandardCharsets.UTF_8)));
+    assertEquals(
+        "2jmj7l5rSw0yVb/vlWAYkK/YBwk=", class5.digest("".getBytes(StandardCharsets.UTF_8)));
+  }
+
+  @Test
+  @DisplayName("Digester for the SHA1 algorithm, string input and byte array output")
+  void digesterWithStringInputAndByteArrayOutput() {
+    final var class6 = new Class6();
+    instrument(class6);
+    assertArrayEquals(MESSAGE_SHA1, class6.digest("message"));
+    assertArrayEquals(EMPTY_SHA1, class6.digest(""));
+  }
+
   static class Class1 {
     @SuppressWarnings("unused")
     @Digester(algorithm = "SHA1")
-    private com.mirkocaserta.bruce.digest.Digester digester;
+    private Function<String, String> digester;
 
     public String digest(String message) {
-      return digester.digest(message);
+      return digester.apply(message);
     }
   }
 
   static class Class2 {
     @SuppressWarnings("unused")
-    @Digester(algorithm = "SHA1")
-    private com.mirkocaserta.bruce.digest.Digester digester;
+    @Digester(algorithm = "SHA1", outputType = byte[].class)
+    private Function<byte[], byte[]> digester;
 
     public byte[] digest(byte[] message) {
-      return digester.digest(message);
+      return digester.apply(message);
     }
   }
 
   static class Class3 {
     @SuppressWarnings("unused")
     @Digester(algorithm = "SHA1", provider = "BC", encoding = Encoding.BASE64)
-    private com.mirkocaserta.bruce.digest.Digester digester;
+    private Function<String, String> digester;
 
     public String digest(String message) {
-      return digester.digest(message);
+      return digester.apply(message);
     }
   }
 
   static class Class4 {
     @SuppressWarnings("unused")
-    @Digester(algorithm = "SHA1", provider = "BC")
-    private com.mirkocaserta.bruce.digest.Digester digester;
+    @Digester(algorithm = "SHA1", provider = "BC", outputType = byte[].class)
+    private Function<byte[], byte[]> digester;
 
     public byte[] digest(byte[] message) {
-      return digester.digest(message);
+      return digester.apply(message);
+    }
+  }
+
+  static class Class5 {
+    @SuppressWarnings("unused")
+    @Digester(algorithm = "SHA1", provider = "BC")
+    private Function<byte[], String> digester;
+
+    public String digest(byte[] message) {
+      return digester.apply(message);
+    }
+  }
+
+  static class Class6 {
+    @SuppressWarnings("unused")
+    @Digester(algorithm = "SHA1", provider = "BC", outputType = byte[].class)
+    private Function<String, byte[]> digester;
+
+    public byte[] digest(String message) {
+      return digester.apply(message);
     }
   }
 }
