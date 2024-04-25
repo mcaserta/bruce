@@ -3,7 +3,6 @@ package com.mirkocaserta.bruce.digest;
 import com.mirkocaserta.bruce.BruceException;
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
-
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;

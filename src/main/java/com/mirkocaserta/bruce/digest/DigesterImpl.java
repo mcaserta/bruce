@@ -3,7 +3,6 @@ package com.mirkocaserta.bruce.digest;
 import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.BruceException;
 import com.mirkocaserta.bruce.Encoding;
-
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
