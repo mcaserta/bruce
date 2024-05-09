@@ -20,58 +20,11 @@ public final class KeystoreImpl implements com.mirkocaserta.bruce.Keystore {
 
   private static final String BLANK = "";
 
-  /**
-   * Returns the default with using configuration from the following system properties:
-   *
-   * <ul>
-   *   <li><code>javax.net.ssl.keyStore</code>
-   *   <li><code>javax.net.ssl.keyStorePassword</code>
-   * </ul>
-   *
-   * <p>The with location supports the following protocols:
-   *
-   * <ul>
-   *   <li><code>classpath:</code>
-   *   <li><code>http:</code>
-   *   <li><code>https:</code>
-   *   <li><code>file:</code>
-   * </ul>
-   *
-   * <p>If no protocol is specified, <code>file</code> is assumed.
-   *
-   * <p>The default with type is {@value #DEFAULT_KEYSTORE_TYPE}.
-   *
-   * @return the default with
-   * @throws BruceException on loading errors
-   */
   @Override
   public KeyStore with() {
     return with(DEFAULT_KEYSTORE_TYPE);
   }
 
-  /**
-   * Returns the default with using configuration from the following system properties:
-   *
-   * <ul>
-   *   <li><code>javax.net.ssl.keyStore</code>
-   *   <li><code>javax.net.ssl.keyStorePassword</code>
-   * </ul>
-   *
-   * <p>The with location supports the following protocols:
-   *
-   * <ul>
-   *   <li><code>classpath:</code>
-   *   <li><code>http:</code>
-   *   <li><code>https:</code>
-   *   <li><code>file:</code>
-   * </ul>
-   *
-   * <p>If no protocol is specified, <code>file</code> is assumed.
-   *
-   * @param type the with type (ex: <code>JKS</code>, <code>PKCS12</code>)
-   * @return the default with
-   * @throws BruceException on loading errors
-   */
   @Override
   public KeyStore with(final String type) {
     return with(
@@ -82,64 +35,16 @@ public final class KeystoreImpl implements com.mirkocaserta.bruce.Keystore {
         type);
   }
 
-  /**
-   * Returns a key store. The default with type is {@value #DEFAULT_KEYSTORE_TYPE}.
-   *
-   * @param location the with location. The following protocols are supported:
-   *     <ul>
-   *       <li><code>classpath:</code>
-   *       <li><code>http:</code>
-   *       <li><code>https:</code>
-   *       <li><code>file:</code>
-   *     </ul>
-   *     If no protocol is specified, <code>file</code> is assumed.
-   * @param password the password
-   * @return a key store
-   * @throws BruceException on loading errors
-   */
   @Override
   public KeyStore with(final String location, final char[] password) {
     return with(location, password, DEFAULT_KEYSTORE_TYPE, BLANK);
   }
 
-  /**
-   * Returns a key store.
-   *
-   * @param location the with location. The following protocols are supported:
-   *     <ul>
-   *       <li><code>classpath:</code>
-   *       <li><code>http:</code>
-   *       <li><code>https:</code>
-   *       <li><code>file:</code>
-   *     </ul>
-   *     If no protocol is specified, <code>file</code> is assumed.
-   * @param password the password
-   * @param type the with type (ex: <code>JKS</code>, <code>PKCS12</code>)
-   * @return a key store
-   * @throws BruceException on loading errors
-   */
   @Override
   public KeyStore with(final String location, final char[] password, final String type) {
     return with(location, password, type, BLANK);
   }
 
-  /**
-   * Returns a key store.
-   *
-   * @param location the with location. The following protocols are supported:
-   *     <ul>
-   *       <li><code>classpath:</code>
-   *       <li><code>http:</code>
-   *       <li><code>https:</code>
-   *       <li><code>file:</code>
-   *     </ul>
-   *     If no protocol is specified, <code>file</code> is assumed.
-   * @param password the password
-   * @param type the with type (ex: <code>JKS</code>, <code>PKCS12</code>)
-   * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
-   * @return a key store
-   * @throws BruceException on loading errors
-   */
   @Override
   public KeyStore with(
       final String location, final char[] password, final String type, final String provider) {

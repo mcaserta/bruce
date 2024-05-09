@@ -16,31 +16,11 @@ public final class DigesterImpl implements com.mirkocaserta.bruce.Digester {
   private static final String INVALID_ENCODING_NULL = "Invalid encoding: null";
   private static final String INVALID_OUTPUT_TYPE_NULL = "Invalid outputType: null";
 
-  /**
-   * Returns a message digester for the given parameters.
-   *
-   * <p>This digester implementation assumes your input messages are using the {@link
-   * Charset#defaultCharset()}.
-   *
-   * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
-   * @param encoding the encoding
-   * @return a message digester
-   * @throws BruceException on no such algorithm or provider exceptions
-   */
   @Override
   public <T> Function<T, String> with(final String algorithm, final Encoding encoding) {
     return with(algorithm, BLANK, encoding, Charset.defaultCharset(), String.class);
   }
 
-  /**
-   * Returns a message digester for the given parameters.
-   *
-   * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
-   * @param encoding the encoding
-   * @param charset the charset used for the input messages
-   * @return a message digester
-   * @throws BruceException on no such algorithm or provider exceptions
-   */
   @Override
   public <T, R> Function<T, R> with(
       final String algorithm,
@@ -50,18 +30,6 @@ public final class DigesterImpl implements com.mirkocaserta.bruce.Digester {
     return with(algorithm, BLANK, encoding, charset, outputType);
   }
 
-  /**
-   * Returns a message digester for the given parameters.
-   *
-   * <p>This digester implementation assumes your input messages are using the {@link
-   * Charset#defaultCharset()}.
-   *
-   * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
-   * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
-   * @param encoding the encoding
-   * @return a message digester
-   * @throws BruceException on no such algorithm or provider exceptions
-   */
   @Override
   public <T, R> Function<T, R> with(
       final String algorithm,
@@ -71,19 +39,6 @@ public final class DigesterImpl implements com.mirkocaserta.bruce.Digester {
     return with(algorithm, provider, encoding, Charset.defaultCharset(), outputType);
   }
 
-  /**
-   * Returns a message digester for the given parameters.
-   *
-   * @param <T> input type parameter
-   * @param <R> output type parameter
-   * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
-   * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
-   * @param encoding the encoding
-   * @param charset the charset used for the input messages
-   * @param outputType the output type class
-   * @return a message digester
-   * @throws BruceException on no such algorithm or provider exceptions
-   */
   @Override
   public <T, R> Function<T, R> with(
       final String algorithm,
@@ -160,27 +115,12 @@ public final class DigesterImpl implements com.mirkocaserta.bruce.Digester {
     return with(algorithm, byte[].class);
   }
 
-  /**
-   * Returns a message digester for the given parameters.
-   *
-   * @param algorithm the algorithm (ex: <code>SHA1</code>, <code>MD5</code>, etc.)
-   * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
-   * @return a message digester
-   * @throws BruceException on no such algorithm or provider exceptions
-   */
   @Override
   public <T, R> Function<T, R> with(
       final String algorithm, final String provider, final Class<R> outputType) {
     return with(algorithm, provider, Encoding.HEX, Charset.defaultCharset(), outputType);
   }
 
-  /**
-   * Returns a message digester for the given parameters.
-   *
-   * @param algorithm the algorithm (ex: SHA1, MD5, etc.)
-   * @return a message digester
-   * @throws BruceException on no such algorithm exception
-   */
   @Override
   public <T, R> Function<T, R> with(final String algorithm, final Class<R> outputType) {
     return with(algorithm, BLANK, outputType);
