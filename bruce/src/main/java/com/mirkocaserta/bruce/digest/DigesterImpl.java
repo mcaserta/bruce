@@ -27,7 +27,7 @@ public final class DigesterImpl {
    * @return a message digester
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static <T> Function<T, String> with(final String algorithm, final Encoding encoding) {
+  public <T> Function<T, String> with(final String algorithm, final Encoding encoding) {
     return with(algorithm, BLANK, encoding, Charset.defaultCharset(), String.class);
   }
 
@@ -40,7 +40,7 @@ public final class DigesterImpl {
    * @return a message digester
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static <T, R> Function<T, R> with(
+  public <T, R> Function<T, R> with(
       final String algorithm,
       final Encoding encoding,
       final Charset charset,
@@ -60,7 +60,7 @@ public final class DigesterImpl {
    * @return a message digester
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static <T, R> Function<T, R> with(
+  public <T, R> Function<T, R> with(
       final String algorithm,
       final String provider,
       final Encoding encoding,
@@ -81,7 +81,7 @@ public final class DigesterImpl {
    * @return a message digester
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static <T, R> Function<T, R> with(
+  public <T, R> Function<T, R> with(
       final String algorithm,
       final String provider,
       final Encoding encoding,
@@ -151,7 +151,7 @@ public final class DigesterImpl {
     }
   }
 
-  public static <T> Function<T, byte[]> with(final String algorithm) {
+  public <T> Function<T, byte[]> with(final String algorithm) {
     return with(algorithm, byte[].class);
   }
 
@@ -163,7 +163,7 @@ public final class DigesterImpl {
    * @return a message digester
    * @throws BruceException on no such algorithm or provider exceptions
    */
-  public static <T, R> Function<T, R> with(
+  public <T, R> Function<T, R> with(
       final String algorithm, final String provider, final Class<R> outputType) {
     return with(algorithm, provider, Encoding.HEX, Charset.defaultCharset(), outputType);
   }
@@ -175,7 +175,7 @@ public final class DigesterImpl {
    * @return a message digester
    * @throws BruceException on no such algorithm exception
    */
-  public static <T, R> Function<T, R> with(final String algorithm, final Class<R> outputType) {
+  public <T, R> Function<T, R> with(final String algorithm, final Class<R> outputType) {
     return with(algorithm, BLANK, outputType);
   }
 }

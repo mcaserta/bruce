@@ -1,5 +1,6 @@
 package com.mirkocaserta.bruce.digest;
 
+import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.BruceException;
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
@@ -19,7 +20,7 @@ class DigesterWithCustomProviderTest {
   @DisplayName("Digester for the SHA1 algorithm")
   void sha1() {
     final var digester =
-        DigesterImpl.with("SHA1", "BC", byte[].class); // use Bouncy Castle provider
+        Bruce.digester.with("SHA1", "BC", byte[].class); // use Bouncy Castle provider
     Assertions.assertArrayEquals(
         DigesterConsts.MESSAGE_SHA1, digester.apply("message".getBytes(StandardCharsets.UTF_8)));
     Assertions.assertArrayEquals(
@@ -29,7 +30,8 @@ class DigesterWithCustomProviderTest {
   @Test
   @DisplayName("Digester for the MD5 algorithm")
   void md5() {
-    final var digester = DigesterImpl.with("MD5", "BC", byte[].class); // use Bouncy Castle provider
+    final var digester =
+        Bruce.digester.with("MD5", "BC", byte[].class); // use Bouncy Castle provider
     Assertions.assertArrayEquals(
         DigesterConsts.MESSAGE_MD5, digester.apply("message".getBytes(StandardCharsets.UTF_8)));
     Assertions.assertArrayEquals(
@@ -41,7 +43,7 @@ class DigesterWithCustomProviderTest {
   void invalidAlgorithm1() {
     Assertions.assertThrows(
         BruceException.class,
-        () -> DigesterImpl.with("foo", "BC", byte[].class), // use Bouncy Castle provider
+        () -> Bruce.digester.with("foo", "BC", byte[].class), // use Bouncy Castle provider
         "No such algorithm: foo");
   }
 }

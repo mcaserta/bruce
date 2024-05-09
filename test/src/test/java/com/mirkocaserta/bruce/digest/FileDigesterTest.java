@@ -2,6 +2,7 @@ package com.mirkocaserta.bruce.digest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.BruceException;
 import com.mirkocaserta.bruce.Encoding;
 import java.io.File;
@@ -18,7 +19,7 @@ class FileDigesterTest {
   @Test
   @DisplayName("Hexadecimal file digester for the SHA1 algorithm")
   void sha1Hex() {
-    final var digester = DigesterImpl.with("SHA1", Encoding.HEX);
+    final var digester = Bruce.digester.with("SHA1", Encoding.HEX);
     assertEquals(
         "4e1243bd22c66e76c2ba9eddc1f91394e57f9f83",
         digester.apply(new File("src/test/resources/test-file-1")),
@@ -33,7 +34,7 @@ class FileDigesterTest {
   @DisplayName("Hexadecimal file digester for the SHA1 algorithm with file output")
   void sha1HexWithFileOutput() throws IOException {
     final var digester =
-        DigesterImpl.with("SHA1", Encoding.HEX, StandardCharsets.UTF_8, File.class);
+        Bruce.digester.with("SHA1", Encoding.HEX, StandardCharsets.UTF_8, File.class);
     final var file1 = digester.apply(new File("src/test/resources/test-file-1"));
     final var file2 = digester.apply(new File("src/test/resources/test-file-2"));
     assertEquals(
@@ -45,7 +46,7 @@ class FileDigesterTest {
   @Test
   @DisplayName("Base64 file digester for the SHA1 algorithm")
   void sha1Base64() {
-    final var digester = DigesterImpl.with("SHA1", Encoding.BASE64);
+    final var digester = Bruce.digester.with("SHA1", Encoding.BASE64);
     assertEquals(
         "ThJDvSLGbnbCup7dwfkTlOV/n4M=",
         digester.apply(new File("src/test/resources/test-file-1")),
@@ -61,7 +62,7 @@ class FileDigesterTest {
   void invalidAlgorithm1() {
     Assertions.assertThrows(
         BruceException.class,
-        () -> DigesterImpl.with("foo", Encoding.HEX),
+        () -> Bruce.digester.with("foo", Encoding.HEX),
         "No such algorithm: foo");
   }
 }

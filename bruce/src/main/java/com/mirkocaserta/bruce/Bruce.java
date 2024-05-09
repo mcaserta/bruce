@@ -42,7 +42,6 @@ public final class Bruce {
   /** The default keystore format/type. */
   public static final String DEFAULT_KEYSTORE_TYPE = "PKCS12";
 
-  @SuppressWarnings("InstantiationOfUtilityClass")
   public static final DigesterImpl digester = new DigesterImpl();
 
   private static final String BLANK = "";
@@ -1503,7 +1502,7 @@ public final class Bruce {
               pair.key().setAccessible(true);
 
               final var digester =
-                  DigesterImpl.with(
+                  Bruce.digester.with(
                       pair.val().algorithm(),
                       pair.val().provider(),
                       pair.val().encoding(),
