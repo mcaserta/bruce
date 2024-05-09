@@ -6,6 +6,7 @@ import static com.mirkocaserta.bruce.cipher.Mode.ENCRYPT;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.BruceException;
 import java.security.Key;
 import java.security.KeyStore;
@@ -14,9 +15,9 @@ import org.junit.jupiter.api.Test;
 class CipherRoundTripTest {
 
   private final KeyStore aliceKeystore =
-      keystore("classpath:/keystore-alice.p12", "password".toCharArray(), "PKCS12");
+      Bruce.keystore.with("classpath:/keystore-alice.p12", "password".toCharArray(), "PKCS12");
   private final KeyStore bobKeystore =
-      keystore("classpath:/keystore-bob.p12", "password".toCharArray(), "PKCS12");
+      Bruce.keystore.with("classpath:/keystore-bob.p12", "password".toCharArray(), "PKCS12");
   private final Key alicePrivateKey = privateKey(aliceKeystore, "alice", "password".toCharArray());
   private final Key bobPrivateKey = privateKey(bobKeystore, "bob", "password".toCharArray());
   private final Key alicePublicKey = publicKey(aliceKeystore, "alice");

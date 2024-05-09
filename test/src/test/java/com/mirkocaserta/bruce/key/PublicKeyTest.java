@@ -1,9 +1,9 @@
 package com.mirkocaserta.bruce.key;
 
-import static com.mirkocaserta.bruce.Bruce.keystore;
 import static com.mirkocaserta.bruce.Bruce.publicKey;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.BruceException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -16,7 +16,8 @@ class PublicKeyTest {
   @Test
   @DisplayName("loads a public key")
   void publicKeyTest() throws KeyStoreException {
-    KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+    KeyStore keystore =
+        Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
@@ -29,7 +30,8 @@ class PublicKeyTest {
   @Test
   @DisplayName("loading a non existing public key should throw an error")
   void nonExistingKey() throws KeyStoreException {
-    KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+    KeyStore keystore =
+        Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");

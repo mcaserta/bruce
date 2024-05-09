@@ -6,21 +6,17 @@ import com.mirkocaserta.bruce.cipher.symmetric.CipherByKey;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipher;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherByKey;
 import com.mirkocaserta.bruce.digest.DigesterImpl;
+import com.mirkocaserta.bruce.keystore.KeystoreImpl;
 import com.mirkocaserta.bruce.mac.EncodingMac;
 import com.mirkocaserta.bruce.mac.Mac;
 import com.mirkocaserta.bruce.signature.*;
 import com.mirkocaserta.bruce.signature.Signer;
 import com.mirkocaserta.bruce.util.Hex;
 import com.mirkocaserta.bruce.util.Pair;
-import java.io.*;
 import java.lang.reflect.Field;
-import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.*;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -39,10 +35,9 @@ import javax.crypto.spec.SecretKeySpec;
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
 public final class Bruce {
-  /** The default keystore format/type. */
-  public static final String DEFAULT_KEYSTORE_TYPE = "PKCS12";
 
-  public static final DigesterImpl digester = new DigesterImpl();
+  public static final Digester digester = new DigesterImpl();
+  public static final Keystore keystore = new KeystoreImpl();
 
   private static final String BLANK = "";
   private static final String INVALID_ENCODING_NULL = "Invalid encoding: null";
@@ -62,156 +57,9 @@ public final class Bruce {
   }
 
   /**
-   * Returns the default keystore using configuration from the following system properties:
+   * Loads a certificate from the given with.
    *
-   * <ul>
-   *   <li><code>javax.net.ssl.keyStore</code>
-   *   <li><code>javax.net.ssl.keyStorePassword</code>
-   * </ul>
-   *
-   * <p>The keystore location supports the following protocols:
-   *
-   * <ul>
-   *   <li><code>classpath:</code>
-   *   <li><code>http:</code>
-   *   <li><code>https:</code>
-   *   <li><code>file:</code>
-   * </ul>
-   *
-   * <p>If no protocol is specified, <code>file</code> is assumed.
-   *
-   * <p>The default keystore type is {@value #DEFAULT_KEYSTORE_TYPE}.
-   *
-   * @return the default keystore
-   * @throws BruceException on loading errors
-   */
-  public static KeyStore keystore() {
-    return keystore(DEFAULT_KEYSTORE_TYPE);
-  }
-
-  /**
-   * Returns the default keystore using configuration from the following system properties:
-   *
-   * <ul>
-   *   <li><code>javax.net.ssl.keyStore</code>
-   *   <li><code>javax.net.ssl.keyStorePassword</code>
-   * </ul>
-   *
-   * <p>The keystore location supports the following protocols:
-   *
-   * <ul>
-   *   <li><code>classpath:</code>
-   *   <li><code>http:</code>
-   *   <li><code>https:</code>
-   *   <li><code>file:</code>
-   * </ul>
-   *
-   * <p>If no protocol is specified, <code>file</code> is assumed.
-   *
-   * @param type the keystore type (ex: <code>JKS</code>, <code>PKCS12</code>)
-   * @return the default keystore
-   * @throws BruceException on loading errors
-   */
-  public static KeyStore keystore(final String type) {
-    return keystore(
-        System.getProperty("javax.net.ssl.keyStore"),
-        Optional.ofNullable(System.getProperty("javax.net.ssl.keyStorePassword"))
-            .orElse(BLANK)
-            .toCharArray(),
-        type);
-  }
-
-  /**
-   * Returns a key store. The default keystore type is {@value #DEFAULT_KEYSTORE_TYPE}.
-   *
-   * @param location the keystore location. The following protocols are supported:
-   *     <ul>
-   *       <li><code>classpath:</code>
-   *       <li><code>http:</code>
-   *       <li><code>https:</code>
-   *       <li><code>file:</code>
-   *     </ul>
-   *     If no protocol is specified, <code>file</code> is assumed.
-   * @param password the password
-   * @return a key store
-   * @throws BruceException on loading errors
-   */
-  public static KeyStore keystore(final String location, final char[] password) {
-    return keystore(location, password, DEFAULT_KEYSTORE_TYPE, BLANK);
-  }
-
-  /**
-   * Returns a key store.
-   *
-   * @param location the keystore location. The following protocols are supported:
-   *     <ul>
-   *       <li><code>classpath:</code>
-   *       <li><code>http:</code>
-   *       <li><code>https:</code>
-   *       <li><code>file:</code>
-   *     </ul>
-   *     If no protocol is specified, <code>file</code> is assumed.
-   * @param password the password
-   * @param type the keystore type (ex: <code>JKS</code>, <code>PKCS12</code>)
-   * @return a key store
-   * @throws BruceException on loading errors
-   */
-  public static KeyStore keystore(final String location, final char[] password, final String type) {
-    return keystore(location, password, type, BLANK);
-  }
-
-  /**
-   * Returns a key store.
-   *
-   * @param location the keystore location. The following protocols are supported:
-   *     <ul>
-   *       <li><code>classpath:</code>
-   *       <li><code>http:</code>
-   *       <li><code>https:</code>
-   *       <li><code>file:</code>
-   *     </ul>
-   *     If no protocol is specified, <code>file</code> is assumed.
-   * @param password the password
-   * @param type the keystore type (ex: <code>JKS</code>, <code>PKCS12</code>)
-   * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
-   * @return a key store
-   * @throws BruceException on loading errors
-   */
-  public static KeyStore keystore(
-      final String location, final char[] password, final String type, final String provider) {
-    if (location == null || location.isBlank()) {
-      throw new BruceException("please provide a valid key store location");
-    }
-
-    try {
-      final var keyStore =
-          provider == null || provider.isBlank()
-              ? KeyStore.getInstance(type)
-              : KeyStore.getInstance(type, provider);
-      final InputStream inputStream;
-      if (location.startsWith("classpath:")) {
-        inputStream = Bruce.class.getResourceAsStream(location.replaceFirst("classpath:", BLANK));
-      } else if (location.matches("^https*://.*$")) {
-        inputStream = new URL(location).openConnection().getInputStream();
-      } else {
-        inputStream = Files.newInputStream(Path.of(location.replaceFirst("file:", BLANK)));
-      }
-      keyStore.load(inputStream, password);
-      return keyStore;
-    } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException e) {
-      throw new BruceException(String.format("error loading keystore: location=%s", location), e);
-    } catch (NoSuchProviderException e) {
-      throw new BruceException(
-          String.format("error loading keystore, no such provider: provider=%s", provider), e);
-    } catch (Exception e) {
-      throw new BruceException("error loading keystore", e);
-    }
-  }
-
-  /**
-   * Loads a certificate from the given keystore.
-   *
-   * @param keystore the keystore to read from
+   * @param keystore the with to read from
    * @param alias the certificate alias
    * @return the certificate
    * @throws BruceException on loading errors
@@ -231,9 +79,9 @@ public final class Bruce {
   }
 
   /**
-   * Loads a public key from the given keystore.
+   * Loads a public key from the given with.
    *
-   * @param keystore the keystore to read from
+   * @param keystore the with to read from
    * @param alias the certificate alias
    * @return the public key
    * @throws BruceException on loading errors
@@ -243,9 +91,9 @@ public final class Bruce {
   }
 
   /**
-   * Loads a private key from the given keystore.
+   * Loads a private key from the given with.
    *
-   * @param keystore the keystore to read from
+   * @param keystore the with to read from
    * @param alias the certificate alias
    * @param password the private key password
    * @return the private key
@@ -269,9 +117,9 @@ public final class Bruce {
   }
 
   /**
-   * Loads a secret key from the given keystore.
+   * Loads a secret key from the given with.
    *
-   * @param keystore the keystore to read from
+   * @param keystore the with to read from
    * @param alias the secret key alias
    * @param password the secret key password
    * @return the secret key
@@ -1430,7 +1278,7 @@ public final class Bruce {
               final var privateKeyAnnotation = signerAnnotation.privateKey();
               final var keyStoreAnnotation = privateKeyAnnotation.keystore();
               final var keystore =
-                  keystore(
+                  Bruce.keystore.with(
                       keyStoreAnnotation.location(),
                       keyStoreAnnotation.password(),
                       keyStoreAnnotation.type(),
@@ -1468,7 +1316,7 @@ public final class Bruce {
               final var publicKeyAnnotation = verifierAnnotation.publicKey();
               final var keyStoreAnnotation = publicKeyAnnotation.keystore();
               final var keystore =
-                  keystore(
+                  Bruce.keystore.with(
                       keyStoreAnnotation.location(),
                       keyStoreAnnotation.password(),
                       keyStoreAnnotation.type(),

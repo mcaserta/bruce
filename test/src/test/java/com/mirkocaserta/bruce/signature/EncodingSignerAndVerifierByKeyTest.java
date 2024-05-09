@@ -4,6 +4,7 @@ import static com.mirkocaserta.bruce.Bruce.*;
 import static com.mirkocaserta.bruce.Encoding.BASE64;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.mirkocaserta.bruce.Bruce;
 import java.security.KeyStore;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -11,10 +12,10 @@ import org.junit.jupiter.api.Test;
 class EncodingSignerAndVerifierByKeyTest {
 
   private final KeyStore aliceKeystore =
-      keystore("classpath:/keystore-alice.p12", "password".toCharArray(), "PKCS12");
+      Bruce.keystore.with("classpath:/keystore-alice.p12", "password".toCharArray(), "PKCS12");
 
   private final KeyStore bobKeystore =
-      keystore("classpath:/keystore-bob.p12", "password".toCharArray(), "PKCS12");
+      Bruce.keystore.with("classpath:/keystore-bob.p12", "password".toCharArray(), "PKCS12");
 
   private final EncodingSignerByKey signer =
       signer(

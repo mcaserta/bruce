@@ -1,10 +1,10 @@
 package com.mirkocaserta.bruce.key;
 
-import static com.mirkocaserta.bruce.Bruce.keystore;
 import static com.mirkocaserta.bruce.Bruce.privateKey;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
+import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.BruceException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -16,7 +16,8 @@ class PrivateKeyTest {
   @Test
   @DisplayName("loads a private key")
   void privateKeyTest() throws KeyStoreException {
-    var keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+    var keystore =
+        Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
@@ -29,7 +30,8 @@ class PrivateKeyTest {
   @Test
   @DisplayName("loading a non existing private key should throw an error")
   void nonExistingKey() throws KeyStoreException {
-    var keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+    var keystore =
+        Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");

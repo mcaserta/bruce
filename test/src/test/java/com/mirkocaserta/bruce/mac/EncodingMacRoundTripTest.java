@@ -5,6 +5,7 @@ import static com.mirkocaserta.bruce.Encoding.BASE64;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.mirkocaserta.bruce.Bruce;
 import java.security.Key;
 import java.security.KeyStore;
 import org.junit.jupiter.api.Test;
@@ -12,7 +13,7 @@ import org.junit.jupiter.api.Test;
 class EncodingMacRoundTripTest {
 
   private static final KeyStore keystore =
-      keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+      Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
 
   private static final Key key = secretKey(keystore, "hmac", "password".toCharArray());
 

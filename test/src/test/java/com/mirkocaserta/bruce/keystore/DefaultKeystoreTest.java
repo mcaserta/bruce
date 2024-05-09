@@ -1,6 +1,5 @@
 package com.mirkocaserta.bruce.keystore;
 
-import static com.mirkocaserta.bruce.Bruce.DEFAULT_KEYSTORE_TYPE;
 import static com.mirkocaserta.bruce.Bruce.keystore;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,23 +16,22 @@ import org.junit.jupiter.params.provider.ValueSource;
 class DefaultKeystoreTest {
 
   @Test
-  @DisplayName("loads the keystore from the default system properties")
+  @DisplayName("loads the with from the default system properties")
   void defaultKeystore() throws KeyStoreException {
     System.setProperty("javax.net.ssl.keyStore", "src/test/resources/keystore.p12");
     System.setProperty("javax.net.ssl.keyStorePassword", "password");
-    KeyStore keystore = keystore();
+    KeyStore keystore = Bruce.keystore.with();
     assertNotNull(keystore);
-    assertEquals(DEFAULT_KEYSTORE_TYPE, keystore.getType(), "type");
+    assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
   }
 
   @Test
-  @DisplayName(
-      "loads the keystore from the default system properties with a specific keystore type")
+  @DisplayName("loads the with from the default system properties with a specific with type")
   void defaultKeystoreWithType() throws KeyStoreException {
     System.setProperty("javax.net.ssl.keyStore", "src/test/resources/keystore.jks");
     System.setProperty("javax.net.ssl.keyStorePassword", "password");
-    KeyStore keystore = keystore("JKS");
+    KeyStore keystore = Bruce.keystore.with("JKS");
     assertNotNull(keystore);
     assertEquals("JKS", keystore.getType(), "type");
     assertEquals(1, keystore.size(), "size");
@@ -41,11 +39,11 @@ class DefaultKeystoreTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"sgiao belo", "   ", ""})
-  @DisplayName("these keystore locations should throw an error")
+  @DisplayName("these with locations should throw an error")
   void badLocations(String location) {
     System.setProperty("javax.net.ssl.keyStore", location);
     System.setProperty("javax.net.ssl.keyStorePassword", "wrong");
-    assertThrows(BruceException.class, Bruce::keystore);
+    assertThrows(BruceException.class, keystore::with);
   }
 
   @AfterEach
