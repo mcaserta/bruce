@@ -1,4 +1,4 @@
-package com.mirkocaserta.bruce.annotations;
+package com.mirkocaserta.bruce.api.annotations;
 
 import com.mirkocaserta.bruce.Encoding;
 import java.lang.annotation.ElementType;

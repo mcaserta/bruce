@@ -1,4 +1,4 @@
-package com.mirkocaserta.bruce.annotations;
+package com.mirkocaserta.bruce.api.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,12 +7,10 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
-public @interface KeyStore {
-  String location();
+public @interface PrivateKey {
+  KeyStore keystore();
+
+  String alias();
 
   char[] password();
-
-  String type() default "";
-
-  String provider() default "";
 }

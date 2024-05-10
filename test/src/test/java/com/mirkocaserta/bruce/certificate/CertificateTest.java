@@ -1,6 +1,5 @@
 package com.mirkocaserta.bruce.certificate;
 
-import static com.mirkocaserta.bruce.Bruce.certificate;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -22,7 +21,7 @@ class CertificateTest {
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
-    Certificate certificate = certificate(keystore, "test");
+    Certificate certificate = Bruce.certificate.with(keystore, "test");
     assertNotNull(certificate);
     assertEquals("X.509", certificate.getType(), "type");
     assertNotNull(certificate.getPublicKey());
@@ -38,13 +37,13 @@ class CertificateTest {
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
-    assertThrows(BruceException.class, () -> certificate(keystore, "sgiao belo"));
+    assertThrows(BruceException.class, () -> Bruce.certificate.with(keystore, "sgiao belo"));
   }
 
   @Test
   @DisplayName("an exception in getCertificate should be wrapped in a BruceException")
   void getCertificateExceptionGetsWrapped() {
     KeyStore keystore = mock(KeyStore.class);
-    assertThrows(BruceException.class, () -> certificate(keystore, "test"));
+    assertThrows(BruceException.class, () -> Bruce.certificate.with(keystore, "test"));
   }
 }

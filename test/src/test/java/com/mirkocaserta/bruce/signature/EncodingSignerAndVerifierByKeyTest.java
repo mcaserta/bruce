@@ -21,15 +21,19 @@ class EncodingSignerAndVerifierByKeyTest {
       signer(
           Map.of(
               "alice",
-              privateKey(aliceKeystore, "alice", "password".toCharArray()),
+              Bruce.privateKey.with(aliceKeystore, "alice", "password".toCharArray()),
               "bob",
-              privateKey(bobKeystore, "bob", "password".toCharArray())),
+              Bruce.privateKey.with(bobKeystore, "bob", "password".toCharArray())),
           "SHA512withRSA",
           BASE64);
 
   private final EncodingVerifierByKey verifier =
       verifier(
-          Map.of("alice", publicKey(aliceKeystore, "alice"), "bob", publicKey(bobKeystore, "bob")),
+          Map.of(
+              "alice",
+              Bruce.publicKey.with(aliceKeystore, "alice"),
+              "bob",
+              Bruce.publicKey.with(bobKeystore, "bob")),
           "SHA512withRSA",
           BASE64);
 

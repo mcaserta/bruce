@@ -1,6 +1,5 @@
 package com.mirkocaserta.bruce.key;
 
-import static com.mirkocaserta.bruce.Bruce.publicKey;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.mirkocaserta.bruce.Bruce;
@@ -21,7 +20,7 @@ class PublicKeyTest {
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
-    PublicKey publicKey = publicKey(keystore, "test");
+    PublicKey publicKey = Bruce.publicKey.with(keystore, "test");
     assertNotNull(publicKey);
     assertEquals("RSA", publicKey.getAlgorithm(), "algorithm");
     assertEquals("X.509", publicKey.getFormat(), "format");
@@ -35,6 +34,6 @@ class PublicKeyTest {
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
-    assertThrows(BruceException.class, () -> publicKey(keystore, "sgiao belo"));
+    assertThrows(BruceException.class, () -> Bruce.publicKey.with(keystore, "sgiao belo"));
   }
 }

@@ -12,13 +12,14 @@ class EncodingSignerAndVerifierBase64Test extends EncodingSignerAndVerifierCommo
   protected Signer getSigner() {
     final KeyStore keystore =
         Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
-    return signer(privateKey(keystore, "test", "password".toCharArray()), "SHA512withRSA", BASE64);
+    return signer(
+        Bruce.privateKey.with(keystore, "test", "password".toCharArray()), "SHA512withRSA", BASE64);
   }
 
   @Override
   protected Verifier getVerifier() {
     final KeyStore keystore =
         Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
-    return verifier(publicKey(keystore, "test"), "SHA512withRSA", BASE64);
+    return verifier(Bruce.publicKey.with(keystore, "test"), "SHA512withRSA", BASE64);
   }
 }

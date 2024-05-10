@@ -1,6 +1,7 @@
 module com.mirkocaserta.bruce {
   exports com.mirkocaserta.bruce;
-  exports com.mirkocaserta.bruce.annotations;
+  exports com.mirkocaserta.bruce.api;
+  exports com.mirkocaserta.bruce.api.annotations;
   exports com.mirkocaserta.bruce.cipher;
   exports com.mirkocaserta.bruce.cipher.asymmetric;
   exports com.mirkocaserta.bruce.cipher.symmetric;

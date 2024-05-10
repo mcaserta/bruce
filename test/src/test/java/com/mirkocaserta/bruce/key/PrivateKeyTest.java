@@ -1,6 +1,5 @@
 package com.mirkocaserta.bruce.key;
 
-import static com.mirkocaserta.bruce.Bruce.privateKey;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -21,7 +20,7 @@ class PrivateKeyTest {
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
-    var privateKey = privateKey(keystore, "test", "password".toCharArray());
+    var privateKey = Bruce.privateKey.with(keystore, "test", "password".toCharArray());
     assertNotNull(privateKey);
     assertEquals("RSA", privateKey.getAlgorithm(), "algorithm");
     assertEquals("PKCS#8", privateKey.getFormat(), "format");
@@ -36,7 +35,8 @@ class PrivateKeyTest {
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
     var password = "foo".toCharArray();
-    assertThrows(BruceException.class, () -> privateKey(keystore, "sgiao belo", password));
+    assertThrows(
+        BruceException.class, () -> Bruce.privateKey.with(keystore, "sgiao belo", password));
   }
 
   @Test
@@ -44,6 +44,6 @@ class PrivateKeyTest {
   void exceptionsShouldBeWrapped() {
     var keystore = mock(KeyStore.class);
     var password = "password".toCharArray();
-    assertThrows(BruceException.class, () -> privateKey(keystore, "test", password));
+    assertThrows(BruceException.class, () -> Bruce.privateKey.with(keystore, "test", password));
   }
 }

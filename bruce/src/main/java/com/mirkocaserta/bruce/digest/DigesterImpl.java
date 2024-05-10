@@ -3,6 +3,7 @@ package com.mirkocaserta.bruce.digest;
 import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.BruceException;
 import com.mirkocaserta.bruce.Encoding;
+import com.mirkocaserta.bruce.api.Digester;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -11,7 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.function.Function;
 
-public final class DigesterImpl implements com.mirkocaserta.bruce.Digester {
+public final class DigesterImpl implements Digester {
   private static final String BLANK = "";
   private static final String INVALID_ENCODING_NULL = "Invalid encoding: null";
   private static final String INVALID_OUTPUT_TYPE_NULL = "Invalid outputType: null";

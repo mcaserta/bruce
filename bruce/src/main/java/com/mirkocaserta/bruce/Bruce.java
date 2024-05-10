@@ -1,12 +1,17 @@
 package com.mirkocaserta.bruce;
 
+import com.mirkocaserta.bruce.api.Digester;
+import com.mirkocaserta.bruce.api.KeyStore;
+import com.mirkocaserta.bruce.certificate.CertificateImpl;
 import com.mirkocaserta.bruce.cipher.Mode;
 import com.mirkocaserta.bruce.cipher.asymmetric.Cipher;
 import com.mirkocaserta.bruce.cipher.symmetric.CipherByKey;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipher;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherByKey;
 import com.mirkocaserta.bruce.digest.DigesterImpl;
-import com.mirkocaserta.bruce.keystore.KeystoreImpl;
+import com.mirkocaserta.bruce.keys.PrivateKeyImpl;
+import com.mirkocaserta.bruce.keys.PublicKeyImpl;
+import com.mirkocaserta.bruce.keystore.KeyStoreImpl;
 import com.mirkocaserta.bruce.mac.EncodingMac;
 import com.mirkocaserta.bruce.mac.Mac;
 import com.mirkocaserta.bruce.signature.*;
@@ -16,7 +21,6 @@ import com.mirkocaserta.bruce.util.Pair;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.security.*;
-import java.security.cert.Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -37,7 +41,10 @@ import javax.crypto.spec.SecretKeySpec;
 public final class Bruce {
 
   public static final Digester digester = new DigesterImpl();
-  public static final Keystore keystore = new KeystoreImpl();
+  public static final KeyStore keystore = new KeyStoreImpl();
+  public static final com.mirkocaserta.bruce.api.Certificate certificate = new CertificateImpl();
+  public static final com.mirkocaserta.bruce.api.PublicKey publicKey = new PublicKeyImpl();
+  public static final com.mirkocaserta.bruce.api.PrivateKey privateKey = new PrivateKeyImpl();
 
   private static final String BLANK = "";
   private static final String INVALID_ENCODING_NULL = "Invalid encoding: null";
@@ -57,66 +64,6 @@ public final class Bruce {
   }
 
   /**
-   * Loads a certificate from the given with.
-   *
-   * @param keystore the with to read from
-   * @param alias the certificate alias
-   * @return the certificate
-   * @throws BruceException on loading errors
-   */
-  public static Certificate certificate(final KeyStore keystore, final String alias) {
-    try {
-      final var certificate = keystore.getCertificate(alias);
-
-      if (certificate == null) {
-        throw new BruceException(String.format("certificate not found for alias: %s", alias));
-      }
-
-      return certificate;
-    } catch (KeyStoreException e) {
-      throw new BruceException(String.format("error loading certificate with alias: %s", alias), e);
-    }
-  }
-
-  /**
-   * Loads a public key from the given with.
-   *
-   * @param keystore the with to read from
-   * @param alias the certificate alias
-   * @return the public key
-   * @throws BruceException on loading errors
-   */
-  public static PublicKey publicKey(final KeyStore keystore, final String alias) {
-    return certificate(keystore, alias).getPublicKey();
-  }
-
-  /**
-   * Loads a private key from the given with.
-   *
-   * @param keystore the with to read from
-   * @param alias the certificate alias
-   * @param password the private key password
-   * @return the private key
-   * @throws BruceException on loading errors
-   */
-  public static PrivateKey privateKey(
-      final KeyStore keystore, final String alias, final char[] password) {
-    try {
-      final var privateKeyEntry =
-          (KeyStore.PrivateKeyEntry)
-              keystore.getEntry(alias, new KeyStore.PasswordProtection(password));
-
-      if (privateKeyEntry == null) {
-        throw new BruceException(String.format("no such private key with alias: %s", alias));
-      }
-
-      return privateKeyEntry.getPrivateKey();
-    } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException e) {
-      throw new BruceException(String.format("error loading private key with alias: %s", alias), e);
-    }
-  }
-
-  /**
    * Loads a secret key from the given with.
    *
    * @param keystore the with to read from
@@ -125,7 +72,8 @@ public final class Bruce {
    * @return the secret key
    * @throws BruceException on loading errors
    */
-  public static Key secretKey(final KeyStore keystore, final String alias, final char[] password) {
+  public static Key secretKey(
+      final java.security.KeyStore keystore, final String alias, final char[] password) {
     try {
       final var key = keystore.getKey(alias, password);
 
@@ -1265,12 +1213,14 @@ public final class Bruce {
 
   private static void instrumentSigners(final List<Field> fields, final Object object) {
     fields.stream()
-        .filter(field -> field.isAnnotationPresent(com.mirkocaserta.bruce.annotations.Signer.class))
+        .filter(
+            field -> field.isAnnotationPresent(com.mirkocaserta.bruce.api.annotations.Signer.class))
         .map(
             field ->
                 Pair.of(
                     field,
-                    field.getDeclaredAnnotation(com.mirkocaserta.bruce.annotations.Signer.class)))
+                    field.getDeclaredAnnotation(
+                        com.mirkocaserta.bruce.api.annotations.Signer.class)))
         .forEach(
             pair -> {
               pair.key().setAccessible(true);
@@ -1284,7 +1234,7 @@ public final class Bruce {
                       keyStoreAnnotation.type(),
                       keyStoreAnnotation.provider());
               final var privateKey =
-                  privateKey(
+                  Bruce.privateKey.with(
                       keystore, privateKeyAnnotation.alias(), privateKeyAnnotation.password());
 
               if (Signer.class.equals(pair.key().getType())) {
@@ -1303,12 +1253,14 @@ public final class Bruce {
   private static void instrumentVerifiers(final List<Field> fields, final Object object) {
     fields.stream()
         .filter(
-            field -> field.isAnnotationPresent(com.mirkocaserta.bruce.annotations.Verifier.class))
+            field ->
+                field.isAnnotationPresent(com.mirkocaserta.bruce.api.annotations.Verifier.class))
         .map(
             field ->
                 Pair.of(
                     field,
-                    field.getDeclaredAnnotation(com.mirkocaserta.bruce.annotations.Verifier.class)))
+                    field.getDeclaredAnnotation(
+                        com.mirkocaserta.bruce.api.annotations.Verifier.class)))
         .forEach(
             pair -> {
               pair.key().setAccessible(true);
@@ -1321,7 +1273,7 @@ public final class Bruce {
                       keyStoreAnnotation.password(),
                       keyStoreAnnotation.type(),
                       keyStoreAnnotation.provider());
-              final var publicKey = publicKey(keystore, publicKeyAnnotation.alias());
+              final var publicKey = Bruce.publicKey.with(keystore, publicKeyAnnotation.alias());
 
               if (Verifier.class.equals(pair.key().getType())) {
                 final var verifier =
@@ -1339,12 +1291,14 @@ public final class Bruce {
   private static void instrumentDigesters(final List<Field> fields, final Object object) {
     fields.stream()
         .filter(
-            field -> field.isAnnotationPresent(com.mirkocaserta.bruce.annotations.Digester.class))
+            field ->
+                field.isAnnotationPresent(com.mirkocaserta.bruce.api.annotations.Digester.class))
         .map(
             field ->
                 Pair.of(
                     field,
-                    field.getDeclaredAnnotation(com.mirkocaserta.bruce.annotations.Digester.class)))
+                    field.getDeclaredAnnotation(
+                        com.mirkocaserta.bruce.api.annotations.Digester.class)))
         .forEach(
             pair -> {
               pair.key().setAccessible(true);

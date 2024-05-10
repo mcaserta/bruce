@@ -2,6 +2,7 @@ package com.mirkocaserta.bruce.annotations;
 
 import static com.mirkocaserta.bruce.Bruce.instrument;
 
+import com.mirkocaserta.bruce.api.annotations.*;
 import com.mirkocaserta.bruce.signature.SignerAndVerifierCommonTest;
 import org.junit.jupiter.api.BeforeAll;
 

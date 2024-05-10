@@ -17,13 +17,16 @@ class SignerAndVerifierWithCustomProviderTest extends SignerAndVerifierCommonTes
   protected Signer getSigner() {
     final KeyStore keystore =
         Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
-    return signer(privateKey(keystore, "test", "password".toCharArray()), "RIPEMD256withRSA", "BC");
+    return signer(
+        Bruce.privateKey.with(keystore, "test", "password".toCharArray()),
+        "RIPEMD256withRSA",
+        "BC");
   }
 
   @Override
   protected Verifier getVerifier() {
     final KeyStore keystore =
         Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
-    return verifier(publicKey(keystore, "test"), "RIPEMD256withRSA", "BC");
+    return verifier(Bruce.publicKey.with(keystore, "test"), "RIPEMD256withRSA", "BC");
   }
 }

@@ -18,10 +18,12 @@ class CipherRoundTripTest {
       Bruce.keystore.with("classpath:/keystore-alice.p12", "password".toCharArray(), "PKCS12");
   private final KeyStore bobKeystore =
       Bruce.keystore.with("classpath:/keystore-bob.p12", "password".toCharArray(), "PKCS12");
-  private final Key alicePrivateKey = privateKey(aliceKeystore, "alice", "password".toCharArray());
-  private final Key bobPrivateKey = privateKey(bobKeystore, "bob", "password".toCharArray());
-  private final Key alicePublicKey = publicKey(aliceKeystore, "alice");
-  private final Key bobPublicKey = publicKey(bobKeystore, "bob");
+  private final Key alicePrivateKey =
+      Bruce.privateKey.with(aliceKeystore, "alice", "password".toCharArray());
+  private final Key bobPrivateKey =
+      Bruce.privateKey.with(bobKeystore, "bob", "password".toCharArray());
+  private final Key alicePublicKey = Bruce.publicKey.with(aliceKeystore, "alice");
+  private final Key bobPublicKey = Bruce.publicKey.with(bobKeystore, "bob");
 
   @Test
   void roundTrip() {

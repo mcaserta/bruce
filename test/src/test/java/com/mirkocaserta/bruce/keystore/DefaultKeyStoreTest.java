@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class DefaultKeystoreTest {
+class DefaultKeyStoreTest {
 
   @Test
   @DisplayName("loads the with from the default system properties")

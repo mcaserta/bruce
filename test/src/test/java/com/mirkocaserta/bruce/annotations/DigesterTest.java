@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.mirkocaserta.bruce.Encoding;
+import com.mirkocaserta.bruce.api.annotations.Digester;
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
 import java.util.function.Function;

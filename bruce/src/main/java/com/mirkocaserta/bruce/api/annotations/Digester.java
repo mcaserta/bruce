@@ -1,4 +1,4 @@
-package com.mirkocaserta.bruce.annotations;
+package com.mirkocaserta.bruce.api.annotations;
 
 import com.mirkocaserta.bruce.Encoding;
 import java.lang.annotation.ElementType;
@@ -8,14 +8,14 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Verifier {
-  PublicKey publicKey();
-
+public @interface Digester {
   String algorithm();
 
   String provider() default "";
 
-  String charset() default "UTF-8";
-
   Encoding encoding() default Encoding.BASE64;
+
+  String charsetName() default "UTF-8";
+
+  Class<?> outputType() default String.class;
 }

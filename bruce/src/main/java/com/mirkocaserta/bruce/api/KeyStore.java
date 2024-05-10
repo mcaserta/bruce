@@ -1,8 +1,8 @@
-package com.mirkocaserta.bruce;
+package com.mirkocaserta.bruce.api;
 
-import java.security.KeyStore;
+import com.mirkocaserta.bruce.BruceException;
 
-public interface Keystore {
+public interface KeyStore {
   /**
    * Returns the default keystore using configuration from the following system properties:
    *
@@ -27,7 +27,7 @@ public interface Keystore {
    * @return the default keystore
    * @throws BruceException on loading errors
    */
-  KeyStore with();
+  java.security.KeyStore with();
 
   /**
    * Returns the default keystore using configuration from the following system properties:
@@ -52,7 +52,7 @@ public interface Keystore {
    * @return the default keystore
    * @throws BruceException on loading errors
    */
-  KeyStore with(String type);
+  java.security.KeyStore with(String type);
 
   /**
    * Returns a key store. The default keystore type is <code>PKCS12</code>.
@@ -69,7 +69,7 @@ public interface Keystore {
    * @return a key store
    * @throws BruceException on loading errors
    */
-  KeyStore with(String location, char[] password);
+  java.security.KeyStore with(String location, char[] password);
 
   /**
    * Returns a key store.
@@ -87,7 +87,7 @@ public interface Keystore {
    * @return a key store
    * @throws BruceException on loading errors
    */
-  KeyStore with(String location, char[] password, String type);
+  java.security.KeyStore with(String location, char[] password, String type);
 
   /**
    * Returns a key store.
@@ -106,5 +106,5 @@ public interface Keystore {
    * @return a key store
    * @throws BruceException on loading errors
    */
-  KeyStore with(String location, char[] password, String type, String provider);
+  java.security.KeyStore with(String location, char[] password, String type, String provider);
 }

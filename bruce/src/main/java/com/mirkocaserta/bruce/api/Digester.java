@@ -1,5 +1,7 @@
-package com.mirkocaserta.bruce;
+package com.mirkocaserta.bruce.api;
 
+import com.mirkocaserta.bruce.BruceException;
+import com.mirkocaserta.bruce.Encoding;
 import java.nio.charset.Charset;
 import java.util.function.Function;
 
