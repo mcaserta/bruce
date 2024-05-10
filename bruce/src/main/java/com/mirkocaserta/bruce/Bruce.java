@@ -2,6 +2,7 @@ package com.mirkocaserta.bruce;
 
 import com.mirkocaserta.bruce.api.Digester;
 import com.mirkocaserta.bruce.api.KeyStore;
+import com.mirkocaserta.bruce.api.SecretKey;
 import com.mirkocaserta.bruce.certificate.CertificateImpl;
 import com.mirkocaserta.bruce.cipher.Mode;
 import com.mirkocaserta.bruce.cipher.asymmetric.Cipher;
@@ -9,8 +10,10 @@ import com.mirkocaserta.bruce.cipher.symmetric.CipherByKey;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipher;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherByKey;
 import com.mirkocaserta.bruce.digest.DigesterImpl;
+import com.mirkocaserta.bruce.keys.KeyPairImpl;
 import com.mirkocaserta.bruce.keys.PrivateKeyImpl;
 import com.mirkocaserta.bruce.keys.PublicKeyImpl;
+import com.mirkocaserta.bruce.keys.SecretKeyImpl;
 import com.mirkocaserta.bruce.keystore.KeyStoreImpl;
 import com.mirkocaserta.bruce.mac.EncodingMac;
 import com.mirkocaserta.bruce.mac.Mac;
@@ -45,6 +48,8 @@ public final class Bruce {
   public static final com.mirkocaserta.bruce.api.Certificate certificate = new CertificateImpl();
   public static final com.mirkocaserta.bruce.api.PublicKey publicKey = new PublicKeyImpl();
   public static final com.mirkocaserta.bruce.api.PrivateKey privateKey = new PrivateKeyImpl();
+  public static final SecretKey secretKey = new SecretKeyImpl();
+  public static final com.mirkocaserta.bruce.api.KeyPair keyPair = new KeyPairImpl();
 
   private static final String BLANK = "";
   private static final String INVALID_ENCODING_NULL = "Invalid encoding: null";
@@ -61,98 +66,6 @@ public final class Bruce {
 
   private Bruce() {
     // utility class, users can't make new instances
-  }
-
-  /**
-   * Loads a secret key from the given with.
-   *
-   * @param keystore the with to read from
-   * @param alias the secret key alias
-   * @param password the secret key password
-   * @return the secret key
-   * @throws BruceException on loading errors
-   */
-  public static Key secretKey(
-      final java.security.KeyStore keystore, final String alias, final char[] password) {
-    try {
-      final var key = keystore.getKey(alias, password);
-
-      if (key == null) {
-        throw new BruceException(String.format("no such secret key with alias: %s", alias));
-      }
-
-      return key;
-    } catch (KeyStoreException | UnrecoverableKeyException | NoSuchAlgorithmException e) {
-      throw new BruceException(String.format("error loading secret key with alias: %s", alias), e);
-    }
-  }
-
-  /**
-   * Generates a key pair.
-   *
-   * @param algorithm the key algorithm
-   * @param keySize the key size
-   * @return the key pair
-   */
-  public static KeyPair keyPair(final String algorithm, final int keySize) {
-    return keyPair(algorithm, null, keySize, null);
-  }
-
-  /**
-   * Generates a key pair.
-   *
-   * @param algorithm the key algorithm
-   * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
-   * @param keySize the key size
-   * @return the key pair
-   */
-  public static KeyPair keyPair(final String algorithm, final String provider, final int keySize) {
-    return keyPair(algorithm, provider, keySize, null);
-  }
-
-  /**
-   * Generates a key pair with the specified random number generator.
-   *
-   * @param algorithm the key algorithm
-   * @param keySize the key size
-   * @param random the random number generator
-   * @return the key pair
-   */
-  public static KeyPair keyPair(
-      final String algorithm, final int keySize, final SecureRandom random) {
-    return keyPair(algorithm, null, keySize, random);
-  }
-
-  /**
-   * Generates a key pair with the specified provider and random number generator.
-   *
-   * @param algorithm the key algorithm
-   * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
-   * @param keySize the key size
-   * @param random the random number generator
-   * @return the key pair
-   */
-  public static KeyPair keyPair(
-      final String algorithm, final String provider, final int keySize, final SecureRandom random) {
-    try {
-      final var keyGen =
-          provider == null || provider.isBlank()
-              ? KeyPairGenerator.getInstance(algorithm)
-              : KeyPairGenerator.getInstance(algorithm, provider);
-
-      if (random == null) {
-        keyGen.initialize(keySize);
-      } else {
-        keyGen.initialize(keySize, random);
-      }
-      return keyGen.generateKeyPair();
-    } catch (NoSuchAlgorithmException e) {
-      throw new BruceException(String.format("no such algorithm: %s", algorithm), e);
-    } catch (InvalidParameterException e) {
-      throw new BruceException(String.format("invalid key size: %d", keySize), e);
-    } catch (NoSuchProviderException e) {
-      throw new BruceException(String.format("no such provider: %s", provider), e);
-    }
   }
 
   /**
@@ -218,115 +131,6 @@ public final class Bruce {
       throw new BruceException(
           String.format("error getting signer: algorithm=%s, provider=%s", algorithm, provider), e);
     }
-  }
-
-  /**
-   * Returns a signer where the private key can be chosen at runtime. The signing keys must be
-   * provided in a map where the map key is an alias to the signing key and the value is the
-   * corresponding signing key.
-   *
-   * @param privateKeyMap the signing key map
-   * @param algorithm the signing algorithm
-   * @return the signer
-   * @throws BruceException on no such algorithm or provider exceptions
-   */
-  public static SignerByKey signer(
-      final Map<String, PrivateKey> privateKeyMap, final String algorithm) {
-    return signer(privateKeyMap, algorithm, BLANK);
-  }
-
-  /**
-   * Returns a signer where the private key can be chosen at runtime. The signing keys must be
-   * provided in a map where the map key is an alias to the signing key and the value is the
-   * corresponding signing key.
-   *
-   * @param privateKeyMap the signing key map
-   * @param algorithm the signing algorithm
-   * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
-   * @return the signer
-   * @throws BruceException on no such algorithm or provider exceptions
-   */
-  public static SignerByKey signer(
-      final Map<String, PrivateKey> privateKeyMap, final String algorithm, final String provider) {
-    return (privateKeyId, message) -> {
-      final var privateKey = privateKeyMap.get(privateKeyId);
-
-      if (privateKey == null) {
-        throw new BruceException(String.format("private key not found for id: %s", privateKeyId));
-      }
-
-      return signer(privateKey, algorithm, provider).sign(message);
-    };
-  }
-
-  /**
-   * Returns an encoding signer where the private key can be chosen at runtime. The signing keys
-   * must be provided in a map where the map key is an alias to the signing key and the value is the
-   * corresponding signing key.
-   *
-   * <p>The implementation assumes your input messages use the <code>UTF-8</code> charset.
-   *
-   * @param privateKeyMap the signing key map
-   * @param algorithm the signing algorithm
-   * @param encoding the signature encoding
-   * @return the signer
-   * @throws BruceException on no such algorithm or provider exceptions
-   */
-  public static EncodingSignerByKey signer(
-      final Map<String, PrivateKey> privateKeyMap,
-      final String algorithm,
-      final Encoding encoding) {
-    return signer(privateKeyMap, algorithm, null, Charset.defaultCharset(), encoding);
-  }
-
-  /**
-   * Returns an encoding signer where the private key can be chosen at runtime. The signing keys
-   * must be provided in a map where the map key is an alias to the signing key and the value is the
-   * corresponding signing key.
-   *
-   * @param privateKeyMap the signing key map
-   * @param algorithm the signing algorithm
-   * @param charset the charset used in messages
-   * @param encoding the signature encoding
-   * @return the signer
-   * @throws BruceException on no such algorithm or provider exceptions
-   */
-  public static EncodingSignerByKey signer(
-      final Map<String, PrivateKey> privateKeyMap,
-      final String algorithm,
-      final Charset charset,
-      final Encoding encoding) {
-    return signer(privateKeyMap, algorithm, null, charset, encoding);
-  }
-
-  /**
-   * Returns an encoding signer where the private key can be chosen at runtime. The signing keys
-   * must be provided in a map where the map key is an alias to the signing key and the value is the
-   * corresponding signing key.
-   *
-   * @param privateKeyMap the signing key map
-   * @param algorithm the signing algorithm
-   * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
-   * @param charset the charset used in messages
-   * @param encoding the signature encoding
-   * @return the signer
-   * @throws BruceException on no such algorithm or provider exceptions
-   */
-  public static EncodingSignerByKey signer(
-      final Map<String, PrivateKey> privateKeyMap,
-      final String algorithm,
-      final String provider,
-      final Charset charset,
-      final Encoding encoding) {
-    return (privateKeyId, message) -> {
-      final var privateKey = privateKeyMap.get(privateKeyId);
-
-      if (privateKey == null) {
-        throw new BruceException(String.format("private key not found for id: %s", privateKeyId));
-      }
-
-      return signer(privateKey, algorithm, provider, charset, encoding).sign(message);
-    };
   }
 
   /**

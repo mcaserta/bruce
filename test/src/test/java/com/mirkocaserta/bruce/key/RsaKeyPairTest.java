@@ -5,6 +5,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.BruceException;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +15,7 @@ class RsaKeyPairTest {
 
   @Test
   void generateAndUse() {
-    var keyPair = keyPair("RSA", 4096);
+    var keyPair = Bruce.keyPair.with("RSA", 4096);
     var signer = signer(keyPair.getPrivate(), "SHA512withRSA");
     var verifier = verifier(keyPair.getPublic(), "SHA512withRSA");
     var signature = signer.sign(MESSAGE);
@@ -23,11 +24,11 @@ class RsaKeyPairTest {
 
   @Test
   void noSuchAlgorithm() {
-    assertThrows(BruceException.class, () -> keyPair("XXX", 2048));
+    assertThrows(BruceException.class, () -> Bruce.keyPair.with("XXX", 2048));
   }
 
   @Test
   void invalidKeySize() {
-    assertThrows(BruceException.class, () -> keyPair("RSA", 23));
+    assertThrows(BruceException.class, () -> Bruce.keyPair.with("RSA", 23));
   }
 }

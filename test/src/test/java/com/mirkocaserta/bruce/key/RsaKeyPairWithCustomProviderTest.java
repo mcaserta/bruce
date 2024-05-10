@@ -5,6 +5,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.BruceException;
 import java.security.Security;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -12,15 +13,15 @@ import org.junit.jupiter.api.Test;
 
 class RsaKeyPairWithCustomProviderTest {
 
+  private static final byte[] MESSAGE = "Hello".getBytes(UTF_8);
+
   static {
     Security.addProvider(new BouncyCastleProvider());
   }
 
-  private static final byte[] MESSAGE = "Hello".getBytes(UTF_8);
-
   @Test
   void generateAndUse() {
-    var keyPair = keyPair("RSA", "BC", 4096);
+    var keyPair = Bruce.keyPair.with("RSA", "BC", 4096);
     var signer = signer(keyPair.getPrivate(), "RIPEMD160withRSA/ISO9796-2");
     var verifier = verifier(keyPair.getPublic(), "RIPEMD160withRSA/ISO9796-2");
     var signature = signer.sign(MESSAGE);
@@ -29,6 +30,6 @@ class RsaKeyPairWithCustomProviderTest {
 
   @Test
   void noSuchProvider() {
-    assertThrows(BruceException.class, () -> keyPair("RSA", "sgiao belo", 2048));
+    assertThrows(BruceException.class, () -> Bruce.keyPair.with("RSA", "sgiao belo", 2048));
   }
 }

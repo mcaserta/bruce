@@ -14,7 +14,7 @@ class MacRoundTripTest {
   private static final KeyStore keystore =
       Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
 
-  private static final Key key = secretKey(keystore, "hmac", "password".toCharArray());
+  private static final Key key = Bruce.secretKey.with(keystore, "hmac", "password".toCharArray());
 
   @Test
   void roundTrip() {

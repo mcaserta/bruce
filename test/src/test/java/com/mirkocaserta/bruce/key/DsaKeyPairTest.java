@@ -4,6 +4,7 @@ import static com.mirkocaserta.bruce.Bruce.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.mirkocaserta.bruce.Bruce;
 import org.junit.jupiter.api.Test;
 
 class DsaKeyPairTest {
@@ -12,7 +13,7 @@ class DsaKeyPairTest {
 
   @Test
   void generateAndUse() {
-    var keyPair = keyPair("DSA", 2048);
+    var keyPair = Bruce.keyPair.with("DSA", 2048);
     var signer = signer(keyPair.getPrivate(), "SHA256withDSA");
     var verifier = verifier(keyPair.getPublic(), "SHA256withDSA");
     var signature = signer.sign(MESSAGE);

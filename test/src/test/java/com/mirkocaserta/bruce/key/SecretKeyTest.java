@@ -1,6 +1,5 @@
 package com.mirkocaserta.bruce.key;
 
-import static com.mirkocaserta.bruce.Bruce.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -22,7 +21,7 @@ class SecretKeyTest {
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
-    Key key = secretKey(keystore, "hmac", "password".toCharArray());
+    Key key = Bruce.secretKey.with(keystore, "hmac", "password".toCharArray());
     assertNotNull(key);
     assertTrue(
         "HmacSHA256".equals(key.getAlgorithm()) || "1.2.840.113549.2.9".equals(key.getAlgorithm()),
@@ -39,7 +38,8 @@ class SecretKeyTest {
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
     var password = "foo".toCharArray();
-    assertThrows(BruceException.class, () -> secretKey(keystore, "sgiao belo", password));
+    assertThrows(
+        BruceException.class, () -> Bruce.secretKey.with(keystore, "sgiao belo", password));
   }
 
   @Test
@@ -47,6 +47,6 @@ class SecretKeyTest {
   void exceptionsShouldBeWrapped() {
     KeyStore keystore = mock(KeyStore.class);
     var password = "password".toCharArray();
-    assertThrows(BruceException.class, () -> secretKey(keystore, "hmac", password));
+    assertThrows(BruceException.class, () -> Bruce.secretKey.with(keystore, "hmac", password));
   }
 }
