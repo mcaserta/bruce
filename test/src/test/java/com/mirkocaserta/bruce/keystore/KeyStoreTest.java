@@ -22,7 +22,8 @@ class KeyStoreTest {
         "src/test/resources/keystore.p12"
       })
   void classpathKeystore(String location) throws KeyStoreException {
-    final var keystore = Bruce.keystore.with(location(location), password("password".toCharArray()));
+    final var keystore =
+        Bruce.keystore.with(location(location), password("password".toCharArray()));
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
@@ -81,7 +82,9 @@ class KeyStoreTest {
     final var password = "password".toCharArray();
     assertThrows(
         BruceException.class,
-        () -> Bruce.keystore.with(location("classpath:keystore.jks"), password(password), type("foo")));
+        () ->
+            Bruce.keystore.with(
+                location("classpath:keystore.jks"), password(password), type("foo")));
   }
 
   @Test
@@ -92,6 +95,9 @@ class KeyStoreTest {
         BruceException.class,
         () ->
             Bruce.keystore.with(
-                location("classpath:keystore.jks"), password(password), type("JKS"), provider("foo")));
+                location("classpath:keystore.jks"),
+                password(password),
+                type("JKS"),
+                provider("foo")));
   }
 }
