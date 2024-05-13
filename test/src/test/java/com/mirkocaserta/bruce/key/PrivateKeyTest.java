@@ -1,5 +1,7 @@
 package com.mirkocaserta.bruce.key;
 
+import static com.mirkocaserta.bruce.api.KeyStoreParam.location;
+import static com.mirkocaserta.bruce.api.KeyStoreParam.password;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -15,12 +17,13 @@ class PrivateKeyTest {
   @Test
   @DisplayName("loads a private key")
   void privateKeyTest() throws KeyStoreException {
-    var keystore =
-        Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+    final var keystore =
+        Bruce.keystore.with(
+            location("classpath:/keystore.p12"), password("password".toCharArray()));
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
-    var privateKey = Bruce.privateKey.with(keystore, "test", "password".toCharArray());
+    final var privateKey = Bruce.privateKey.with(keystore, "test", "password".toCharArray());
     assertNotNull(privateKey);
     assertEquals("RSA", privateKey.getAlgorithm(), "algorithm");
     assertEquals("PKCS#8", privateKey.getFormat(), "format");
@@ -29,12 +32,13 @@ class PrivateKeyTest {
   @Test
   @DisplayName("loading a non existing private key should throw an error")
   void nonExistingKey() throws KeyStoreException {
-    var keystore =
-        Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+    final var keystore =
+        Bruce.keystore.with(
+            location("classpath:/keystore.p12"), password("password".toCharArray()));
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
-    var password = "foo".toCharArray();
+    final var password = "foo".toCharArray();
     assertThrows(
         BruceException.class, () -> Bruce.privateKey.with(keystore, "sgiao belo", password));
   }

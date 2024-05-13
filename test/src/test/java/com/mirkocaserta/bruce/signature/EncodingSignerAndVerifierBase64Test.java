@@ -2,24 +2,30 @@ package com.mirkocaserta.bruce.signature;
 
 import static com.mirkocaserta.bruce.Bruce.*;
 import static com.mirkocaserta.bruce.Encoding.BASE64;
+import static com.mirkocaserta.bruce.api.KeyStoreParam.*;
 
 import com.mirkocaserta.bruce.Bruce;
-import java.security.KeyStore;
 
 class EncodingSignerAndVerifierBase64Test extends EncodingSignerAndVerifierCommonTest {
 
   @Override
   protected Signer getSigner() {
-    final KeyStore keystore =
-        Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+    final var keystore =
+        Bruce.keystore.with(
+            location("classpath:/keystore.p12"),
+            password("password".toCharArray()),
+            type("PKCS12"));
     return signer(
         Bruce.privateKey.with(keystore, "test", "password".toCharArray()), "SHA512withRSA", BASE64);
   }
 
   @Override
   protected Verifier getVerifier() {
-    final KeyStore keystore =
-        Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+    final var keystore =
+        Bruce.keystore.with(
+            location("classpath:/keystore.p12"),
+            password("password".toCharArray()),
+            type("PKCS12"));
     return verifier(Bruce.publicKey.with(keystore, "test"), "SHA512withRSA", BASE64);
   }
 }

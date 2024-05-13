@@ -1,11 +1,11 @@
 package com.mirkocaserta.bruce.key;
 
+import static com.mirkocaserta.bruce.api.KeyStoreParam.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.BruceException;
-import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import org.junit.jupiter.api.DisplayName;
@@ -16,12 +16,15 @@ class SecretKeyTest {
   @Test
   @DisplayName("loads a secret key")
   void secretKeyTest() throws KeyStoreException {
-    KeyStore keystore =
-        Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+    final var keystore =
+        Bruce.keystore.with(
+            location("classpath:/keystore.p12"),
+            password("password".toCharArray()),
+            type("PKCS12"));
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
-    Key key = Bruce.secretKey.with(keystore, "hmac", "password".toCharArray());
+    final var key = Bruce.secretKey.with(keystore, "hmac", "password".toCharArray());
     assertNotNull(key);
     assertTrue(
         "HmacSHA256".equals(key.getAlgorithm()) || "1.2.840.113549.2.9".equals(key.getAlgorithm()),
@@ -32,8 +35,9 @@ class SecretKeyTest {
   @Test
   @DisplayName("loading a non existing secret key should throw an error")
   void nonExistingKey() throws KeyStoreException {
-    KeyStore keystore =
-        Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+    final var keystore =
+        Bruce.keystore.with(
+            location("classpath:/keystore.p12"), password("password".toCharArray()));
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");

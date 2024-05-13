@@ -1,5 +1,6 @@
 package com.mirkocaserta.bruce.keystore;
 
+import static com.mirkocaserta.bruce.api.KeyStoreParam.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.mirkocaserta.bruce.Bruce;
@@ -22,7 +23,7 @@ class KeyStoreTest {
         "src/test/resources/keystore.p12"
       })
   void classpathKeystore(String location) throws KeyStoreException {
-    KeyStore keystore = Bruce.keystore.with(location, "password".toCharArray());
+    KeyStore keystore = Bruce.keystore.with(location(location), password("password".toCharArray()));
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
@@ -32,7 +33,10 @@ class KeyStoreTest {
   @DisplayName("loads a with from the classpath with the default provider")
   void classpathKeystoreWithDefaultProvider() throws KeyStoreException {
     KeyStore keystore =
-        Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+        Bruce.keystore.with(
+            location("classpath:/keystore.p12"),
+            password("password".toCharArray()),
+            type("PKCS12"));
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
@@ -41,7 +45,9 @@ class KeyStoreTest {
   @Test
   @DisplayName("loads a with from the classpath with the default provider and type")
   void classpathKeystoreWithDefaultProviderAndType() throws KeyStoreException {
-    KeyStore keystore = Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray());
+    KeyStore keystore =
+        Bruce.keystore.with(
+            location("classpath:/keystore.p12"), password("password".toCharArray()));
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
@@ -52,10 +58,11 @@ class KeyStoreTest {
   void httpsKeystore() throws KeyStoreException {
     KeyStore keystore =
         Bruce.keystore.with(
-            "https://github.com/mcaserta/spring-crypto-utils/raw/1.4/src/test/resources/keystore.jks",
-            "password".toCharArray(),
-            "JKS",
-            "SUN");
+            location(
+                "https://github.com/mcaserta/spring-crypto-utils/raw/1.4/src/test/resources/keystore.jks"),
+            password("password".toCharArray()),
+            type("JKS"),
+            provider("SUN"));
     assertNotNull(keystore);
     assertEquals("JKS", keystore.getType(), "type");
     assertEquals(1, keystore.size(), "size");
@@ -65,7 +72,8 @@ class KeyStoreTest {
   @DisplayName("loading a non existent with should throw an exception")
   void nonExistent() {
     var password = "bar".toCharArray();
-    assertThrows(BruceException.class, () -> Bruce.keystore.with("foo", password));
+    assertThrows(
+        BruceException.class, () -> Bruce.keystore.with(location("foo"), password(password)));
   }
 
   @Test
@@ -73,7 +81,8 @@ class KeyStoreTest {
   void noSuchType() {
     var password = "password".toCharArray();
     assertThrows(
-        BruceException.class, () -> Bruce.keystore.with("classpath:with.jks", password, "foo"));
+        BruceException.class,
+        () -> Bruce.keystore.with(location("classpath:with.jks"), password(password), type("foo")));
   }
 
   @Test
@@ -82,6 +91,8 @@ class KeyStoreTest {
     var password = "password".toCharArray();
     assertThrows(
         BruceException.class,
-        () -> Bruce.keystore.with("classpath:with.jks", password, "JKS", "foo"));
+        () ->
+            Bruce.keystore.with(
+                location("classpath:with.jks"), password(password), type("JKS"), provider("foo")));
   }
 }

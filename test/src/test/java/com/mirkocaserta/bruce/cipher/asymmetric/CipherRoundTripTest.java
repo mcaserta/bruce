@@ -1,6 +1,8 @@
 package com.mirkocaserta.bruce.cipher.asymmetric;
 
 import static com.mirkocaserta.bruce.Bruce.*;
+import static com.mirkocaserta.bruce.api.KeyStoreParam.*;
+import static com.mirkocaserta.bruce.api.KeyStoreParam.type;
 import static com.mirkocaserta.bruce.cipher.Mode.DECRYPT;
 import static com.mirkocaserta.bruce.cipher.Mode.ENCRYPT;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -15,9 +17,15 @@ import org.junit.jupiter.api.Test;
 class CipherRoundTripTest {
 
   private final KeyStore aliceKeystore =
-      Bruce.keystore.with("classpath:/keystore-alice.p12", "password".toCharArray(), "PKCS12");
+      Bruce.keystore.with(
+          location("classpath:/keystore-alice.p12"),
+          password("password".toCharArray()),
+          type("PKCS12"));
   private final KeyStore bobKeystore =
-      Bruce.keystore.with("classpath:/keystore-bob.p12", "password".toCharArray(), "PKCS12");
+      Bruce.keystore.with(
+          location("classpath:/keystore-bob.p12"),
+          password("password".toCharArray()),
+          type("PKCS12"));
   private final Key alicePrivateKey =
       Bruce.privateKey.with(aliceKeystore, "alice", "password".toCharArray());
   private final Key bobPrivateKey =

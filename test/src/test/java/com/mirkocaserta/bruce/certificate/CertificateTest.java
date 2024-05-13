@@ -1,5 +1,6 @@
 package com.mirkocaserta.bruce.certificate;
 
+import static com.mirkocaserta.bruce.api.KeyStoreParam.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -17,7 +18,10 @@ class CertificateTest {
   @DisplayName("loads a certificate")
   void certificateLoad() throws KeyStoreException {
     KeyStore keystore =
-        Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+        Bruce.keystore.with(
+            location("classpath:/keystore.p12"),
+            password("password".toCharArray()),
+            type("PKCS12"));
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
@@ -33,7 +37,10 @@ class CertificateTest {
   @DisplayName("loading a non existing certificate should throw an error")
   void nonExistingKey() throws KeyStoreException {
     KeyStore keystore =
-        Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+        Bruce.keystore.with(
+            location("classpath:/keystore.p12"),
+            password("password".toCharArray()),
+            type("PKCS12"));
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");

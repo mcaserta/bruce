@@ -1,6 +1,8 @@
 package com.mirkocaserta.bruce.mac;
 
 import static com.mirkocaserta.bruce.Bruce.*;
+import static com.mirkocaserta.bruce.api.KeyStoreParam.location;
+import static com.mirkocaserta.bruce.api.KeyStoreParam.password;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -12,7 +14,7 @@ import org.junit.jupiter.api.Test;
 class MacRoundTripTest {
 
   private static final KeyStore keystore =
-      Bruce.keystore.with("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
+      Bruce.keystore.with(location("classpath:/keystore.p12"), password("password".toCharArray()));
 
   private static final Key key = Bruce.secretKey.with(keystore, "hmac", "password".toCharArray());
 

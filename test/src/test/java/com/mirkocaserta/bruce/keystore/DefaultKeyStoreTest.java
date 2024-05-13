@@ -1,6 +1,8 @@
 package com.mirkocaserta.bruce.keystore;
 
 import static com.mirkocaserta.bruce.Bruce.keystore;
+import static com.mirkocaserta.bruce.api.KeyStoreParam.type;
+import static com.mirkocaserta.bruce.api.KeyStoreParam.useSystemProps;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.mirkocaserta.bruce.Bruce;
@@ -20,7 +22,7 @@ class DefaultKeyStoreTest {
   void defaultKeystore() throws KeyStoreException {
     System.setProperty("javax.net.ssl.keyStore", "src/test/resources/keystore.p12");
     System.setProperty("javax.net.ssl.keyStorePassword", "password");
-    KeyStore keystore = Bruce.keystore.with();
+    KeyStore keystore = Bruce.keystore.with(useSystemProps());
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
@@ -31,7 +33,7 @@ class DefaultKeyStoreTest {
   void defaultKeystoreWithType() throws KeyStoreException {
     System.setProperty("javax.net.ssl.keyStore", "src/test/resources/keystore.jks");
     System.setProperty("javax.net.ssl.keyStorePassword", "password");
-    KeyStore keystore = Bruce.keystore.with("JKS");
+    KeyStore keystore = Bruce.keystore.with(useSystemProps(), type("JKS"));
     assertNotNull(keystore);
     assertEquals("JKS", keystore.getType(), "type");
     assertEquals(1, keystore.size(), "size");
