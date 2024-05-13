@@ -1,6 +1,6 @@
 package com.mirkocaserta.bruce.certificate;
 
-import static com.mirkocaserta.bruce.api.KeyStoreParam.*;
+import static com.mirkocaserta.bruce.api.params.KeyStoreParam.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 

@@ -1,6 +1,6 @@
 package com.mirkocaserta.bruce.keystore;
 
-import com.mirkocaserta.bruce.api.KeyStoreParam;
+import com.mirkocaserta.bruce.api.params.KeyStoreParam;
 
 public final class KeyStoreParams {
   private String type = "PKCS12";

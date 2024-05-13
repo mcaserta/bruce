@@ -2,8 +2,8 @@ package com.mirkocaserta.bruce;
 
 import com.mirkocaserta.bruce.api.Digester;
 import com.mirkocaserta.bruce.api.KeyStore;
-import com.mirkocaserta.bruce.api.KeyStoreParam;
 import com.mirkocaserta.bruce.api.SecretKey;
+import com.mirkocaserta.bruce.api.params.KeyStoreParam;
 import com.mirkocaserta.bruce.certificate.CertificateImpl;
 import com.mirkocaserta.bruce.cipher.Mode;
 import com.mirkocaserta.bruce.cipher.asymmetric.Cipher;
@@ -1032,12 +1032,7 @@ public final class Bruce {
               final var signerAnnotation = pair.val();
               final var privateKeyAnnotation = signerAnnotation.privateKey();
               final var keyStoreAnnotation = privateKeyAnnotation.keystore();
-              final var keystore =
-                  Bruce.keystore.with(
-                      KeyStoreParam.location(keyStoreAnnotation.location()),
-                      KeyStoreParam.password(keyStoreAnnotation.password()),
-                      KeyStoreParam.type(keyStoreAnnotation.type()),
-                      KeyStoreParam.provider(keyStoreAnnotation.provider()));
+              final var keystore = fromAnnotation(keyStoreAnnotation);
               final var privateKey =
                   Bruce.privateKey.with(
                       keystore, privateKeyAnnotation.alias(), privateKeyAnnotation.password());
@@ -1072,12 +1067,7 @@ public final class Bruce {
               final var verifierAnnotation = pair.val();
               final var publicKeyAnnotation = verifierAnnotation.publicKey();
               final var keyStoreAnnotation = publicKeyAnnotation.keystore();
-              final var keystore =
-                  Bruce.keystore.with(
-                      KeyStoreParam.location(keyStoreAnnotation.location()),
-                      KeyStoreParam.password(keyStoreAnnotation.password()),
-                      KeyStoreParam.type(keyStoreAnnotation.type()),
-                      KeyStoreParam.provider(keyStoreAnnotation.provider()));
+              final var keystore = fromAnnotation(keyStoreAnnotation);
               final var publicKey = Bruce.publicKey.with(keystore, publicKeyAnnotation.alias());
 
               if (Verifier.class.equals(pair.key().getType())) {
@@ -1091,6 +1081,20 @@ public final class Bruce {
                 set(pair.key(), object, verifier);
               }
             });
+  }
+
+  private static java.security.KeyStore fromAnnotation(
+      com.mirkocaserta.bruce.api.annotations.KeyStore keyStoreAnnotation) {
+    return keyStoreAnnotation.useSystemProperties()
+        ? Bruce.keystore.with(
+            KeyStoreParam.useSystemProperties(),
+            KeyStoreParam.type(keyStoreAnnotation.type()),
+            KeyStoreParam.provider(keyStoreAnnotation.provider()))
+        : Bruce.keystore.with(
+            KeyStoreParam.location(keyStoreAnnotation.location()),
+            KeyStoreParam.password(keyStoreAnnotation.password()),
+            KeyStoreParam.type(keyStoreAnnotation.type()),
+            KeyStoreParam.provider(keyStoreAnnotation.provider()));
   }
 
   private static void instrumentDigesters(final List<Field> fields, final Object object) {

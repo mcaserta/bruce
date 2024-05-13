@@ -1,7 +1,7 @@
 package com.mirkocaserta.bruce.key;
 
-import static com.mirkocaserta.bruce.api.KeyStoreParam.location;
-import static com.mirkocaserta.bruce.api.KeyStoreParam.password;
+import static com.mirkocaserta.bruce.api.params.KeyStoreParam.location;
+import static com.mirkocaserta.bruce.api.params.KeyStoreParam.password;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.mirkocaserta.bruce.Bruce;

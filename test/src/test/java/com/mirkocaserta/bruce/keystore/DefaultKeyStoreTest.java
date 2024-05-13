@@ -1,7 +1,7 @@
 package com.mirkocaserta.bruce.keystore;
 
-import static com.mirkocaserta.bruce.api.KeyStoreParam.type;
-import static com.mirkocaserta.bruce.api.KeyStoreParam.useSystemProperties;
+import static com.mirkocaserta.bruce.api.params.KeyStoreParam.type;
+import static com.mirkocaserta.bruce.api.params.KeyStoreParam.useSystemProperties;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.mirkocaserta.bruce.Bruce;

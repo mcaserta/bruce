@@ -1,4 +1,4 @@
-package com.mirkocaserta.bruce.api;
+package com.mirkocaserta.bruce.api.params;
 
 public final class KeyStoreParam {
   private final Type type;
@@ -55,7 +55,8 @@ public final class KeyStoreParam {
   }
 
   /**
-   * Returns the default keystore using configuration from the following system properties:
+   * This specifies that the keystore location and password parameters are to be read from the
+   * following system properties:
    *
    * <ul>
    *   <li><code>javax.net.ssl.keyStore</code>

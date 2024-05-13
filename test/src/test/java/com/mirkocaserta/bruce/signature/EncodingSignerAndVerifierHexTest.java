@@ -2,7 +2,7 @@ package com.mirkocaserta.bruce.signature;
 
 import static com.mirkocaserta.bruce.Bruce.*;
 import static com.mirkocaserta.bruce.Encoding.HEX;
-import static com.mirkocaserta.bruce.api.KeyStoreParam.*;
+import static com.mirkocaserta.bruce.api.params.KeyStoreParam.*;
 
 import com.mirkocaserta.bruce.Bruce;
 

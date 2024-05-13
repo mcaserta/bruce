@@ -3,7 +3,7 @@ package com.mirkocaserta.bruce.keystore;
 import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.BruceException;
 import com.mirkocaserta.bruce.api.KeyStore;
-import com.mirkocaserta.bruce.api.KeyStoreParam;
+import com.mirkocaserta.bruce.api.params.KeyStoreParam;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
