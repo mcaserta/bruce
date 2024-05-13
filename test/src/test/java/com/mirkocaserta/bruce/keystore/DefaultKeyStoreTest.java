@@ -1,13 +1,11 @@
 package com.mirkocaserta.bruce.keystore;
 
-import static com.mirkocaserta.bruce.Bruce.keystore;
 import static com.mirkocaserta.bruce.api.KeyStoreParam.type;
-import static com.mirkocaserta.bruce.api.KeyStoreParam.useSystemProps;
+import static com.mirkocaserta.bruce.api.KeyStoreParam.useSystemProperties;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.BruceException;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,22 +16,22 @@ import org.junit.jupiter.params.provider.ValueSource;
 class DefaultKeyStoreTest {
 
   @Test
-  @DisplayName("loads the with from the default system properties")
+  @DisplayName("loads the keystore from the default system properties")
   void defaultKeystore() throws KeyStoreException {
     System.setProperty("javax.net.ssl.keyStore", "src/test/resources/keystore.p12");
     System.setProperty("javax.net.ssl.keyStorePassword", "password");
-    KeyStore keystore = Bruce.keystore.with(useSystemProps());
+    final var keystore = Bruce.keystore.with(useSystemProperties());
     assertNotNull(keystore);
     assertEquals("PKCS12", keystore.getType(), "type");
     assertEquals(2, keystore.size(), "size");
   }
 
   @Test
-  @DisplayName("loads the with from the default system properties with a specific with type")
+  @DisplayName("loads the keystore from the default system properties with a specific with type")
   void defaultKeystoreWithType() throws KeyStoreException {
     System.setProperty("javax.net.ssl.keyStore", "src/test/resources/keystore.jks");
     System.setProperty("javax.net.ssl.keyStorePassword", "password");
-    KeyStore keystore = Bruce.keystore.with(useSystemProps(), type("JKS"));
+    final var keystore = Bruce.keystore.with(useSystemProperties(), type("JKS"));
     assertNotNull(keystore);
     assertEquals("JKS", keystore.getType(), "type");
     assertEquals(1, keystore.size(), "size");
@@ -41,11 +39,11 @@ class DefaultKeyStoreTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"sgiao belo", "   ", ""})
-  @DisplayName("these with locations should throw an error")
+  @DisplayName("these keystore locations should throw an error")
   void badLocations(String location) {
     System.setProperty("javax.net.ssl.keyStore", location);
     System.setProperty("javax.net.ssl.keyStorePassword", "wrong");
-    assertThrows(BruceException.class, keystore::with);
+    assertThrows(BruceException.class, () -> Bruce.keystore.with(useSystemProperties()));
   }
 
   @AfterEach

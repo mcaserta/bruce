@@ -75,7 +75,7 @@ public final class KeyStoreParam {
    *
    * <p>The default keystore type is <code>PKCS12</code>.
    */
-  public static KeyStoreParam useSystemProps() {
+  public static KeyStoreParam useSystemProperties() {
     return new KeyStoreParam(Type.LOCATION, "SYSTEM_PROPERTIES", null);
   }
 
