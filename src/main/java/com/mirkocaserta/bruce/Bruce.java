@@ -175,6 +175,26 @@ public final class Bruce {
     }
 
     /**
+     * Returns a key store. The default keystore type is {@value #DEFAULT_KEYSTORE_TYPE}.
+     * Convenience overload that accepts String password for easier usage.
+     *
+     * @param location the keystore location. The following protocols are supported:
+     *                 <ul>
+     *                 <li><code>classpath:</code></li>
+     *                 <li><code>http:</code></li>
+     *                 <li><code>https:</code></li>
+     *                 <li><code>file:</code></li>
+     *                 </ul>
+     *                 If no protocol is specified, <code>file</code> is assumed.
+     * @param password the password
+     * @return a key store
+     * @throws BruceException on loading errors
+     */
+    public static KeyStore keystore(String location, String password) {
+        return keystore(location, password.toCharArray());
+    }
+
+    /**
      * Returns a key store.
      *
      * @param location the keystore location. The following protocols are supported:
@@ -192,6 +212,27 @@ public final class Bruce {
      */
     public static KeyStore keystore(String location, char[] password, String type) {
         return keystore(location, password, type, BLANK);
+    }
+
+    /**
+     * Returns a key store.
+     * Convenience overload that accepts String password for easier usage.
+     *
+     * @param location the keystore location. The following protocols are supported:
+     *                 <ul>
+     *                 <li><code>classpath:</code></li>
+     *                 <li><code>http:</code></li>
+     *                 <li><code>https:</code></li>
+     *                 <li><code>file:</code></li>
+     *                 </ul>
+     *                 If no protocol is specified, <code>file</code> is assumed.
+     * @param password the password
+     * @param type     the keystore type (ex: <code>JKS</code>, <code>PKCS12</code>)
+     * @return a key store
+     * @throws BruceException on loading errors
+     */
+    public static KeyStore keystore(String location, String password, String type) {
+        return keystore(location, password.toCharArray(), type);
     }
 
     /**
@@ -240,6 +281,27 @@ public final class Bruce {
     }
 
     /**
+     * Loads a key store from the given location using the specified password, type and provider.
+     *
+     * @param location the keystore location. The following protocols are supported:
+     *                 <ul>
+     *                 <li><code>classpath:</code></li>
+     *                 <li><code>http:</code></li>
+     *                 <li><code>https:</code></li>
+     *                 <li><code>file:</code></li>
+     *                 </ul>
+     *                 If no protocol is specified, <code>file</code> is assumed.
+     * @param password the password
+     * @param type     the keystore type (ex: <code>JKS</code>, <code>PKCS12</code>)
+     * @param provider the provider (hint: Bouncy Castle is <code>BC</code>)
+     * @return a key store
+     * @throws BruceException on loading errors
+     */
+    public static KeyStore keystore(String location, String password, String type, String provider) {
+        return keystore(location, password.toCharArray(), type, provider);
+    }
+
+    /**
      * Loads a certificate from the given keystore.
      *
      * @param keystore the keystore to read from
@@ -282,6 +344,19 @@ public final class Bruce {
      * @return the private key
      * @throws BruceException on loading errors
      */
+    public static PrivateKey privateKey(KeyStore keystore, String alias, String password) {
+        return privateKey(keystore, alias, password.toCharArray());
+    }
+
+    /**
+     * Loads a private key from the given keystore.
+     *
+     * @param keystore the keystore to read from
+     * @param alias    the certificate alias
+     * @param password the private key password
+     * @return the private key
+     * @throws BruceException on loading errors
+     */
     public static PrivateKey privateKey(KeyStore keystore, String alias, char[] password) {
         try {
             var privateKeyEntry = (KeyStore.PrivateKeyEntry) keystore.getEntry(alias, new KeyStore.PasswordProtection(password));
@@ -294,6 +369,19 @@ public final class Bruce {
         } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException e) {
             throw new BruceException(String.format("error loading private key with alias: %s", alias), e);
         }
+    }
+
+    /**
+     * Loads a secret key from the given keystore.
+     *
+     * @param keystore the keystore to read from
+     * @param alias    the secret key alias
+     * @param password the secret key password
+     * @return the secret key
+     * @throws BruceException on loading errors
+     */
+    public static Key secretKey(KeyStore keystore, String alias, String password) {
+        return secretKey(keystore, alias, password.toCharArray());
     }
 
     /**

@@ -36,11 +36,23 @@ You are of course free not to use static imports. I personally like them as the 
 
 ## Passwords
 
-Passwords in the API are typed as a `char` array. There is a good reason for this: depending on implementation specifics, `String` instances might be stored in a permanent memory area.
+Bruce provides two options for password handling to balance security and convenience:
 
-One might argue that accessing this memory area is not easy task for an attacker, but there's plenty of reasons why this is not always the case.
+**For maximum security**: Use `char[]` arrays. String instances might be stored in permanent memory areas, and depending on implementation specifics, this could potentially be accessed by attackers. Character arrays can be explicitly cleared from memory after use.
 
-So, Bruce only accepts passwords as `char` arrays. If you are working with passwords that are already arriving to you in a `String` instance, just call `.toCharArray()` on it to perform the conversion where necessary.
+**For convenience**: Use `String` passwords. Bruce provides convenient overloads that accept String passwords and internally convert them to char arrays for you.
+
+```java
+// Maximum security approach with char arrays
+KeyStore keystore = keystore("classpath:keystore.p12", "password".toCharArray());
+PrivateKey key = privateKey(keystore, "alias", "password".toCharArray());
+
+// Convenience approach with Strings  
+KeyStore keystore = keystore("classpath:keystore.p12", "password");
+PrivateKey key = privateKey(keystore, "alias", "password");
+```
+
+You can choose char arrays for better security or Strings for convenience based on your application's security requirements.
 
 ## Encoding
 

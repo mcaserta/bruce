@@ -14,8 +14,11 @@ SignerBuilder signerBuilder();
 KeyStore keystore();
 KeyStore keystore(String type);
 KeyStore keystore(String location, char[] password);
+KeyStore keystore(String location, String password);  // convenience overload
 KeyStore keystore(String location, char[] password, String type);
+KeyStore keystore(String location, String password, String type);  // convenience overload
 KeyStore keystore(String location, char[] password, String type, String provider);
+KeyStore keystore(String location, String password, String type, String provider);  // convenience overload
 
 // certificate methods
 Certificate certificate(KeyStore keystore, String alias);
@@ -23,7 +26,9 @@ Certificate certificate(KeyStore keystore, String alias);
 // key methods
 PublicKey publicKey(KeyStore keystore, String alias);
 PrivateKey privateKey(KeyStore keystore, String alias, char[] password);
+PrivateKey privateKey(KeyStore keystore, String alias, String password);  // convenience overload
 Key secretKey(KeyStore keystore, String alias, char[] password);
+Key secretKey(KeyStore keystore, String alias, String password);  // convenience overload
 KeyPair keyPair(String algorithm, int keySize);
 KeyPair keyPair(String algorithm, String provider, int keySize);
 KeyPair keyPair(String algorithm, int keySize, SecureRandom random);
