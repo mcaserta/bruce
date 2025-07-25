@@ -8,35 +8,22 @@ import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherByKey;
 import com.mirkocaserta.bruce.digest.Digester;
 import com.mirkocaserta.bruce.digest.EncodingDigester;
 import com.mirkocaserta.bruce.digest.FileDigester;
+import com.mirkocaserta.bruce.impl.cipher.AsymmetricCipherOperations;
+import com.mirkocaserta.bruce.impl.cipher.SymmetricCipherOperations;
+import com.mirkocaserta.bruce.impl.digest.DigestOperations;
+import com.mirkocaserta.bruce.impl.keystore.KeyGenerators;
+import com.mirkocaserta.bruce.impl.keystore.KeyStoreOperations;
+import com.mirkocaserta.bruce.impl.mac.MacOperations;
+import com.mirkocaserta.bruce.impl.signature.SignatureOperations;
 import com.mirkocaserta.bruce.mac.EncodingMac;
 import com.mirkocaserta.bruce.mac.Mac;
 import com.mirkocaserta.bruce.signature.Signer;
 import com.mirkocaserta.bruce.signature.*;
-import com.mirkocaserta.bruce.util.Hex;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.*;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.util.Base64;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -54,21 +41,6 @@ public final class Bruce {
      * The default keystore format/type.
      */
     public static final String DEFAULT_KEYSTORE_TYPE = "PKCS12";
-
-    private static final Hex.Encoder HEX_ENCODER = Hex.getEncoder();
-    private static final Base64.Encoder BASE_64_ENCODER = Base64.getEncoder();
-    private static final Base64.Encoder URL_ENCODER = Base64.getUrlEncoder();
-    private static final Base64.Encoder MIME_ENCODER = Base64.getMimeEncoder();
-    private static final Hex.Decoder HEX_DECODER = Hex.getDecoder();
-    private static final Base64.Decoder BASE_64_DECODER = Base64.getDecoder();
-    private static final Base64.Decoder URL_DECODER = Base64.getUrlDecoder();
-    private static final Base64.Decoder MIME_DECODER = Base64.getMimeDecoder();
-
-    private static final String BLANK = "";
-    private static final String INVALID_ENCODING_NULL = "Invalid encoding: null";
-    private static final String MODE_CANNOT_BE_NULL = "mode cannot be null";
-
-    private static final ConcurrentMap<String, Cipher> cipherCache = new ConcurrentHashMap<>();
 
     private Bruce() {
         // utility class, users can't make new instances
@@ -147,7 +119,7 @@ public final class Bruce {
      * @throws BruceException on loading errors
      */
     public static KeyStore keystore() {
-        return keystore(DEFAULT_KEYSTORE_TYPE);
+        return KeyStoreOperations.loadDefaultKeyStore();
     }
 
     /**
@@ -175,11 +147,7 @@ public final class Bruce {
      * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String type) {
-        return keystore(
-                System.getProperty("javax.net.ssl.keyStore"),
-                Optional.ofNullable(System.getProperty("javax.net.ssl.keyStorePassword")).orElse(BLANK).toCharArray(),
-                type
-        );
+        return KeyStoreOperations.loadKeyStore(type);
     }
 
     /**
@@ -198,7 +166,7 @@ public final class Bruce {
      * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String location, char[] password) {
-        return keystore(location, password, DEFAULT_KEYSTORE_TYPE, BLANK);
+        return KeyStoreOperations.loadKeyStore(location, password);
     }
 
     /**
@@ -218,7 +186,7 @@ public final class Bruce {
      * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String location, String password) {
-        return keystore(location, password.toCharArray());
+        return KeyStoreOperations.loadKeyStore(location, password.toCharArray());
     }
 
     /**
@@ -238,7 +206,7 @@ public final class Bruce {
      * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String location, char[] password, String type) {
-        return keystore(location, password, type, BLANK);
+        return KeyStoreOperations.loadKeyStore(location, password, type);
     }
 
     /**
@@ -259,7 +227,7 @@ public final class Bruce {
      * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String location, String password, String type) {
-        return keystore(location, password.toCharArray(), type);
+        return KeyStoreOperations.loadKeyStore(location, password.toCharArray(), type);
     }
 
     /**
@@ -280,31 +248,7 @@ public final class Bruce {
      * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String location, char[] password, String type, String provider) {
-        if (location == null || location.isBlank()) {
-            throw new BruceException("please provide a valid key store location");
-        }
-
-        try {
-            var keyStore = provider == null || provider.isBlank() ?
-                    KeyStore.getInstance(type) :
-                    KeyStore.getInstance(type, provider);
-            InputStream inputStream;
-            if (location.startsWith("classpath:")) {
-                inputStream = Bruce.class.getResourceAsStream(location.replaceFirst("classpath:", BLANK));
-            } else if (location.matches("^https*://.*$")) {
-                inputStream = new URL(location).openConnection().getInputStream();
-            } else {
-                inputStream = Files.newInputStream(Path.of(location.replaceFirst("file:", BLANK)));
-            }
-            keyStore.load(inputStream, password);
-            return keyStore;
-        } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException e) {
-            throw new BruceException(String.format("error loading keystore: location=%s", location), e);
-        } catch (NoSuchProviderException e) {
-            throw new BruceException(String.format("error loading keystore, no such provider: provider=%s", provider), e);
-        } catch (Exception e) {
-            throw new BruceException("error loading keystore", e);
-        }
+        return KeyStoreOperations.loadKeyStore(location, password, type, provider);
     }
 
     /**
@@ -325,7 +269,7 @@ public final class Bruce {
      * @throws BruceException on loading errors
      */
     public static KeyStore keystore(String location, String password, String type, String provider) {
-        return keystore(location, password.toCharArray(), type, provider);
+        return KeyStoreOperations.loadKeyStore(location, password.toCharArray(), type, provider);
     }
 
     /**
@@ -337,17 +281,7 @@ public final class Bruce {
      * @throws BruceException on loading errors
      */
     public static Certificate certificate(KeyStore keystore, String alias) {
-        try {
-            var certificate = keystore.getCertificate(alias);
-
-            if (certificate == null) {
-                throw new BruceException(String.format("certificate not found for alias: %s", alias));
-            }
-
-            return certificate;
-        } catch (KeyStoreException e) {
-            throw new BruceException(String.format("error loading certificate with alias: %s", alias), e);
-        }
+        return KeyStoreOperations.loadCertificate(keystore, alias);
     }
 
     /**
@@ -359,7 +293,7 @@ public final class Bruce {
      * @throws BruceException on loading errors
      */
     public static PublicKey publicKey(KeyStore keystore, String alias) {
-        return certificate(keystore, alias).getPublicKey();
+        return KeyStoreOperations.extractPublicKey(keystore, alias);
     }
 
     /**
@@ -372,7 +306,7 @@ public final class Bruce {
      * @throws BruceException on loading errors
      */
     public static PrivateKey privateKey(KeyStore keystore, String alias, String password) {
-        return privateKey(keystore, alias, password.toCharArray());
+        return KeyStoreOperations.loadPrivateKey(keystore, alias, password.toCharArray());
     }
 
     /**
@@ -385,17 +319,7 @@ public final class Bruce {
      * @throws BruceException on loading errors
      */
     public static PrivateKey privateKey(KeyStore keystore, String alias, char[] password) {
-        try {
-            var privateKeyEntry = (KeyStore.PrivateKeyEntry) keystore.getEntry(alias, new KeyStore.PasswordProtection(password));
-
-            if (privateKeyEntry == null) {
-                throw new BruceException(String.format("no such private key with alias: %s", alias));
-            }
-
-            return privateKeyEntry.getPrivateKey();
-        } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException e) {
-            throw new BruceException(String.format("error loading private key with alias: %s", alias), e);
-        }
+        return KeyStoreOperations.loadPrivateKey(keystore, alias, password);
     }
 
     /**
@@ -408,7 +332,7 @@ public final class Bruce {
      * @throws BruceException on loading errors
      */
     public static Key secretKey(KeyStore keystore, String alias, String password) {
-        return secretKey(keystore, alias, password.toCharArray());
+        return KeyStoreOperations.loadSecretKey(keystore, alias, password.toCharArray());
     }
 
     /**
@@ -421,17 +345,7 @@ public final class Bruce {
      * @throws BruceException on loading errors
      */
     public static Key secretKey(KeyStore keystore, String alias, char[] password) {
-        try {
-            var key = keystore.getKey(alias, password);
-
-            if (key == null) {
-                throw new BruceException(String.format("no such secret key with alias: %s", alias));
-            }
-
-            return key;
-        } catch (KeyStoreException | UnrecoverableKeyException | NoSuchAlgorithmException e) {
-            throw new BruceException(String.format("error loading secret key with alias: %s", alias), e);
-        }
+        return KeyStoreOperations.loadSecretKey(keystore, alias, password);
     }
 
     /**
@@ -442,7 +356,7 @@ public final class Bruce {
      * @return the key pair
      */
     public static KeyPair keyPair(String algorithm, int keySize) {
-        return keyPair(algorithm, null, keySize, null);
+        return KeyGenerators.generateKeyPair(algorithm, keySize);
     }
 
     /**
@@ -454,7 +368,7 @@ public final class Bruce {
      * @return the key pair
      */
     public static KeyPair keyPair(String algorithm, String provider, int keySize) {
-        return keyPair(algorithm, provider, keySize, null);
+        return KeyGenerators.generateKeyPair(algorithm, provider, keySize);
     }
 
     /**
@@ -466,7 +380,7 @@ public final class Bruce {
      * @return the key pair
      */
     public static KeyPair keyPair(String algorithm, int keySize, SecureRandom random) {
-        return keyPair(algorithm, null, keySize, random);
+        return KeyGenerators.generateKeyPair(algorithm, keySize, random);
     }
 
     /**
@@ -479,24 +393,7 @@ public final class Bruce {
      * @return the key pair
      */
     public static KeyPair keyPair(String algorithm, String provider, int keySize, SecureRandom random) {
-        try {
-            var keyGen = provider == null || provider.isBlank() ?
-                    KeyPairGenerator.getInstance(algorithm) :
-                    KeyPairGenerator.getInstance(algorithm, provider);
-
-            if (random == null) {
-                keyGen.initialize(keySize);
-            } else {
-                keyGen.initialize(keySize, random);
-            }
-            return keyGen.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            throw new BruceException(String.format("no such algorithm: %s", algorithm), e);
-        } catch (InvalidParameterException e) {
-            throw new BruceException(String.format("invalid key size: %d", keySize), e);
-        } catch (NoSuchProviderException e) {
-            throw new BruceException(String.format("no such provider: %s", provider), e);
-        }
+        return KeyGenerators.generateKeyPair(algorithm, provider, keySize, random);
     }
 
     /**
@@ -511,7 +408,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static EncodingDigester digester(String algorithm, Encoding encoding) {
-        return digester(algorithm, BLANK, encoding, UTF_8);
+        return DigestOperations.createEncodingDigester(algorithm, encoding);
     }
 
     /**
@@ -524,7 +421,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static EncodingDigester digester(String algorithm, Encoding encoding, Charset charset) {
-        return digester(algorithm, BLANK, encoding, charset);
+        return DigestOperations.createEncodingDigester(algorithm, encoding, charset);
     }
 
     /**
@@ -540,7 +437,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static EncodingDigester digester(String algorithm, String provider, Encoding encoding) {
-        return digester(algorithm, provider, encoding, UTF_8);
+        return DigestOperations.createEncodingDigester(algorithm, provider, encoding);
     }
 
     /**
@@ -554,15 +451,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static EncodingDigester digester(String algorithm, String provider, Encoding encoding, Charset charset) {
-        if (encoding == null) {
-            throw new BruceException(INVALID_ENCODING_NULL);
-        }
-
-        var rawDigester = provider == null || provider.isBlank()
-                ? digester(algorithm)
-                : digester(algorithm, provider);
-
-        return message -> encode(encoding, rawDigester.digest(message.getBytes(charset)));
+        return DigestOperations.createEncodingDigester(algorithm, provider, encoding, charset);
     }
 
     /**
@@ -574,7 +463,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static FileDigester fileDigester(String algorithm, Encoding encoding) {
-        return fileDigester(algorithm, BLANK, encoding);
+        return DigestOperations.createFileDigester(algorithm, encoding);
     }
 
     /**
@@ -587,46 +476,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static FileDigester fileDigester(String algorithm, String provider, Encoding encoding) {
-        if (encoding == null) {
-            throw new BruceException(INVALID_ENCODING_NULL);
-        }
-
-        try { // fail fast
-            if (provider == null || provider.isBlank()) {
-                MessageDigest.getInstance(algorithm);
-            } else {
-                MessageDigest.getInstance(algorithm, provider);
-            }
-        } catch (NoSuchAlgorithmException e) {
-            throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
-        } catch (NoSuchProviderException e) {
-            throw new BruceException(String.format("No such provider: %s", provider), e);
-        }
-
-        return file -> {
-            try {
-                var digest = provider == null || provider.isBlank()
-                        ? MessageDigest.getInstance(algorithm)
-                        : MessageDigest.getInstance(algorithm, provider);
-                try (var inputStream = new FileInputStream(file)) {
-                    var buffer = new byte[8192];
-                    int read;
-
-                    while ((read = inputStream.read(buffer)) > 0) {
-                        digest.update(buffer, 0, read);
-                    }
-                }
-                return encode(encoding, digest.digest());
-            } catch (NoSuchAlgorithmException e) {
-                throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
-            } catch (NoSuchProviderException e) {
-                throw new BruceException(String.format("No such provider: %s", provider), e);
-            } catch (FileNotFoundException e) {
-                throw new BruceException(String.format("No such file: %s", file), e);
-            } catch (IOException e) {
-                throw new BruceException(String.format("I/O error reading file: %s", file), e);
-            }
-        };
+        return DigestOperations.createFileDigester(algorithm, provider, encoding);
     }
 
     /**
@@ -638,19 +488,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static Digester digester(String algorithm, String provider) {
-        MessageDigest digester;
-
-        try {
-            digester = provider == null || provider.isBlank()
-                    ? MessageDigest.getInstance(algorithm)
-                    : MessageDigest.getInstance(algorithm, provider);
-        } catch (NoSuchAlgorithmException e) {
-            throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
-        } catch (NoSuchProviderException e) {
-            throw new BruceException(String.format("No such provider: %s", provider), e);
-        }
-
-        return digester::digest;
+        return DigestOperations.createRawDigester(algorithm, provider);
     }
 
     /**
@@ -661,7 +499,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm exception
      */
     public static Digester digester(String algorithm) {
-        return digester(algorithm, BLANK);
+        return DigestOperations.createRawDigester(algorithm);
     }
 
     /**
@@ -674,7 +512,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static Signer signer(PrivateKey privateKey, String algorithm) {
-        return signer(privateKey, algorithm, BLANK);
+        return SignatureOperations.createSigner(privateKey, algorithm);
     }
 
     /**
@@ -688,33 +526,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static Signer signer(PrivateKey privateKey, String algorithm, String provider) {
-        Signer signer = message -> {
-            try {
-                var signature = getSignature(algorithm, provider);
-                signature.initSign(privateKey);
-                signature.update(message);
-                return signature.sign();
-            } catch (SignatureException | InvalidKeyException e) {
-                throw new BruceException(String.format("error generating the signature: algorithm=%s, provider=%s", algorithm, provider), e);
-            }
-        };
-
-        /*
-        This is here in order to trigger exceptions at initialization time
-        rather than at runtime when invoking the sign method on the signer.
-         */
-        signer.sign("FAIL FAST".getBytes(UTF_8));
-        return signer;
-    }
-
-    private static Signature getSignature(String algorithm, String provider) {
-        try {
-            return provider == null || provider.isBlank()
-                    ? Signature.getInstance(algorithm)
-                    : Signature.getInstance(algorithm, provider);
-        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-            throw new BruceException(String.format("error getting signer: algorithm=%s, provider=%s", algorithm, provider), e);
-        }
+        return SignatureOperations.createSigner(privateKey, algorithm, provider);
     }
 
     /**
@@ -728,7 +540,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static SignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm) {
-        return signer(privateKeyMap, algorithm, BLANK);
+        return SignatureOperations.createSignerByKey(privateKeyMap, algorithm);
     }
 
     /**
@@ -743,15 +555,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static SignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm, String provider) {
-        return (privateKeyId, message) -> {
-            var privateKey = privateKeyMap.get(privateKeyId);
-
-            if (privateKey == null) {
-                throw new BruceException(String.format("private key not found for id: %s", privateKeyId));
-            }
-
-            return signer(privateKey, algorithm, provider).sign(message);
-        };
+        return SignatureOperations.createSignerByKey(privateKeyMap, algorithm, provider);
     }
 
     /**
@@ -768,7 +572,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static EncodingSignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm, Encoding encoding) {
-        return signer(privateKeyMap, algorithm, null, UTF_8, encoding);
+        return SignatureOperations.createEncodingSignerByKey(privateKeyMap, algorithm, encoding);
     }
 
     /**
@@ -784,7 +588,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static EncodingSignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm, Charset charset, Encoding encoding) {
-        return signer(privateKeyMap, algorithm, null, charset, encoding);
+        return SignatureOperations.createEncodingSignerByKey(privateKeyMap, algorithm, charset, encoding);
     }
 
     /**
@@ -801,20 +605,12 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static EncodingSignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm, String provider, Charset charset, Encoding encoding) {
-        return (privateKeyId, message) -> {
-            var privateKey = privateKeyMap.get(privateKeyId);
-
-            if (privateKey == null) {
-                throw new BruceException(String.format("private key not found for id: %s", privateKeyId));
-            }
-
-            return signer(privateKey, algorithm, provider, charset, encoding).sign(message);
-        };
+        return SignatureOperations.createEncodingSignerByKey(privateKeyMap, algorithm, provider, charset, encoding);
     }
 
     /**
      * Returns an encoding signer for the given private key using the
-     * default provider and {@link StandardCharsets#UTF_8}
+     * default provider and {@link java.nio.charset.StandardCharsets#UTF_8}
      * as the default charset used in messages.
      *
      * @param privateKey the signing key
@@ -824,7 +620,7 @@ public final class Bruce {
      * @throws BruceException on initialization exceptions
      */
     public static EncodingSigner signer(PrivateKey privateKey, String algorithm, Encoding encoding) {
-        return signer(privateKey, algorithm, BLANK, UTF_8, encoding);
+        return SignatureOperations.createEncodingSigner(privateKey, algorithm, encoding);
     }
 
     /**
@@ -839,7 +635,7 @@ public final class Bruce {
      * @throws BruceException on initialization exceptions
      */
     public static EncodingSigner signer(PrivateKey privateKey, String algorithm, Charset charset, Encoding encoding) {
-        return signer(privateKey, algorithm, BLANK, charset, encoding);
+        return SignatureOperations.createEncodingSigner(privateKey, algorithm, charset, encoding);
     }
 
     /**
@@ -854,16 +650,7 @@ public final class Bruce {
      * @throws BruceException on initialization exceptions
      */
     public static EncodingSigner signer(PrivateKey privateKey, String algorithm, String provider, Charset charset, Encoding encoding) {
-        if (encoding == null) {
-            throw new BruceException(INVALID_ENCODING_NULL);
-        }
-
-        if (charset == null) {
-            throw new BruceException("Invalid charset: null");
-        }
-
-        var signer = signer(privateKey, algorithm, provider);
-        return message -> encode(encoding, signer.sign(message.getBytes(charset)));
+        return SignatureOperations.createEncodingSigner(privateKey, algorithm, provider, charset, encoding);
     }
 
     /**
@@ -876,7 +663,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static Verifier verifier(PublicKey publicKey, String algorithm) {
-        return verifier(publicKey, algorithm, BLANK);
+        return SignatureOperations.createVerifier(publicKey, algorithm);
     }
 
     /**
@@ -890,18 +677,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static Verifier verifier(PublicKey publicKey, String algorithm, String provider) {
-        return (message, signature) -> {
-            try {
-                var signatureInstance = getSignature(algorithm, provider);
-                signatureInstance.initVerify(publicKey);
-                signatureInstance.update(message);
-                return signatureInstance.verify(signature);
-            } catch (InvalidKeyException e) {
-                throw new BruceException(String.format("error verifying the signature: algorithm=%s, provider=%s", algorithm, provider), e);
-            } catch (SignatureException e) {
-                return false;
-            }
-        };
+        return SignatureOperations.createVerifier(publicKey, algorithm, provider);
     }
 
     /**
@@ -916,7 +692,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static VerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm) {
-        return verifier(publicKeyMap, algorithm, BLANK);
+        return SignatureOperations.createVerifierByKey(publicKeyMap, algorithm);
     }
 
     /**
@@ -932,21 +708,13 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static VerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm, String provider) {
-        return (publicKeyId, message, signature) -> {
-            var publicKey = publicKeyMap.get(publicKeyId);
-
-            if (publicKey == null) {
-                throw new BruceException(String.format("public key not found for id: %s", publicKeyId));
-            }
-
-            return verifier(publicKey, algorithm, provider).verify(message, signature);
-        };
+        return SignatureOperations.createVerifierByKey(publicKeyMap, algorithm, provider);
     }
 
     /**
      * Returns an encoding verifier for the given public key.
      * This method assumes the default messages charset is
-     * {@link StandardCharsets#UTF_8}. The default provider
+     * {@link java.nio.charset.StandardCharsets#UTF_8}. The default provider
      * is used.
      *
      * @param publicKey the verification key
@@ -956,13 +724,13 @@ public final class Bruce {
      * @throws BruceException on initialization exceptions
      */
     public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, Encoding encoding) {
-        return verifier(publicKey, algorithm, BLANK, encoding);
+        return SignatureOperations.createEncodingVerifier(publicKey, algorithm, encoding);
     }
 
     /**
      * Returns an encoding verifier for the given public key.
      * This method assumes the default messages charset is
-     * {@link StandardCharsets#UTF_8}.
+     * {@link java.nio.charset.StandardCharsets#UTF_8}.
      *
      * @param publicKey the verification key
      * @param algorithm the verification algorithm
@@ -972,7 +740,7 @@ public final class Bruce {
      * @throws BruceException on initialization exceptions
      */
     public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, String provider, Encoding encoding) {
-        return verifier(publicKey, algorithm, provider, UTF_8, encoding);
+        return SignatureOperations.createEncodingVerifier(publicKey, algorithm, provider, encoding);
     }
 
     /**
@@ -987,16 +755,7 @@ public final class Bruce {
      * @throws BruceException on initialization exceptions
      */
     public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, String provider, Charset charset, Encoding encoding) {
-        if (encoding == null) {
-            throw new BruceException(INVALID_ENCODING_NULL);
-        }
-
-        if (charset == null) {
-            throw new BruceException("Invalid charset: null");
-        }
-
-        var verifier = verifier(publicKey, algorithm, provider);
-        return (message, signature) -> verifier.verify(message.getBytes(charset), decode(encoding, signature));
+        return SignatureOperations.createEncodingVerifier(publicKey, algorithm, provider, charset, encoding);
     }
 
     /**
@@ -1014,7 +773,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static EncodingVerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm, Encoding encoding) {
-        return verifier(publicKeyMap, algorithm, null, UTF_8, encoding);
+        return SignatureOperations.createEncodingVerifierByKey(publicKeyMap, algorithm, encoding);
     }
 
     /**
@@ -1031,7 +790,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static EncodingVerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm, Charset charset, Encoding encoding) {
-        return verifier(publicKeyMap, algorithm, null, charset, encoding);
+        return SignatureOperations.createEncodingVerifierByKey(publicKeyMap, algorithm, charset, encoding);
     }
 
     /**
@@ -1049,15 +808,7 @@ public final class Bruce {
      * @throws BruceException on no such algorithm or provider exceptions
      */
     public static EncodingVerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm, String provider, Charset charset, Encoding encoding) {
-        return (publicKeyId, message, signature) -> {
-            var publicKey = publicKeyMap.get(publicKeyId);
-
-            if (publicKey == null) {
-                throw new BruceException(String.format("public key not found for id: %s", publicKeyId));
-            }
-
-            return verifier(publicKey, algorithm, provider, charset, encoding).verify(message, signature);
-        };
+        return SignatureOperations.createEncodingVerifierByKey(publicKeyMap, algorithm, provider, charset, encoding);
     }
 
     /**
@@ -1067,7 +818,7 @@ public final class Bruce {
      * @return a newly generated symmetric key
      */
     public static byte[] symmetricKey(String algorithm) {
-        return symmetricKey(algorithm, BLANK);
+        return KeyGenerators.generateSymmetricKey(algorithm);
     }
 
     /**
@@ -1079,15 +830,7 @@ public final class Bruce {
      * @return a newly generated symmetric key
      */
     public static byte[] symmetricKey(String algorithm, String provider) {
-        try {
-            var generator = provider == null || provider.isBlank()
-                    ? KeyGenerator.getInstance(algorithm)
-                    : KeyGenerator.getInstance(algorithm, provider);
-            generator.init(new SecureRandom());
-            return generator.generateKey().getEncoded();
-        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-            throw new BruceException(String.format("cannot generate key: algorithm=%s, provider=%s", algorithm, provider), e);
-        }
+        return KeyGenerators.generateSymmetricKey(algorithm, provider);
     }
 
     /**
@@ -1098,7 +841,7 @@ public final class Bruce {
      * @return a newly generated symmetric key
      */
     public static String symmetricKey(String algorithm, Encoding encoding) {
-        return symmetricKey(algorithm, BLANK, encoding);
+        return KeyGenerators.generateEncodedSymmetricKey(algorithm, encoding);
     }
 
     /**
@@ -1111,7 +854,7 @@ public final class Bruce {
      * @return a newly generated symmetric key
      */
     public static String symmetricKey(String algorithm, String provider, Encoding encoding) {
-        return encode(encoding, symmetricKey(algorithm, provider));
+        return KeyGenerators.generateEncodedSymmetricKey(algorithm, provider, encoding);
     }
 
     /**
@@ -1124,7 +867,7 @@ public final class Bruce {
      * @return the symmetric cipher
      */
     public static CipherByKey cipher(String keyAlgorithm, String cipherAlgorithm, Mode mode) {
-        return cipher(keyAlgorithm, cipherAlgorithm, BLANK, mode);
+        return SymmetricCipherOperations.createCipherByKey(keyAlgorithm, cipherAlgorithm, mode);
     }
 
     /**
@@ -1138,27 +881,7 @@ public final class Bruce {
      * @return the symmetric cipher
      */
     public static CipherByKey cipher(String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode) {
-        if (mode == null) {
-            throw new BruceException(MODE_CANNOT_BE_NULL);
-        }
-
-        return (key, iv, message) -> {
-            try {
-                var initializationVectorSpec = new IvParameterSpec(iv);
-                var spec = new SecretKeySpec(key, keyAlgorithm);
-                var cipher = provider == null || provider.isBlank()
-                        ? javax.crypto.Cipher.getInstance(cipherAlgorithm)
-                        : javax.crypto.Cipher.getInstance(cipherAlgorithm, provider);
-                if (mode == Mode.ENCRYPT) {
-                    cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, spec, initializationVectorSpec);
-                } else if (mode == Mode.DECRYPT) {
-                    cipher.init(javax.crypto.Cipher.DECRYPT_MODE, spec, initializationVectorSpec);
-                }
-                return cipher.doFinal(message);
-            } catch (NoSuchAlgorithmException | BadPaddingException | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException | NoSuchProviderException | IllegalBlockSizeException e) {
-                throw new BruceException("error encrypting/decrypting message", e);
-            }
-        };
+        return SymmetricCipherOperations.createCipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode);
     }
 
     /**
@@ -1171,7 +894,7 @@ public final class Bruce {
      * @return the symmetric cipher
      */
     public static com.mirkocaserta.bruce.cipher.symmetric.Cipher cipher(byte[] key, String keyAlgorithm, String cipherAlgorithm, Mode mode) {
-        return cipher(key, keyAlgorithm, cipherAlgorithm, BLANK, mode);
+        return SymmetricCipherOperations.createCipher(key, keyAlgorithm, cipherAlgorithm, mode);
     }
 
     /**
@@ -1185,8 +908,7 @@ public final class Bruce {
      * @return the symmetric cipher
      */
     public static com.mirkocaserta.bruce.cipher.symmetric.Cipher cipher(byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode) {
-        var cipher = cipher(keyAlgorithm, cipherAlgorithm, provider, mode);
-        return (iv, message) -> cipher.encrypt(key, iv, message);
+        return SymmetricCipherOperations.createCipher(key, keyAlgorithm, cipherAlgorithm, provider, mode);
     }
 
     /**
@@ -1200,7 +922,7 @@ public final class Bruce {
      * @return the symmetric cipher
      */
     public static EncodingCipherByKey cipherByKey(String keyAlgorithm, String cipherAlgorithm, Mode mode, Charset charset) {
-        return cipherByKey(keyAlgorithm, cipherAlgorithm, BLANK, mode, charset);
+        return SymmetricCipherOperations.createEncodingCipherByKey(keyAlgorithm, cipherAlgorithm, mode, charset);
     }
 
     /**
@@ -1215,19 +937,7 @@ public final class Bruce {
      * @return the symmetric cipher
      */
     public static EncodingCipherByKey cipherByKey(String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode, Charset charset) {
-        var cipher = cipher(keyAlgorithm, cipherAlgorithm, provider, mode);
-
-        return (key, iv, message, encoding) -> {
-            var keyBA = decode(encoding, key);
-            var ivBA = decode(encoding, iv);
-
-            if (mode == Mode.ENCRYPT) {
-                return encode(encoding, cipher.encrypt(keyBA, ivBA, message.getBytes(charset)));
-            } else if (mode == Mode.DECRYPT) {
-                return new String(cipher.encrypt(keyBA, ivBA, decode(encoding, message)), charset);
-            }
-            throw new BruceException("no such mode");
-        };
+        return SymmetricCipherOperations.createEncodingCipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode, charset);
     }
 
     /**
@@ -1242,7 +952,7 @@ public final class Bruce {
      * @return the symmetric cipher
      */
     public static EncodingCipher cipher(String key, String keyAlgorithm, String cipherAlgorithm, Mode mode, Charset charset, Encoding encoding) {
-        return cipher(key, keyAlgorithm, cipherAlgorithm, BLANK, mode, charset, encoding);
+        return SymmetricCipherOperations.createEncodingCipher(key, keyAlgorithm, cipherAlgorithm, mode, charset, encoding);
     }
 
     /**
@@ -1258,8 +968,7 @@ public final class Bruce {
      * @return the symmetric cipher
      */
     public static EncodingCipher cipher(String key, String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode, Charset charset, Encoding encoding) {
-        var cipher = cipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode, charset);
-        return (iv, message) -> cipher.encrypt(key, iv, message, encoding);
+        return SymmetricCipherOperations.createEncodingCipher(key, keyAlgorithm, cipherAlgorithm, provider, mode, charset, encoding);
     }
 
     /**
@@ -1271,7 +980,7 @@ public final class Bruce {
      * @return the asymmetric cipher
      */
     public static Cipher cipher(Key key, String algorithm, Mode mode) {
-        return cipher(key, algorithm, BLANK, mode);
+        return AsymmetricCipherOperations.createCipher(key, algorithm, mode);
     }
 
     /**
@@ -1284,25 +993,7 @@ public final class Bruce {
      * @return the asymmetric cipher
      */
     public static Cipher cipher(Key key, String algorithm, String provider, Mode mode) {
-        if (mode == null) {
-            throw new BruceException(MODE_CANNOT_BE_NULL);
-        }
-
-        return message -> {
-            try {
-                var cipher = provider == null || provider.isBlank()
-                        ? javax.crypto.Cipher.getInstance(algorithm)
-                        : javax.crypto.Cipher.getInstance(algorithm, provider);
-                if (mode == Mode.ENCRYPT) {
-                    cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, key);
-                } else if (mode == Mode.DECRYPT) {
-                    cipher.init(javax.crypto.Cipher.DECRYPT_MODE, key);
-                }
-                return cipher.doFinal(message);
-            } catch (Exception e) {
-                throw new BruceException(String.format("error encrypting/decrypting message; mode=%s", mode), e);
-            }
-        };
+        return AsymmetricCipherOperations.createCipher(key, algorithm, provider, mode);
     }
 
     /**
@@ -1313,7 +1004,7 @@ public final class Bruce {
      * @return an asymmetric cipher with a map of preconfigured keys
      */
     public static com.mirkocaserta.bruce.cipher.asymmetric.CipherByKey cipher(Map<String, Key> keys, String algorithm) {
-        return cipher(keys, algorithm, BLANK);
+        return AsymmetricCipherOperations.createCipherByKey(keys, algorithm);
     }
 
     /**
@@ -1325,8 +1016,7 @@ public final class Bruce {
      * @return an asymmetric cipher with a map of preconfigured keys
      */
     public static com.mirkocaserta.bruce.cipher.asymmetric.CipherByKey cipher(Map<String, Key> keys, String algorithm, String provider) {
-        // we use a cipher cache here as getting a new one each time is a bit expensive
-        return (keyId, mode, message) -> getCipher(keys, keyId, algorithm, provider, mode).encrypt(message);
+        return AsymmetricCipherOperations.createCipherByKey(keys, algorithm, provider);
     }
 
     /**
@@ -1340,7 +1030,7 @@ public final class Bruce {
      * @return an encoding asymmetric cipher
      */
     public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipher cipher(Key key, String algorithm, Mode mode, Encoding encoding, Charset charset) {
-        return cipher(key, algorithm, BLANK, mode, encoding, charset);
+        return AsymmetricCipherOperations.createEncodingCipher(key, algorithm, mode, encoding, charset);
     }
 
     /**
@@ -1355,8 +1045,7 @@ public final class Bruce {
      * @return an encoding asymmetric cipher
      */
     public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipher cipher(Key key, String algorithm, String provider, Mode mode, Encoding encoding, Charset charset) {
-        var cipher = cipher(key, algorithm, provider, mode);
-        return message -> crypt(cipher, message, mode, encoding, charset);
+        return AsymmetricCipherOperations.createEncodingCipher(key, algorithm, provider, mode, encoding, charset);
     }
 
     /**
@@ -1369,7 +1058,7 @@ public final class Bruce {
      * @return an encoding asymmetric cipher with a map of preconfigured keys
      */
     public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipherByKey cipher(Map<String, Key> keys, String algorithm, Encoding encoding, Charset charset) {
-        return cipher(keys, algorithm, BLANK, encoding, charset);
+        return AsymmetricCipherOperations.createEncodingCipherByKey(keys, algorithm, encoding, charset);
     }
 
     /**
@@ -1383,62 +1072,7 @@ public final class Bruce {
      * @return an encoding asymmetric cipher with a map of preconfigured keys
      */
     public static com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipherByKey cipher(Map<String, Key> keys, String algorithm, String provider, Encoding encoding, Charset charset) {
-        return (keyId, mode, message) -> {
-            var cipher = getCipher(keys, keyId, algorithm, provider, mode);
-            return crypt(cipher, message, mode, encoding, charset);
-        };
-    }
-
-    /**
-     * Performs encryption or decryption based on the given mode.
-     *
-     * @param cipher   the encryption/decryption cipher
-     * @param message  the message
-     * @param mode     the cipher mode: encrypt/decrypt
-     * @param encoding the message encoding
-     * @param charset  the message charset
-     * @return the encrypted or decrypted message
-     */
-    private static String crypt(Cipher cipher, String message, Mode mode, Encoding encoding, Charset charset) {
-        if (mode == Mode.ENCRYPT) {
-            return encode(encoding, cipher.encrypt(message.getBytes(charset)));
-        } else if (mode == Mode.DECRYPT) {
-            return new String(cipher.encrypt(decode(encoding, message)), charset);
-        }
-        throw new BruceException("no such mode");
-    }
-
-    /**
-     * Returns a cipher using an internal cache.
-     *
-     * @param keys      a map of keys where keyId is the map key and the cipher key is the value
-     * @param keyId     the key id
-     * @param algorithm the cipher algorithm
-     * @param provider  the provider
-     * @param mode      the cipher mode: encrypt/decrypt
-     * @return the cipher
-     */
-    private static Cipher getCipher(Map<String, Key> keys, String keyId, String algorithm, String provider, Mode mode) {
-        return cipherCache.computeIfAbsent(cipherCacheKey(keyId, algorithm, provider, mode), ignored -> {
-            var key = keys.get(keyId);
-            if (key == null) {
-                throw new BruceException(String.format("no such key: %s", keyId));
-            }
-            return cipher(key, algorithm, provider, mode);
-        });
-    }
-
-    /**
-     * This is used to generate the cipher cache key.
-     *
-     * @param keyId     the key id
-     * @param algorithm the cypher algorithm
-     * @param provider  the cypher provider
-     * @param mode      the cyphering mode: encrypt/decrypt
-     * @return the cache key
-     */
-    private static String cipherCacheKey(String keyId, String algorithm, String provider, Mode mode) {
-        return keyId + "::" + algorithm + "::" + provider + "::" + mode;
+        return AsymmetricCipherOperations.createEncodingCipherByKey(keys, algorithm, provider, encoding, charset);
     }
 
     /**
@@ -1449,7 +1083,7 @@ public final class Bruce {
      * @return the message authentication codes interface
      */
     public static Mac mac(Key key, String algorithm) {
-        return mac(key, algorithm, BLANK);
+        return MacOperations.createMac(key, algorithm);
     }
 
     /**
@@ -1461,21 +1095,7 @@ public final class Bruce {
      * @return the message authentication codes interface
      */
     public static Mac mac(Key key, String algorithm, String provider) {
-        return message -> {
-            try {
-                var mac = provider == null || provider.isBlank()
-                        ? javax.crypto.Mac.getInstance(algorithm)
-                        : javax.crypto.Mac.getInstance(algorithm, provider);
-                mac.init(key);
-                return mac.doFinal(message);
-            } catch (NoSuchAlgorithmException e) {
-                throw new BruceException(String.format("no such algorithm: %s", key.getAlgorithm()), e);
-            } catch (InvalidKeyException e) {
-                throw new BruceException("invalid key", e);
-            } catch (NoSuchProviderException e) {
-                throw new BruceException(String.format("no such provider: %s", provider), e);
-            }
-        };
+        return MacOperations.createMac(key, algorithm, provider);
     }
 
     /**
@@ -1488,7 +1108,7 @@ public final class Bruce {
      * @return the message authentication codes interface
      */
     public static EncodingMac mac(Key key, String algorithm, Encoding encoding, Charset charset) {
-        return mac(key, algorithm, BLANK, encoding, charset);
+        return MacOperations.createEncodingMac(key, algorithm, encoding, charset);
     }
 
     /**
@@ -1502,53 +1122,7 @@ public final class Bruce {
      * @return the message authentication codes interface
      */
     public static EncodingMac mac(Key key, String algorithm, String provider, Encoding encoding, Charset charset) {
-        var mac = mac(key, algorithm, provider);
-        return message -> encode(encoding, mac.get(message.getBytes(charset)));
-    }
-
-    /**
-     * Decodes the input using the specified encoding.
-     *
-     * @param encoding the encoding to use
-     * @param input    the input to decode
-     * @return a raw bytes array representation of the decoded input
-     * @throws BruceException on decoding errors
-     */
-    private static byte[] decode(final Encoding encoding, final String input) {
-        try {
-            if (encoding == Encoding.HEX) {
-                return HEX_DECODER.decode(input);
-            } else if (encoding == Encoding.BASE64) {
-                return BASE_64_DECODER.decode(input);
-            } else if (encoding == Encoding.URL) {
-                return URL_DECODER.decode(input);
-            } else if (encoding == Encoding.MIME) {
-                return MIME_DECODER.decode(input);
-            }
-            throw new BruceException("invalid encoding");
-        } catch (IllegalArgumentException e) {
-            throw new BruceException(String.format("invalid input for encoding %s", encoding));
-        }
-    }
-
-    /**
-     * Encodes the input using the specified encoding.
-     *
-     * @param encoding the encoding to use
-     * @param input    the input to encode
-     * @return a string representation of the encoded input
-     */
-    private static String encode(final Encoding encoding, final byte[] input) {
-        if (encoding == Encoding.HEX) {
-            return HEX_ENCODER.encodeToString(input);
-        } else if (encoding == Encoding.BASE64) {
-            return BASE_64_ENCODER.encodeToString(input);
-        } else if (encoding == Encoding.URL) {
-            return URL_ENCODER.encodeToString(input);
-        } else if (encoding == Encoding.MIME) {
-            return MIME_ENCODER.encodeToString(input);
-        }
-        throw new BruceException("invalid encoding");
+        return MacOperations.createEncodingMac(key, algorithm, provider, encoding, charset);
     }
 
     /**
