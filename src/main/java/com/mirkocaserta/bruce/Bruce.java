@@ -74,6 +74,26 @@ public final class Bruce {
         // utility class, users can't make new instances
     }
 
+    // Builder Pattern Factory Methods
+
+    /**
+     * Creates a new cipher builder for fluent cipher configuration.
+     * 
+     * @return a new cipher builder
+     */
+    public static CipherBuilder cipherBuilder() {
+        return new CipherBuilder();
+    }
+
+    /**
+     * Creates a new signer builder for fluent signer configuration.
+     * 
+     * @return a new signer builder
+     */
+    public static SignerBuilder signerBuilder() {
+        return new SignerBuilder();
+    }
+
     /**
      * Returns the default keystore using configuration from the following
      * system properties:

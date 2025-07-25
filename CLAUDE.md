@@ -67,6 +67,11 @@ accessed through static methods on the `Bruce` class.
 **Functional Interfaces:**
 Most operations return functional interfaces (e.g., `Signer`, `Verifier`, `Cipher`) that can be used fluently.
 
+**Builder Pattern (NEW):**
+Complex operations with many parameters now support fluent builder APIs to reduce parameter overload:
+- `Bruce.cipherBuilder()` - for cipher operations with 6+ parameters
+- `Bruce.signerBuilder()` - for signer operations with 5+ parameters
+
 **Multiple Key Support:**
 Many operations support "ByKey" variants that accept a Map of keys, allowing runtime key selection by ID.
 

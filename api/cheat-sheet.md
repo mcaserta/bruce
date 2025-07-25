@@ -6,6 +6,10 @@ This is a list of all available methods. Please refer to the detailed documentat
 // supported encodings
 public enum Encoding { HEX, BASE64, URL, MIME };
 
+// builder pattern methods (NEW - reduces parameter overload)
+CipherBuilder cipherBuilder();
+SignerBuilder signerBuilder();
+
 // keystore methods
 KeyStore keystore();
 KeyStore keystore(String type);
@@ -80,5 +84,57 @@ Mac mac(Key key, String algorithm);
 Mac mac(Key key, String algorithm, String provider);
 EncodingMac mac(Key key, String algorithm, Encoding encoding, Charset charset);
 EncodingMac mac(Key key, String algorithm, String provider, Encoding encoding, Charset charset);
+```
+
+## Builder Pattern Usage
+
+For complex operations with many parameters, use the fluent builder APIs:
+
+### Signer Builder
+
+```java
+// Simple signer
+EncodingSigner signer = signerBuilder()
+    .key(privateKey)
+    .algorithm("SHA256withRSA")
+    .build();
+
+// Full configuration
+EncodingSigner signer = signerBuilder()
+    .key(privateKey)
+    .algorithm("SHA256withRSA")
+    .provider("BC")
+    .charset(UTF_8)
+    .encoding(BASE64)
+    .build();
+
+// Multi-key signer
+EncodingSignerByKey signer = signerBuilder()
+    .keys(privateKeyMap)
+    .algorithm("SHA256withRSA")
+    .encoding(BASE64)
+    .buildByKey();
+```
+
+### Cipher Builder
+
+```java
+// Symmetric cipher
+EncodingCipher cipher = cipherBuilder()
+    .key("myKey")
+    .keyAlgorithm("AES")
+    .algorithm("AES/CBC/PKCS5Padding")
+    .mode(ENCRYPT)
+    .charset(UTF_8)
+    .encoding(BASE64)
+    .buildSymmetric();
+
+// Asymmetric cipher
+EncodingCipher cipher = cipherBuilder()
+    .key(publicKey)
+    .algorithm("RSA")
+    .mode(ENCRYPT)
+    .encoding(BASE64)
+    .buildAsymmetric();
 ```
 
