@@ -19,7 +19,7 @@ Certificate certificate(KeyStore keystore, String alias);
 // key methods
 PublicKey publicKey(KeyStore keystore, String alias);
 PrivateKey privateKey(KeyStore keystore, String alias, char[] password);
-Key secretKey(KeyStore keystore, String alias, String char[]);
+Key secretKey(KeyStore keystore, String alias, char[] password);
 KeyPair keyPair(String algorithm, int keySize);
 KeyPair keyPair(String algorithm, String provider, int keySize);
 KeyPair keyPair(String algorithm, int keySize, SecureRandom random);
