@@ -95,6 +95,33 @@ public final class Bruce {
     }
 
     /**
+     * Creates a new verifier builder for fluent verifier configuration.
+     * 
+     * @return a new verifier builder
+     */
+    public static VerifierBuilder verifierBuilder() {
+        return new VerifierBuilder();
+    }
+
+    /**
+     * Creates a new digest builder for fluent digest configuration.
+     * 
+     * @return a new digest builder
+     */
+    public static DigestBuilder digestBuilder() {
+        return new DigestBuilder();
+    }
+
+    /**
+     * Creates a new MAC builder for fluent MAC configuration.
+     * 
+     * @return a new MAC builder
+     */
+    public static MacBuilder macBuilder() {
+        return new MacBuilder();
+    }
+
+    /**
      * Returns the default keystore using configuration from the following
      * system properties:
      *
