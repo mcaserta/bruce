@@ -31,18 +31,50 @@ public final class DigestOperations {
         // utility class
     }
     
+    /**
+     * Creates an encoding message digester using the default provider and UTF-8 charset.
+     *
+     * @param algorithm the digest algorithm
+     * @param encoding the output encoding
+     * @return an encoding digester
+     */
     public static EncodingDigester createEncodingDigester(String algorithm, Bruce.Encoding encoding) {
         return createEncodingDigester(algorithm, BLANK, encoding, UTF_8);
     }
     
+    /**
+     * Creates an encoding message digester using the default provider and a custom charset.
+     *
+     * @param algorithm the digest algorithm
+     * @param encoding the output encoding
+     * @param charset the input charset
+     * @return an encoding digester
+     */
     public static EncodingDigester createEncodingDigester(String algorithm, Bruce.Encoding encoding, Charset charset) {
         return createEncodingDigester(algorithm, BLANK, encoding, charset);
     }
     
+    /**
+     * Creates an encoding message digester using a specific provider and UTF-8 charset.
+     *
+     * @param algorithm the digest algorithm
+     * @param provider the JCA provider name
+     * @param encoding the output encoding
+     * @return an encoding digester
+     */
     public static EncodingDigester createEncodingDigester(String algorithm, String provider, Bruce.Encoding encoding) {
         return createEncodingDigester(algorithm, provider, encoding, UTF_8);
     }
     
+    /**
+     * Creates an encoding message digester using a specific provider and charset.
+     *
+     * @param algorithm the digest algorithm
+     * @param provider the JCA provider name
+     * @param encoding the output encoding
+     * @param charset the input charset
+     * @return an encoding digester
+     */
     public static EncodingDigester createEncodingDigester(String algorithm, String provider, Bruce.Encoding encoding, Charset charset) {
         if (encoding == null) {
             throw new BruceException("Invalid encoding: null");
@@ -55,10 +87,25 @@ public final class DigestOperations {
         return message -> EncodingUtils.encode(encoding, rawDigester.digest(message.getBytes(charset)));
     }
     
+    /**
+     * Creates a file digester using the default provider.
+     *
+     * @param algorithm the digest algorithm
+     * @param encoding the output encoding
+     * @return a file digester producing encoded hashes
+     */
     public static FileDigester createFileDigester(String algorithm, Bruce.Encoding encoding) {
         return createFileDigester(algorithm, BLANK, encoding);
     }
     
+    /**
+     * Creates a file digester using a specific provider.
+     *
+     * @param algorithm the digest algorithm
+     * @param provider the JCA provider name
+     * @param encoding the output encoding
+     * @return a file digester producing encoded hashes
+     */
     public static FileDigester createFileDigester(String algorithm, String provider, Bruce.Encoding encoding) {
         if (encoding == null) {
             throw new BruceException("Invalid encoding: null");
@@ -102,6 +149,13 @@ public final class DigestOperations {
         };
     }
     
+    /**
+     * Creates a raw digester that returns bytes using an optional provider.
+     *
+     * @param algorithm the digest algorithm
+     * @param provider the JCA provider name (blank for default)
+     * @return a raw digester
+     */
     public static Digester createRawDigester(String algorithm, String provider) {
         MessageDigest digester;
 
@@ -118,6 +172,12 @@ public final class DigestOperations {
         return digester::digest;
     }
     
+    /**
+     * Creates a raw digester that returns bytes using the default provider.
+     *
+     * @param algorithm the digest algorithm
+     * @return a raw digester
+     */
     public static Digester createRawDigester(String algorithm) {
         return createRawDigester(algorithm, BLANK);
     }

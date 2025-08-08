@@ -32,10 +32,25 @@ public final class SignatureOperations {
         // utility class
     }
     
+    /**
+     * Creates a signer using the default provider.
+     *
+     * @param privateKey the private key
+     * @param algorithm the signature algorithm (e.g., SHA256withRSA)
+     * @return a signer producing raw bytes
+     */
     public static Signer createSigner(PrivateKey privateKey, String algorithm) {
         return createSigner(privateKey, algorithm, BLANK);
     }
     
+    /**
+     * Creates a signer using a specific provider.
+     *
+     * @param privateKey the private key
+     * @param algorithm the signature algorithm
+     * @param provider the JCA provider name
+     * @return a signer producing raw bytes
+     */
     public static Signer createSigner(PrivateKey privateKey, String algorithm, String provider) {
         Signer signer = message -> {
             try {
@@ -56,10 +71,25 @@ public final class SignatureOperations {
         return signer;
     }
     
+    /**
+     * Creates a signer with runtime key selection.
+     *
+     * @param privateKeyMap map of key id to private key
+     * @param algorithm the signature algorithm
+     * @return a signer with runtime key selection
+     */
     public static SignerByKey createSignerByKey(Map<String, PrivateKey> privateKeyMap, String algorithm) {
         return createSignerByKey(privateKeyMap, algorithm, BLANK);
     }
     
+    /**
+     * Creates a signer with runtime key selection using a specific provider.
+     *
+     * @param privateKeyMap map of key id to private key
+     * @param algorithm the signature algorithm
+     * @param provider the JCA provider name
+     * @return a signer with runtime key selection
+     */
     public static SignerByKey createSignerByKey(Map<String, PrivateKey> privateKeyMap, String algorithm, String provider) {
         return (privateKeyId, message) -> {
             var privateKey = privateKeyMap.get(privateKeyId);
@@ -72,14 +102,41 @@ public final class SignatureOperations {
         };
     }
     
+    /**
+     * Creates an encoding signer with runtime key selection using the default provider and UTF-8 charset.
+     *
+     * @param privateKeyMap map of key id to private key
+     * @param algorithm the signature algorithm
+     * @param encoding the signature encoding
+     * @return an encoding signer with runtime key selection
+     */
     public static EncodingSignerByKey createEncodingSignerByKey(Map<String, PrivateKey> privateKeyMap, String algorithm, Bruce.Encoding encoding) {
         return createEncodingSignerByKey(privateKeyMap, algorithm, null, UTF_8, encoding);
     }
     
+    /**
+     * Creates an encoding signer with runtime key selection and custom charset.
+     *
+     * @param privateKeyMap map of key id to private key
+     * @param algorithm the signature algorithm
+     * @param charset the input charset
+     * @param encoding the signature encoding
+     * @return an encoding signer with runtime key selection
+     */
     public static EncodingSignerByKey createEncodingSignerByKey(Map<String, PrivateKey> privateKeyMap, String algorithm, Charset charset, Bruce.Encoding encoding) {
         return createEncodingSignerByKey(privateKeyMap, algorithm, null, charset, encoding);
     }
     
+    /**
+     * Creates an encoding signer with runtime key selection using a specific provider and custom charset.
+     *
+     * @param privateKeyMap map of key id to private key
+     * @param algorithm the signature algorithm
+     * @param provider the JCA provider name
+     * @param charset the input charset
+     * @param encoding the signature encoding
+     * @return an encoding signer with runtime key selection
+     */
     public static EncodingSignerByKey createEncodingSignerByKey(Map<String, PrivateKey> privateKeyMap, String algorithm, String provider, Charset charset, Bruce.Encoding encoding) {
         return (privateKeyId, message) -> {
             var privateKey = privateKeyMap.get(privateKeyId);
@@ -92,14 +149,41 @@ public final class SignatureOperations {
         };
     }
     
+    /**
+     * Creates an encoding signer using the default provider and UTF-8 charset.
+     *
+     * @param privateKey the private key
+     * @param algorithm the signature algorithm
+     * @param encoding the signature encoding
+     * @return an encoding signer
+     */
     public static EncodingSigner createEncodingSigner(PrivateKey privateKey, String algorithm, Bruce.Encoding encoding) {
         return createEncodingSigner(privateKey, algorithm, BLANK, UTF_8, encoding);
     }
     
+    /**
+     * Creates an encoding signer using the default provider and custom charset.
+     *
+     * @param privateKey the private key
+     * @param algorithm the signature algorithm
+     * @param charset the input charset
+     * @param encoding the signature encoding
+     * @return an encoding signer
+     */
     public static EncodingSigner createEncodingSigner(PrivateKey privateKey, String algorithm, Charset charset, Bruce.Encoding encoding) {
         return createEncodingSigner(privateKey, algorithm, BLANK, charset, encoding);
     }
     
+    /**
+     * Creates an encoding signer using a specific provider and custom charset.
+     *
+     * @param privateKey the private key
+     * @param algorithm the signature algorithm
+     * @param provider the JCA provider name
+     * @param charset the input charset
+     * @param encoding the signature encoding
+     * @return an encoding signer
+     */
     public static EncodingSigner createEncodingSigner(PrivateKey privateKey, String algorithm, String provider, Charset charset, Bruce.Encoding encoding) {
         if (encoding == null) {
             throw new BruceException("Invalid encoding: null");
@@ -113,10 +197,25 @@ public final class SignatureOperations {
         return message -> EncodingUtils.encode(encoding, signer.sign(message.getBytes(charset)));
     }
     
+    /**
+     * Creates a verifier using the default provider.
+     *
+     * @param publicKey the public key
+     * @param algorithm the signature algorithm
+     * @return a verifier of raw signature bytes
+     */
     public static Verifier createVerifier(PublicKey publicKey, String algorithm) {
         return createVerifier(publicKey, algorithm, BLANK);
     }
     
+    /**
+     * Creates a verifier using a specific provider.
+     *
+     * @param publicKey the public key
+     * @param algorithm the signature algorithm
+     * @param provider the JCA provider name
+     * @return a verifier of raw signature bytes
+     */
     public static Verifier createVerifier(PublicKey publicKey, String algorithm, String provider) {
         return (message, signature) -> {
             try {
@@ -132,10 +231,25 @@ public final class SignatureOperations {
         };
     }
     
+    /**
+     * Creates a verifier with runtime key selection.
+     *
+     * @param publicKeyMap map of key id to public key
+     * @param algorithm the signature algorithm
+     * @return a verifier with runtime key selection
+     */
     public static VerifierByKey createVerifierByKey(Map<String, PublicKey> publicKeyMap, String algorithm) {
         return createVerifierByKey(publicKeyMap, algorithm, BLANK);
     }
     
+    /**
+     * Creates a verifier with runtime key selection using a specific provider.
+     *
+     * @param publicKeyMap map of key id to public key
+     * @param algorithm the signature algorithm
+     * @param provider the JCA provider name
+     * @return a verifier with runtime key selection
+     */
     public static VerifierByKey createVerifierByKey(Map<String, PublicKey> publicKeyMap, String algorithm, String provider) {
         return (publicKeyId, message, signature) -> {
             var publicKey = publicKeyMap.get(publicKeyId);
@@ -148,14 +262,41 @@ public final class SignatureOperations {
         };
     }
     
+    /**
+     * Creates an encoding verifier using the default provider and UTF-8 charset.
+     *
+     * @param publicKey the public key
+     * @param algorithm the signature algorithm
+     * @param encoding the signature encoding
+     * @return an encoding verifier
+     */
     public static EncodingVerifier createEncodingVerifier(PublicKey publicKey, String algorithm, Bruce.Encoding encoding) {
         return createEncodingVerifier(publicKey, algorithm, BLANK, encoding);
     }
     
+    /**
+     * Creates an encoding verifier using a specific provider and UTF-8 charset.
+     *
+     * @param publicKey the public key
+     * @param algorithm the signature algorithm
+     * @param provider the JCA provider name
+     * @param encoding the signature encoding
+     * @return an encoding verifier
+     */
     public static EncodingVerifier createEncodingVerifier(PublicKey publicKey, String algorithm, String provider, Bruce.Encoding encoding) {
         return createEncodingVerifier(publicKey, algorithm, provider, UTF_8, encoding);
     }
     
+    /**
+     * Creates an encoding verifier using a specific provider and custom charset.
+     *
+     * @param publicKey the public key
+     * @param algorithm the signature algorithm
+     * @param provider the JCA provider name
+     * @param charset the input charset
+     * @param encoding the signature encoding
+     * @return an encoding verifier
+     */
     public static EncodingVerifier createEncodingVerifier(PublicKey publicKey, String algorithm, String provider, Charset charset, Bruce.Encoding encoding) {
         if (encoding == null) {
             throw new BruceException("Invalid encoding: null");
@@ -169,14 +310,41 @@ public final class SignatureOperations {
         return (message, signature) -> verifier.verify(message.getBytes(charset), EncodingUtils.decode(encoding, signature));
     }
     
+    /**
+     * Creates an encoding verifier with runtime key selection using the default provider and UTF-8 charset.
+     *
+     * @param publicKeyMap map of key id to public key
+     * @param algorithm the signature algorithm
+     * @param encoding the signature encoding
+     * @return an encoding verifier with runtime key selection
+     */
     public static EncodingVerifierByKey createEncodingVerifierByKey(Map<String, PublicKey> publicKeyMap, String algorithm, Bruce.Encoding encoding) {
         return createEncodingVerifierByKey(publicKeyMap, algorithm, null, UTF_8, encoding);
     }
     
+    /**
+     * Creates an encoding verifier with runtime key selection and custom charset.
+     *
+     * @param publicKeyMap map of key id to public key
+     * @param algorithm the signature algorithm
+     * @param charset the input charset
+     * @param encoding the signature encoding
+     * @return an encoding verifier with runtime key selection
+     */
     public static EncodingVerifierByKey createEncodingVerifierByKey(Map<String, PublicKey> publicKeyMap, String algorithm, Charset charset, Bruce.Encoding encoding) {
         return createEncodingVerifierByKey(publicKeyMap, algorithm, null, charset, encoding);
     }
     
+    /**
+     * Creates an encoding verifier with runtime key selection using a specific provider and custom charset.
+     *
+     * @param publicKeyMap map of key id to public key
+     * @param algorithm the signature algorithm
+     * @param provider the JCA provider name
+     * @param charset the input charset
+     * @param encoding the signature encoding
+     * @return an encoding verifier with runtime key selection
+     */
     public static EncodingVerifierByKey createEncodingVerifierByKey(Map<String, PublicKey> publicKeyMap, String algorithm, String provider, Charset charset, Bruce.Encoding encoding) {
         return (publicKeyId, message, signature) -> {
             var publicKey = publicKeyMap.get(publicKeyId);

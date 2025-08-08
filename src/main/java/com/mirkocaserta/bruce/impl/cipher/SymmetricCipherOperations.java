@@ -33,10 +33,27 @@ public final class SymmetricCipherOperations {
         // utility class
     }
     
+    /**
+     * Creates a symmetric cipher where the key is selected at runtime via key id.
+     *
+     * @param keyAlgorithm the key algorithm (e.g., AES)
+     * @param cipherAlgorithm the cipher transformation (e.g., AES/CBC/PKCS5Padding)
+     * @param mode the operation mode (encrypt/decrypt)
+     * @return a cipher interface supporting runtime key selection
+     */
     public static CipherByKey createCipherByKey(String keyAlgorithm, String cipherAlgorithm, Mode mode) {
         return createCipherByKey(keyAlgorithm, cipherAlgorithm, BLANK, mode);
     }
     
+    /**
+     * Creates a symmetric cipher where the key is selected at runtime via key id using a specific provider.
+     *
+     * @param keyAlgorithm the key algorithm (e.g., AES)
+     * @param cipherAlgorithm the cipher transformation (e.g., AES/CBC/PKCS5Padding)
+     * @param provider the JCA provider name (e.g., "BC")
+     * @param mode the operation mode (encrypt/decrypt)
+     * @return a cipher interface supporting runtime key selection
+     */
     public static CipherByKey createCipherByKey(String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode) {
         if (mode == null) {
             throw new BruceException("mode cannot be null");
@@ -61,19 +78,57 @@ public final class SymmetricCipherOperations {
         };
     }
     
+    /**
+     * Creates a symmetric cipher for the given raw key bytes.
+     *
+     * @param key the raw key bytes
+     * @param keyAlgorithm the key algorithm
+     * @param cipherAlgorithm the cipher transformation
+     * @param mode the operation mode (encrypt/decrypt)
+     * @return a symmetric cipher
+     */
     public static com.mirkocaserta.bruce.cipher.symmetric.Cipher createCipher(byte[] key, String keyAlgorithm, String cipherAlgorithm, Mode mode) {
         return createCipher(key, keyAlgorithm, cipherAlgorithm, BLANK, mode);
     }
     
+    /**
+     * Creates a symmetric cipher for the given raw key bytes using a specific provider.
+     *
+     * @param key the raw key bytes
+     * @param keyAlgorithm the key algorithm
+     * @param cipherAlgorithm the cipher transformation
+     * @param provider the JCA provider name (e.g., "BC")
+     * @param mode the operation mode (encrypt/decrypt)
+     * @return a symmetric cipher
+     */
     public static com.mirkocaserta.bruce.cipher.symmetric.Cipher createCipher(byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode) {
         var cipher = createCipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode);
         return (iv, message) -> cipher.encrypt(key, iv, message);
     }
     
+    /**
+     * Creates a text-based symmetric cipher where the key is selected at runtime via key id.
+     *
+     * @param keyAlgorithm the key algorithm
+     * @param cipherAlgorithm the cipher transformation
+     * @param mode the operation mode
+     * @param charset the message charset
+     * @return an encoding cipher with runtime key selection
+     */
     public static EncodingCipherByKey createEncodingCipherByKey(String keyAlgorithm, String cipherAlgorithm, Mode mode, Charset charset) {
         return createEncodingCipherByKey(keyAlgorithm, cipherAlgorithm, BLANK, mode, charset);
     }
     
+    /**
+     * Creates a text-based symmetric cipher where the key is selected at runtime via key id using a specific provider.
+     *
+     * @param keyAlgorithm the key algorithm
+     * @param cipherAlgorithm the cipher transformation
+     * @param provider the JCA provider name
+     * @param mode the operation mode
+     * @param charset the message charset
+     * @return an encoding cipher with runtime key selection
+     */
     public static EncodingCipherByKey createEncodingCipherByKey(String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode, Charset charset) {
         var cipher = createCipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode);
 
@@ -90,10 +145,33 @@ public final class SymmetricCipherOperations {
         };
     }
     
+    /**
+     * Creates a text-based symmetric cipher for the given string key.
+     *
+     * @param key the key as a string
+     * @param keyAlgorithm the key algorithm
+     * @param cipherAlgorithm the cipher transformation
+     * @param mode the operation mode
+     * @param charset the message charset
+     * @param encoding the message encoding
+     * @return an encoding symmetric cipher
+     */
     public static EncodingCipher createEncodingCipher(String key, String keyAlgorithm, String cipherAlgorithm, Mode mode, Charset charset, Bruce.Encoding encoding) {
         return createEncodingCipher(key, keyAlgorithm, cipherAlgorithm, BLANK, mode, charset, encoding);
     }
     
+    /**
+     * Creates a text-based symmetric cipher for the given string key using a specific provider.
+     *
+     * @param key the key as a string
+     * @param keyAlgorithm the key algorithm
+     * @param cipherAlgorithm the cipher transformation
+     * @param provider the JCA provider name
+     * @param mode the operation mode
+     * @param charset the message charset
+     * @param encoding the message encoding
+     * @return an encoding symmetric cipher
+     */
     public static EncodingCipher createEncodingCipher(String key, String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode, Charset charset, Bruce.Encoding encoding) {
         var cipher = createEncodingCipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode, charset);
         return (iv, message) -> cipher.encrypt(key, iv, message, encoding);

@@ -1,3 +1,6 @@
+/**
+ * Bruce module exporting the public API packages.
+ */
 module com.mirkocaserta.bruce {
     exports com.mirkocaserta.bruce;
     exports com.mirkocaserta.bruce.cipher;

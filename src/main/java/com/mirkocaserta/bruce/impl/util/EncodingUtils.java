@@ -27,6 +27,14 @@ public final class EncodingUtils {
         // utility class
     }
     
+    /**
+     * Decodes the input string using the provided encoding.
+     *
+     * @param encoding the encoding type
+     * @param input the encoded input
+     * @return decoded bytes
+     * @throws BruceException if the input is invalid for the given encoding
+     */
     public static byte[] decode(final Bruce.Encoding encoding, final String input) {
         try {
             if (encoding == Bruce.Encoding.HEX) {
@@ -44,6 +52,13 @@ public final class EncodingUtils {
         }
     }
 
+    /**
+     * Encodes the input bytes using the provided encoding.
+     *
+     * @param encoding the encoding type
+     * @param input the raw bytes
+     * @return encoded string
+     */
     public static String encode(final Bruce.Encoding encoding, final byte[] input) {
         if (encoding == Bruce.Encoding.HEX) {
             return HEX_ENCODER.encodeToString(input);

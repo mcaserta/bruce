@@ -26,10 +26,25 @@ public final class MacOperations {
         // utility class
     }
     
+    /**
+     * Creates a MAC calculator using the default provider.
+     *
+     * @param key the secret key
+     * @param algorithm the MAC algorithm (e.g., HmacSHA256)
+     * @return a MAC interface producing raw bytes
+     */
     public static Mac createMac(Key key, String algorithm) {
         return createMac(key, algorithm, BLANK);
     }
     
+    /**
+     * Creates a MAC calculator using a specific provider.
+     *
+     * @param key the secret key
+     * @param algorithm the MAC algorithm
+     * @param provider the JCA provider name
+     * @return a MAC interface producing raw bytes
+     */
     public static Mac createMac(Key key, String algorithm, String provider) {
         return message -> {
             try {
@@ -48,10 +63,29 @@ public final class MacOperations {
         };
     }
     
+    /**
+     * Creates an encoding MAC calculator using the default provider.
+     *
+     * @param key the secret key
+     * @param algorithm the MAC algorithm
+     * @param encoding the output encoding
+     * @param charset the input charset
+     * @return an encoding MAC interface
+     */
     public static EncodingMac createEncodingMac(Key key, String algorithm, Bruce.Encoding encoding, Charset charset) {
         return createEncodingMac(key, algorithm, BLANK, encoding, charset);
     }
     
+    /**
+     * Creates an encoding MAC calculator using a specific provider.
+     *
+     * @param key the secret key
+     * @param algorithm the MAC algorithm
+     * @param provider the JCA provider name
+     * @param encoding the output encoding
+     * @param charset the input charset
+     * @return an encoding MAC interface
+     */
     public static EncodingMac createEncodingMac(Key key, String algorithm, String provider, Bruce.Encoding encoding, Charset charset) {
         var mac = createMac(key, algorithm, provider);
         return message -> EncodingUtils.encode(encoding, mac.get(message.getBytes(charset)));

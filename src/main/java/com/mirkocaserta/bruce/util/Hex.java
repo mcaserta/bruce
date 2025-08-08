@@ -44,6 +44,10 @@ public class Hex {
      */
     public static final class Encoder {
         /**
+         * Not instantiable. Use {@link Hex#getEncoder()}.
+         */
+        private Encoder() {}
+        /**
          * Encodes the input using hexadecimal characters.
          *
          * @param bytes the bytes to encode
@@ -64,6 +68,10 @@ public class Hex {
      * A hexadecimal decoder.
      */
     public static final class Decoder {
+        /**
+         * Not instantiable. Use {@link Hex#getDecoder()}.
+         */
+        private Decoder() {}
         /**
          * Decodes the input using hexadecimal characters.
          *

@@ -30,10 +30,27 @@ public final class AsymmetricCipherOperations {
         // utility class
     }
     
+    /**
+     * Creates a raw asymmetric cipher.
+     *
+     * @param key the key to initialize the cipher with
+     * @param algorithm the transformation (e.g., RSA/ECB/PKCS1Padding)
+     * @param mode the operation mode (encrypt/decrypt)
+     * @return an asymmetric cipher
+     */
     public static Cipher createCipher(Key key, String algorithm, Mode mode) {
         return createCipher(key, algorithm, BLANK, mode);
     }
     
+    /**
+     * Creates a raw asymmetric cipher using a specific provider.
+     *
+     * @param key the key to initialize the cipher with
+     * @param algorithm the transformation
+     * @param provider the JCA provider name
+     * @param mode the operation mode
+     * @return an asymmetric cipher
+     */
     public static Cipher createCipher(Key key, String algorithm, String provider, Mode mode) {
         if (mode == null) {
             throw new BruceException("mode cannot be null");
@@ -56,28 +73,83 @@ public final class AsymmetricCipherOperations {
         };
     }
     
+    /**
+     * Creates an asymmetric cipher where the key is selected at runtime via key id.
+     *
+     * @param keys a map of key id to key
+     * @param algorithm the transformation
+     * @return an asymmetric cipher supporting runtime key selection
+     */
     public static CipherByKey createCipherByKey(Map<String, Key> keys, String algorithm) {
         return createCipherByKey(keys, algorithm, BLANK);
     }
     
+    /**
+     * Creates an asymmetric cipher with runtime key selection using a specific provider.
+     *
+     * @param keys a map of key id to key
+     * @param algorithm the transformation
+     * @param provider the JCA provider name
+     * @return an asymmetric cipher supporting runtime key selection
+     */
     public static CipherByKey createCipherByKey(Map<String, Key> keys, String algorithm, String provider) {
         // we use a cipher cache here as getting a new one each time is a bit expensive
         return (keyId, mode, message) -> getCipher(keys, keyId, algorithm, provider, mode).encrypt(message);
     }
     
+    /**
+     * Creates a text-based asymmetric cipher.
+     *
+     * @param key the key
+     * @param algorithm the transformation
+     * @param mode the operation mode
+     * @param encoding the message encoding
+     * @param charset the message charset
+     * @return an encoding asymmetric cipher
+     */
     public static EncodingCipher createEncodingCipher(Key key, String algorithm, Mode mode, Bruce.Encoding encoding, Charset charset) {
         return createEncodingCipher(key, algorithm, BLANK, mode, encoding, charset);
     }
     
+    /**
+     * Creates a text-based asymmetric cipher using a specific provider.
+     *
+     * @param key the key
+     * @param algorithm the transformation
+     * @param provider the JCA provider name
+     * @param mode the operation mode
+     * @param encoding the message encoding
+     * @param charset the message charset
+     * @return an encoding asymmetric cipher
+     */
     public static EncodingCipher createEncodingCipher(Key key, String algorithm, String provider, Mode mode, Bruce.Encoding encoding, Charset charset) {
         var cipher = createCipher(key, algorithm, provider, mode);
         return message -> crypt(cipher, message, mode, encoding, charset);
     }
     
+    /**
+     * Creates a text-based asymmetric cipher with runtime key selection.
+     *
+     * @param keys a map of key id to key
+     * @param algorithm the transformation
+     * @param encoding the message encoding
+     * @param charset the message charset
+     * @return an encoding asymmetric cipher with runtime key selection
+     */
     public static EncodingCipherByKey createEncodingCipherByKey(Map<String, Key> keys, String algorithm, Bruce.Encoding encoding, Charset charset) {
         return createEncodingCipherByKey(keys, algorithm, BLANK, encoding, charset);
     }
     
+    /**
+     * Creates a text-based asymmetric cipher with runtime key selection using a specific provider.
+     *
+     * @param keys a map of key id to key
+     * @param algorithm the transformation
+     * @param provider the JCA provider name
+     * @param encoding the message encoding
+     * @param charset the message charset
+     * @return an encoding asymmetric cipher with runtime key selection
+     */
     public static EncodingCipherByKey createEncodingCipherByKey(Map<String, Key> keys, String algorithm, String provider, Bruce.Encoding encoding, Charset charset) {
         return (keyId, mode, message) -> {
             var cipher = getCipher(keys, keyId, algorithm, provider, mode);

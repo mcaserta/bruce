@@ -19,18 +19,50 @@ public final class KeyGenerators {
         // utility class
     }
     
+    /**
+     * Generates a key pair using the default provider.
+     *
+     * @param algorithm the key algorithm (e.g., RSA)
+     * @param keySize the key size in bits
+     * @return the generated key pair
+     */
     public static KeyPair generateKeyPair(String algorithm, int keySize) {
         return generateKeyPair(algorithm, null, keySize, null);
     }
     
+    /**
+     * Generates a key pair using a specific provider.
+     *
+     * @param algorithm the key algorithm
+     * @param provider the JCA provider name
+     * @param keySize the key size in bits
+     * @return the generated key pair
+     */
     public static KeyPair generateKeyPair(String algorithm, String provider, int keySize) {
         return generateKeyPair(algorithm, provider, keySize, null);
     }
     
+    /**
+     * Generates a key pair using a specific random source.
+     *
+     * @param algorithm the key algorithm
+     * @param keySize the key size in bits
+     * @param random the secure random source
+     * @return the generated key pair
+     */
     public static KeyPair generateKeyPair(String algorithm, int keySize, SecureRandom random) {
         return generateKeyPair(algorithm, null, keySize, random);
     }
     
+    /**
+     * Generates a key pair using a specific provider and random source.
+     *
+     * @param algorithm the key algorithm
+     * @param provider the JCA provider name
+     * @param keySize the key size in bits
+     * @param random the secure random source
+     * @return the generated key pair
+     */
     public static KeyPair generateKeyPair(String algorithm, String provider, int keySize, SecureRandom random) {
         try {
             var keyGen = provider == null || provider.isBlank() ?
@@ -52,10 +84,23 @@ public final class KeyGenerators {
         }
     }
     
+    /**
+     * Generates a random symmetric key and returns the raw bytes.
+     *
+     * @param algorithm the key algorithm (e.g., AES)
+     * @return the generated key bytes
+     */
     public static byte[] generateSymmetricKey(String algorithm) {
         return generateSymmetricKey(algorithm, "");
     }
     
+    /**
+     * Generates a random symmetric key using a specific provider and returns the raw bytes.
+     *
+     * @param algorithm the key algorithm
+     * @param provider the JCA provider name
+     * @return the generated key bytes
+     */
     public static byte[] generateSymmetricKey(String algorithm, String provider) {
         try {
             var generator = provider == null || provider.isBlank()
@@ -68,10 +113,25 @@ public final class KeyGenerators {
         }
     }
     
+    /**
+     * Generates a random symmetric key and returns it encoded.
+     *
+     * @param algorithm the key algorithm
+     * @param encoding the output encoding
+     * @return the encoded key
+     */
     public static String generateEncodedSymmetricKey(String algorithm, Bruce.Encoding encoding) {
         return generateEncodedSymmetricKey(algorithm, "", encoding);
     }
     
+    /**
+     * Generates a random symmetric key using a specific provider and returns it encoded.
+     *
+     * @param algorithm the key algorithm
+     * @param provider the JCA provider name
+     * @param encoding the output encoding
+     * @return the encoded key
+     */
     public static String generateEncodedSymmetricKey(String algorithm, String provider, Bruce.Encoding encoding) {
         return EncodingUtils.encode(encoding, generateSymmetricKey(algorithm, provider));
     }
