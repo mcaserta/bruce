@@ -1,0 +1,18 @@
+---
+description: Documentation pointers and examples
+---
+### Docs & Examples
+
+- Online docs: `https://bruce.mirkocaserta.com`
+- Download via JitPack: `https://jitpack.io/#mcaserta/bruce`
+- Project readme: [README.adoc](mdc:README.adoc), [README.md](mdc:README.md)
+- Claude guidance: [CLAUDE.md](mdc:CLAUDE.md)
+- API entry: [Bruce.java](mdc:src/main/java/com/mirkocaserta/bruce/Bruce.java)
+- Module exports: [module-info.java](mdc:src/main/java/module-info.java)
+
+Minimal signature example (Base64):
+```java
+PrivateKey pk = Bruce.privateKey(Bruce.keystore("classpath:keystore.p12", "password"), "alice", "password");
+EncodingSigner signer = Bruce.signer(pk, "SHA512withRSA", Bruce.Encoding.BASE64);
+String sig = signer.sign("Hi Bob!");
+```

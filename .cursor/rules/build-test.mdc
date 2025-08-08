@@ -1,0 +1,24 @@
+---
+alwaysApply: true
+---
+### Build, Test, Quality
+
+- **Build system**: Gradle Java Library, group `com.github.mcaserta`
+- **Java**: sourceCompatibility 17; modules configured via `module-info.java`
+
+#### Common Commands
+- `./gradlew build` — compile, test, package JARs (sources, javadoc)
+- `./gradlew test` — run JUnit 5 tests
+- `./gradlew clean` — clean build artifacts
+- `./gradlew javadoc` — generate API docs
+- `./gradlew jacocoTestReport` — coverage (XML enabled)
+- `./gradlew publishToMavenLocal` — publish locally
+- `./gradlew sonar` — SonarCloud analysis
+
+#### Test Setup
+- Framework: JUnit Jupiter 5.11.x
+- Mocking: Mockito 5.18.0
+- Extra provider for tests: Bouncy Castle `bcprov-jdk15on:1.70`
+- Tests in `src/test/java` mirroring main packages; resources in `src/test/resources`
+
+See [build.gradle](mdc:build.gradle).

@@ -1,0 +1,16 @@
+---
+globs: src/main/java/**/*.java
+---
+### Java Conventions and API Usage
+
+- **Facade-first**: Prefer constructing operations via `Bruce` static factories or builders instead of instantiating impl classes.
+- **Builders**: Use `Bruce.cipherBuilder()`, `Bruce.signerBuilder()`, `Bruce.verifierBuilder()`, `Bruce.digestBuilder()`, `Bruce.macBuilder()` for multi-parameter flows.
+- **Encodings**: Prefer the `Encoding` enum for text I/O; default charset is UTF-8 when not specified.
+- **Providers**: Make provider optional; accept String `provider` (e.g., "BC").
+- **ByKey variants**: Use map-based APIs for runtime key selection.
+- **Module boundaries**: Only public API packages are exported; keep implementation details in `com.mirkocaserta.bruce.impl`.
+
+#### Naming & Style
+- Function names: verbs; variables: meaningful nouns; avoid abbreviations.
+- Prefer early returns, shallow nesting, and explicit types for public APIs.
+- Match existing formatting; wrap long lines; avoid unrelated reformatting.

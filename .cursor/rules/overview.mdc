@@ -1,0 +1,28 @@
+---
+alwaysApply: true
+---
+### Bruce: Project Overview
+
+- **Purpose**: Ergonomic, lightweight, pure Java wrapper around the Java Cryptography API (JCA)
+- **Java version**: 17, Java modules enabled (`module-info.java`)
+- **Main entry point**: `Bruce.java` facade offering static factory methods for crypto operations
+
+#### Key Files
+- [build.gradle](mdc:build.gradle)
+- [settings.gradle](mdc:settings.gradle)
+- [module-info.java](mdc:src/main/java/module-info.java)
+- [Bruce.java](mdc:src/main/java/com/mirkocaserta/bruce/Bruce.java)
+
+#### Package Structure (public API)
+- `com.mirkocaserta.bruce` — facade and builders
+- `com.mirkocaserta.bruce.cipher.(symmetric|asymmetric)` — encryption/decryption
+- `com.mirkocaserta.bruce.signature` — digital signatures and verification
+- `com.mirkocaserta.bruce.digest` — message digests and file hashing
+- `com.mirkocaserta.bruce.mac` — message authentication codes
+
+#### Core Patterns
+- **Facade**: `Bruce` exposes simplified APIs
+- **Builder APIs**: `cipherBuilder()`, `signerBuilder()`, `verifierBuilder()`, `digestBuilder()`, `macBuilder()`
+- **ByKey variants**: runtime key selection using maps
+- **Encoding support**: `Encoding` enum (HEX, BASE64, URL, MIME)
+- **Provider support**: optional `provider` parameter (e.g., "BC" for Bouncy Castle)

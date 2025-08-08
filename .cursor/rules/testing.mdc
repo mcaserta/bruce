@@ -1,0 +1,15 @@
+---
+globs: src/test/**
+---
+### Testing Guidelines
+
+- **Framework**: JUnit 5 (Jupiter). Use `@Test`, parameterized tests via JUnit Params.
+- **Structure**: Mirror main package names under `src/test/java`.
+- **Resources**: Use `src/test/resources` for keystores, certs, and sample files; load via classpath.
+- **Providers**: Add Bouncy Castle provider when needed for algorithm coverage.
+- **Coverage**: Keep unit tests deterministic; run `./gradlew jacocoTestReport` for coverage XML.
+
+Useful files:
+- [test resources](mdc:src/test/resources)
+- [logo.png](mdc:src/test/resources/logo.png)
+- [keystore.jks](mdc:src/test/resources/keystore.jks)
