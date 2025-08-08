@@ -7,7 +7,6 @@ import com.mirkocaserta.bruce.digest.EncodingDigester;
 import com.mirkocaserta.bruce.digest.FileDigester;
 import com.mirkocaserta.bruce.impl.util.EncodingUtils;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;

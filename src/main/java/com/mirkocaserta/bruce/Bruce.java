@@ -25,8 +25,6 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.util.Map;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 /**
  * <p>This class is the main entrypoint for all cryptographic operations.</p>
  *
