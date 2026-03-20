@@ -7,8 +7,8 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.util.Map;
 
+import static com.mirkocaserta.bruce.Bruce.cipherBuilder;
 import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
-import static com.mirkocaserta.bruce.Ciphers.cipher;
 import static com.mirkocaserta.bruce.Keystores.keystore;
 import static com.mirkocaserta.bruce.Keystores.privateKey;
 import static com.mirkocaserta.bruce.Keystores.publicKey;
@@ -35,7 +35,7 @@ class EncodingCipherByKeyRoundTripTest {
                 "bob-private", bobPrivateKey
         );
 
-        EncodingCipherByKey cipher = cipher(keys, "RSA", BASE64, UTF_8);
+        EncodingCipherByKey cipher = cipherBuilder().keys(keys).algorithm("RSA").encoding(BASE64).charset(UTF_8).buildAsymmetricByKey();
 
         // Alice writes to Bob
         String aliceMsg01 = "Hello";

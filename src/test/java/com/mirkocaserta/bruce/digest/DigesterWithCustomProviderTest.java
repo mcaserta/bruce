@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
 
-import static com.mirkocaserta.bruce.Digests.digester;
+import static com.mirkocaserta.bruce.Bruce.digestBuilder;
 
 @DisplayName("Raw digester tests with custom provider (Bouncy Castle)")
 class DigesterWithCustomProviderTest {
@@ -21,7 +21,7 @@ class DigesterWithCustomProviderTest {
     @Test
     @DisplayName("Digester for the SHA1 algorithm")
     void sha1() {
-        Digester digester = digester("SHA1", "BC"); // use Bouncy Castle provider
+        Digester digester = digestBuilder().algorithm("SHA1").provider("BC").buildRaw();
         Assertions.assertArrayEquals(DigesterConsts.MESSAGE_SHA1, digester.digest("message".getBytes(StandardCharsets.UTF_8)));
         Assertions.assertArrayEquals(DigesterConsts.EMPTY_SHA1, digester.digest("".getBytes(StandardCharsets.UTF_8)));
     }
@@ -29,7 +29,7 @@ class DigesterWithCustomProviderTest {
     @Test
     @DisplayName("Digester for the MD5 algorithm")
     void md5() {
-        Digester digester = digester("MD5", "BC"); // use Bouncy Castle provider
+        Digester digester = digestBuilder().algorithm("MD5").provider("BC").buildRaw();
         Assertions.assertArrayEquals(DigesterConsts.MESSAGE_MD5, digester.digest("message".getBytes(StandardCharsets.UTF_8)));
         Assertions.assertArrayEquals(DigesterConsts.EMPTY_MD5, digester.digest("".getBytes(StandardCharsets.UTF_8)));
     }
@@ -39,7 +39,7 @@ class DigesterWithCustomProviderTest {
     void invalidAlgorithm1() {
         Assertions.assertThrows(
                 BruceException.class,
-                () -> digester("foo", "BC"), // use Bouncy Castle provider
+                () -> digestBuilder().algorithm("foo").provider("BC").buildRaw(),
                 "No such algorithm: foo"
         );
     }

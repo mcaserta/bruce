@@ -2,6 +2,7 @@ package com.mirkocaserta.bruce;
 
 import com.mirkocaserta.bruce.mac.EncodingMac;
 import com.mirkocaserta.bruce.mac.Mac;
+import com.mirkocaserta.bruce.impl.mac.MacOperations;
 
 import java.nio.charset.Charset;
 import java.security.Key;
@@ -89,7 +90,9 @@ public class MacBuilder {
      */
     public Mac buildRaw() {
         validateParameters();
-        return Macs.mac(key, algorithm, provider);
+        return provider.isBlank()
+                ? MacOperations.createMac(key, algorithm)
+                : MacOperations.createMac(key, algorithm, provider);
     }
     
     /**
@@ -100,7 +103,9 @@ public class MacBuilder {
      */
     public EncodingMac build() {
         validateParameters();
-        return Macs.mac(key, algorithm, provider, encoding, charset);
+        return provider.isBlank()
+                ? MacOperations.createEncodingMac(key, algorithm, encoding, charset)
+                : MacOperations.createEncodingMac(key, algorithm, provider, encoding, charset);
     }
     
     private void validateParameters() {

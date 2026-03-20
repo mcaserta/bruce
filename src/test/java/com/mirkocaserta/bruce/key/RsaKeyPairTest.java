@@ -3,9 +3,9 @@ package com.mirkocaserta.bruce.key;
 import com.mirkocaserta.bruce.BruceException;
 import org.junit.jupiter.api.Test;
 
+import static com.mirkocaserta.bruce.Bruce.signerBuilder;
+import static com.mirkocaserta.bruce.Bruce.verifierBuilder;
 import static com.mirkocaserta.bruce.Keystores.keyPair;
-import static com.mirkocaserta.bruce.Signatures.signer;
-import static com.mirkocaserta.bruce.Signatures.verifier;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,8 +17,8 @@ class RsaKeyPairTest {
     @Test
     void generateAndUse() {
         var keyPair = keyPair("RSA", 4096);
-        var signer = signer(keyPair.getPrivate(), "SHA512withRSA");
-        var verifier = verifier(keyPair.getPublic(), "SHA512withRSA");
+        var signer = signerBuilder().key(keyPair.getPrivate()).algorithm("SHA512withRSA").buildRaw();
+        var verifier = verifierBuilder().key(keyPair.getPublic()).algorithm("SHA512withRSA").buildRaw();
         var signature = signer.sign(MESSAGE);
         assertTrue(verifier.verify(MESSAGE, signature));
     }

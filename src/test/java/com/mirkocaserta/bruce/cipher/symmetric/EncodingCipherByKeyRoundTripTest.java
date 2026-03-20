@@ -6,8 +6,8 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Random;
 
+import static com.mirkocaserta.bruce.Bruce.cipherBuilder;
 import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
-import static com.mirkocaserta.bruce.Ciphers.cipherByKey;
 import static com.mirkocaserta.bruce.Keystores.symmetricKey;
 import static com.mirkocaserta.bruce.cipher.Mode.DECRYPT;
 import static com.mirkocaserta.bruce.cipher.Mode.ENCRYPT;
@@ -24,8 +24,8 @@ class EncodingCipherByKeyRoundTripTest {
         rng.nextBytes(ivBA);
         String iv = Base64.getEncoder().encodeToString(ivBA);
         String key = symmetricKey("DESede", BASE64);
-        EncodingCipherByKey encrypter = cipherByKey("DESede", "DESede/CBC/PKCS5Padding", ENCRYPT, UTF_8);
-        EncodingCipherByKey decrypter = cipherByKey("DESede", "DESede/CBC/PKCS5Padding", DECRYPT, UTF_8);
+        EncodingCipherByKey encrypter = cipherBuilder().keyAlgorithm("DESede").algorithm("DESede/CBC/PKCS5Padding").mode(ENCRYPT).charset(UTF_8).buildSymmetricByKey();
+        EncodingCipherByKey decrypter = cipherBuilder().keyAlgorithm("DESede").algorithm("DESede/CBC/PKCS5Padding").mode(DECRYPT).charset(UTF_8).buildSymmetricByKey();
         String plainText = "Hi there";
         String cypherText = encrypter.encrypt(key, iv, plainText, BASE64);
         assertNotNull(cypherText);

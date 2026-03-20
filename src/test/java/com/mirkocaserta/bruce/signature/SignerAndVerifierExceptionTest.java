@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 
+import static com.mirkocaserta.bruce.Bruce.signerBuilder;
 import static com.mirkocaserta.bruce.Keystores.keystore;
 import static com.mirkocaserta.bruce.Keystores.privateKey;
-import static com.mirkocaserta.bruce.Signatures.signer;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
@@ -18,13 +18,13 @@ class SignerAndVerifierExceptionTest {
     void noSuchAlgorithm() {
         final KeyStore keystore = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
         final PrivateKey privateKey = privateKey(keystore, "test", "password".toCharArray());
-        assertThrows(BruceException.class, () -> signer(privateKey, "FOO512withBAR"));
+        assertThrows(BruceException.class, () -> signerBuilder().key(privateKey).algorithm("FOO512withBAR").buildRaw());
     }
 
     @Test
     void invalidKey() {
         PrivateKey privateKey = mock(PrivateKey.class);
-        assertThrows(BruceException.class, () -> signer(privateKey, "SHA512withRSA"));
+        assertThrows(BruceException.class, () -> signerBuilder().key(privateKey).algorithm("SHA512withRSA").buildRaw());
     }
 
 }

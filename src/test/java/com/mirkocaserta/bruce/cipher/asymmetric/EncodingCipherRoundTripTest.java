@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 import java.security.Key;
 import java.security.KeyStore;
 
+import static com.mirkocaserta.bruce.Bruce.cipherBuilder;
 import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
-import static com.mirkocaserta.bruce.Ciphers.cipher;
 import static com.mirkocaserta.bruce.Keystores.keystore;
 import static com.mirkocaserta.bruce.Keystores.privateKey;
 import static com.mirkocaserta.bruce.Keystores.publicKey;
@@ -27,10 +27,10 @@ class EncodingCipherRoundTripTest {
 
     @Test
     void roundTrip() {
-        EncodingCipher encryptForAlice = cipher(alicePublicKey, "RSA", ENCRYPT, BASE64, UTF_8);
-        EncodingCipher decryptForAlice = cipher(alicePrivateKey, "RSA", DECRYPT, BASE64, UTF_8);
-        EncodingCipher encryptForBob = cipher(bobPublicKey, "RSA", ENCRYPT, BASE64, UTF_8);
-        EncodingCipher decryptForBob = cipher(bobPrivateKey, "RSA", DECRYPT, BASE64, UTF_8);
+        EncodingCipher encryptForAlice = cipherBuilder().key(alicePublicKey).algorithm("RSA").mode(ENCRYPT).encoding(BASE64).charset(UTF_8).buildAsymmetric();
+        EncodingCipher decryptForAlice = cipherBuilder().key(alicePrivateKey).algorithm("RSA").mode(DECRYPT).encoding(BASE64).charset(UTF_8).buildAsymmetric();
+        EncodingCipher encryptForBob = cipherBuilder().key(bobPublicKey).algorithm("RSA").mode(ENCRYPT).encoding(BASE64).charset(UTF_8).buildAsymmetric();
+        EncodingCipher decryptForBob = cipherBuilder().key(bobPrivateKey).algorithm("RSA").mode(DECRYPT).encoding(BASE64).charset(UTF_8).buildAsymmetric();
 
         // Alice writes to Bob
         String aliceMsg01 = "Hello";

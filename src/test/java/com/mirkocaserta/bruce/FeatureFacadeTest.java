@@ -21,16 +21,16 @@ class FeatureFacadeTest {
         KeyStore keystore = Keystores.keystore("classpath:/keystore.p12", "password".toCharArray(), Keystores.DEFAULT_KEYSTORE_TYPE);
         assertNotNull(keystore);
 
-        var signer = Signatures.signer(
-                Keystores.privateKey(keystore, "test", "password".toCharArray()),
-                "SHA512withRSA",
-                Bruce.Encoding.BASE64
-        );
-        var verifier = Signatures.verifier(
-                Keystores.publicKey(keystore, "test"),
-                "SHA512withRSA",
-                Bruce.Encoding.BASE64
-        );
+        var signer = Bruce.signerBuilder()
+                .key(Keystores.privateKey(keystore, "test", "password".toCharArray()))
+                .algorithm("SHA512withRSA")
+                .encoding(Bruce.Encoding.BASE64)
+                .build();
+        var verifier = Bruce.verifierBuilder()
+                .key(Keystores.publicKey(keystore, "test"))
+                .algorithm("SHA512withRSA")
+                .encoding(Bruce.Encoding.BASE64)
+                .build();
 
         String message = "hello facades";
         String signature = signer.sign(message);
@@ -44,22 +44,22 @@ class FeatureFacadeTest {
         String iv = Base64.getEncoder().encodeToString(ivBytes);
         String key = Keystores.symmetricKey("DESede", Bruce.Encoding.BASE64);
 
-        var encrypter = Ciphers.cipher(
-                key,
-                "DESede",
-                "DESede/CBC/PKCS5Padding",
-                Mode.ENCRYPT,
-                StandardCharsets.UTF_8,
-                Bruce.Encoding.BASE64
-        );
-        var decrypter = Ciphers.cipher(
-                key,
-                "DESede",
-                "DESede/CBC/PKCS5Padding",
-                Mode.DECRYPT,
-                StandardCharsets.UTF_8,
-                Bruce.Encoding.BASE64
-        );
+        var encrypter = Bruce.cipherBuilder()
+                .key(key)
+                .keyAlgorithm("DESede")
+                .algorithm("DESede/CBC/PKCS5Padding")
+                .mode(Mode.ENCRYPT)
+                .charset(StandardCharsets.UTF_8)
+                .encoding(Bruce.Encoding.BASE64)
+                .buildSymmetric();
+        var decrypter = Bruce.cipherBuilder()
+                .key(key)
+                .keyAlgorithm("DESede")
+                .algorithm("DESede/CBC/PKCS5Padding")
+                .mode(Mode.DECRYPT)
+                .charset(StandardCharsets.UTF_8)
+                .encoding(Bruce.Encoding.BASE64)
+                .buildSymmetric();
 
         String plainText = "Hi there";
         String cipherText = encrypter.encrypt(iv, plainText);
@@ -69,15 +69,15 @@ class FeatureFacadeTest {
     }
 
     @Test
-    void digestsAndMacsFacadesMatchBruceForwarders() {
+    void digestsAndMacsBuilderRoundTrip() {
         byte[] message = "message".getBytes(StandardCharsets.UTF_8);
-        assertArrayEquals(MESSAGE_SHA1, Digests.digester("SHA1").digest(message));
+        assertArrayEquals(MESSAGE_SHA1, Bruce.digestBuilder().algorithm("SHA1").buildRaw().digest(message));
 
         KeyStore keystore = Keystores.keystore("classpath:/keystore.p12", "password".toCharArray(), Keystores.DEFAULT_KEYSTORE_TYPE);
         var key = Keystores.secretKey(keystore, "hmac", "password".toCharArray());
 
-        String first = Macs.mac(key, "HmacSHA1", Bruce.Encoding.BASE64, StandardCharsets.UTF_8).get("Hello there");
-        String second = Macs.mac(key, "HmacSHA1", Bruce.Encoding.BASE64, StandardCharsets.UTF_8).get("Hello there");
+        String first = Bruce.macBuilder().key(key).algorithm("HmacSHA1").encoding(Bruce.Encoding.BASE64).charset(StandardCharsets.UTF_8).build().get("Hello there");
+        String second = Bruce.macBuilder().key(key).algorithm("HmacSHA1").encoding(Bruce.Encoding.BASE64).charset(StandardCharsets.UTF_8).build().get("Hello there");
 
         assertEquals(first, second);
     }

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 
-import static com.mirkocaserta.bruce.Digests.digester;
+import static com.mirkocaserta.bruce.Bruce.digestBuilder;
 import static com.mirkocaserta.bruce.digest.DigesterConsts.*;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -18,7 +18,7 @@ class DigesterTest {
     @Test
     @DisplayName("Digester for the SHA1 algorithm")
     void sha1() {
-        Digester digester = digester("SHA1");
+        Digester digester = digestBuilder().algorithm("SHA1").buildRaw();
         assertArrayEquals(MESSAGE_SHA1, digester.digest("message".getBytes(StandardCharsets.UTF_8)));
         assertArrayEquals(EMPTY_SHA1, digester.digest("".getBytes(StandardCharsets.UTF_8)));
     }
@@ -26,7 +26,7 @@ class DigesterTest {
     @Test
     @DisplayName("Digester for the MD5 algorithm")
     void md5() {
-        Digester digester = digester("MD5");
+        Digester digester = digestBuilder().algorithm("MD5").buildRaw();
         assertArrayEquals(MESSAGE_MD5, digester.digest("message".getBytes(StandardCharsets.UTF_8)));
         assertArrayEquals(EMPTY_MD5, digester.digest("".getBytes(StandardCharsets.UTF_8)));
     }
@@ -36,7 +36,7 @@ class DigesterTest {
     void invalidAlgorithm1() {
         Assertions.assertThrows(
                 BruceException.class,
-                () -> digester("foo"),
+                () -> digestBuilder().algorithm("foo").buildRaw(),
                 "No such algorithm: foo"
         );
     }
@@ -46,7 +46,7 @@ class DigesterTest {
     void invalidAlgorithm2() {
         assertThrows(
                 BruceException.class,
-                () -> digester("foo", "bar"),
+                () -> digestBuilder().algorithm("foo").provider("bar").buildRaw(),
                 "No such algorithm: foo"
         );
     }
@@ -56,7 +56,7 @@ class DigesterTest {
     void invalidProvider() {
         assertThrows(
                 BruceException.class,
-                () -> digester("SHA1", "foo"),
+                () -> digestBuilder().algorithm("SHA1").provider("foo").buildRaw(),
                 "No such provider: foo"
         );
     }
@@ -66,7 +66,7 @@ class DigesterTest {
     void invalidEncoder() {
         assertThrows(
                 BruceException.class,
-                () -> digester("SHA1", "SUN", null),
+                () -> digestBuilder().algorithm("SHA1").provider("SUN").encoding(null).build(),
                 "No such encoding: null"
         );
     }

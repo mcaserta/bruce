@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test;
 import java.security.Key;
 import java.security.KeyStore;
 
+import static com.mirkocaserta.bruce.Bruce.macBuilder;
 import static com.mirkocaserta.bruce.Keystores.keystore;
 import static com.mirkocaserta.bruce.Keystores.secretKey;
-import static com.mirkocaserta.bruce.Macs.mac;
 import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,9 +20,9 @@ class EncodingMacRoundTripTest {
 
     @Test
     void roundTrip() {
-        EncodingMac alice = mac(key, "HmacSHA1", BASE64, UTF_8);
+        EncodingMac alice = macBuilder().key(key).algorithm("HmacSHA1").encoding(BASE64).charset(UTF_8).build();
         assertNotNull(alice);
-        EncodingMac bob = mac(key, "HmacSHA1", BASE64, UTF_8);
+        EncodingMac bob = macBuilder().key(key).algorithm("HmacSHA1").encoding(BASE64).charset(UTF_8).build();
         assertNotNull(bob);
 
         String message = "Hello there";

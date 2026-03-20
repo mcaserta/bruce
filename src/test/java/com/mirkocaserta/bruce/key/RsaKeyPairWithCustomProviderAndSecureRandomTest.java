@@ -7,9 +7,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.Security;
 
+import static com.mirkocaserta.bruce.Bruce.signerBuilder;
+import static com.mirkocaserta.bruce.Bruce.verifierBuilder;
 import static com.mirkocaserta.bruce.Keystores.keyPair;
-import static com.mirkocaserta.bruce.Signatures.signer;
-import static com.mirkocaserta.bruce.Signatures.verifier;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,8 +25,8 @@ class RsaKeyPairWithCustomProviderAndSecureRandomTest {
     void generateAndUse() throws NoSuchAlgorithmException {
         var random = SecureRandom.getInstanceStrong();
         var keyPair = keyPair("RSA", "BC", 4096, random);
-        var signer = signer(keyPair.getPrivate(), "WHIRLPOOLwithRSA/X9.31");
-        var verifier = verifier(keyPair.getPublic(), "WHIRLPOOLwithRSA/X9.31");
+        var signer = signerBuilder().key(keyPair.getPrivate()).algorithm("WHIRLPOOLwithRSA/X9.31").buildRaw();
+        var verifier = verifierBuilder().key(keyPair.getPublic()).algorithm("WHIRLPOOLwithRSA/X9.31").buildRaw();
         var signature = signer.sign(MESSAGE);
         assertTrue(verifier.verify(MESSAGE, signature));
     }
