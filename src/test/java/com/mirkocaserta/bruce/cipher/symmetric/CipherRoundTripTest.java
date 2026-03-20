@@ -21,8 +21,8 @@ class CipherRoundTripTest {
         byte[] iv = new byte[8];
         rng.nextBytes(iv);
         byte[] key = symmetricKey("DESede");
-        Cipher encrypter = cipherBuilder().key(key).keyAlgorithm("DESede").algorithm("DESede/CBC/PKCS5Padding").mode(ENCRYPT).buildSymmetricRaw();
-        Cipher decrypter = cipherBuilder().key(key).keyAlgorithm("DESede").algorithm("DESede/CBC/PKCS5Padding").mode(DECRYPT).buildSymmetricRaw();
+        SymmetricCipher encrypter = cipherBuilder().key(key).keyAlgorithm("DESede").algorithm("DESede/CBC/PKCS5Padding").mode(ENCRYPT).buildSymmetricRaw();
+        SymmetricCipher decrypter = cipherBuilder().key(key).keyAlgorithm("DESede").algorithm("DESede/CBC/PKCS5Padding").mode(DECRYPT).buildSymmetricRaw();
         byte[] plainText = "Hi there".getBytes(UTF_8);
         byte[] cypherText = encrypter.encrypt(iv, plainText);
         assertNotNull(cypherText);

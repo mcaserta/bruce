@@ -173,7 +173,7 @@ public class CipherBuilder {
      *
      * @return the cipher
      */
-    public com.mirkocaserta.bruce.cipher.symmetric.Cipher buildSymmetricRaw() {
+    public com.mirkocaserta.bruce.cipher.symmetric.SymmetricCipher buildSymmetricRaw() {
         validateSymmetricRawCipher();
         return provider.isBlank()
                 ? SymmetricCipherOperations.createCipher(rawKey, keyAlgorithm, cipherAlgorithm, mode)
@@ -222,7 +222,7 @@ public class CipherBuilder {
      *
      * @return the cipher
      */
-    public com.mirkocaserta.bruce.cipher.asymmetric.Cipher buildAsymmetricRaw() {
+    public com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricCipher buildAsymmetricRaw() {
         validateAsymmetricCipher();
         return provider.isBlank()
                 ? AsymmetricCipherOperations.createCipher(asymmetricKey, cipherAlgorithm, mode)
