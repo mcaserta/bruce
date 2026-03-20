@@ -4,7 +4,7 @@ import com.mirkocaserta.bruce.BruceException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.*;
@@ -95,7 +95,7 @@ public final class KeyStoreOperations {
             if (location.startsWith("classpath:")) {
                 inputStream = KeyStoreOperations.class.getResourceAsStream(location.replaceFirst("classpath:", BLANK));
             } else if (location.matches("^https*://.*$")) {
-                inputStream = new URL(location).openConnection().getInputStream();
+                inputStream = URI.create(location).toURL().openConnection().getInputStream();
             } else {
                 inputStream = Files.newInputStream(Path.of(location.replaceFirst("file:", BLANK)));
             }

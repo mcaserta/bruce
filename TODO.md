@@ -13,5 +13,5 @@
 - [ ] Add streaming variants for signing/verifying and MAC (accept `InputStream`), analogous to `FileDigester`.
 - [ ] Review `module-info.java` exports; keep `impl` internal; consider relocating `Mode` to a neutral API package to avoid exporting parent `cipher` solely for it.
 - [ ] Normalize parameter ordering across APIs: `(key|keys), algorithm, provider?, mode?, encoding?, charset?`.
-- [ ] Gradle: use Java toolchain (17), adopt `junit-bom`, collapse JUnit deps, and configure reproducible builds.
+- [ ] Gradle: use Java toolchain (21), adopt `junit-bom`, collapse JUnit deps, and configure reproducible builds.
 - [ ] Add formatting/linting (Spotless) and static analysis (Error Prone); wire to CI and `./gradlew build`.

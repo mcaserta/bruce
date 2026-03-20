@@ -16,7 +16,7 @@ interfaces for common cryptographic operations including:
 
 ## Build System & Commands
 
-This is a Java library project using Gradle with Java 17 as the target version.
+This is a Java library project using Gradle with Java 21 as the target version.
 
 ### Essential Commands
 
