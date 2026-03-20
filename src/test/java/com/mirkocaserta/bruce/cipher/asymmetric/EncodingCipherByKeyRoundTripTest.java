@@ -8,7 +8,10 @@ import java.security.KeyStore;
 import java.util.Map;
 
 import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
-import static com.mirkocaserta.bruce.Bruce.*;
+import static com.mirkocaserta.bruce.Ciphers.cipher;
+import static com.mirkocaserta.bruce.Keystores.keystore;
+import static com.mirkocaserta.bruce.Keystores.privateKey;
+import static com.mirkocaserta.bruce.Keystores.publicKey;
 import static com.mirkocaserta.bruce.cipher.Mode.DECRYPT;
 import static com.mirkocaserta.bruce.cipher.Mode.ENCRYPT;
 import static java.nio.charset.StandardCharsets.UTF_8;

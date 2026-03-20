@@ -1,6 +1,7 @@
 package com.mirkocaserta.bruce.cipher.symmetric;
 
-import static com.mirkocaserta.bruce.Bruce.symmetricKey;
+import static com.mirkocaserta.bruce.Ciphers.cipher;
+import static com.mirkocaserta.bruce.Keystores.symmetricKey;
 import static com.mirkocaserta.bruce.cipher.Mode.DECRYPT;
 import static com.mirkocaserta.bruce.cipher.Mode.ENCRYPT;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -14,8 +15,6 @@ import java.util.Random;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.Test;
 
-import com.mirkocaserta.bruce.Bruce;
-
 class CipherRoundTripWithCustomProviderTest {
 
     static {
@@ -28,8 +27,8 @@ class CipherRoundTripWithCustomProviderTest {
         byte[] iv = new byte[8];
         rng.nextBytes(iv);
         byte[] key = symmetricKey("DESede", "BC");
-        Cipher encrypter = Bruce.cipher(key, "DESede", "DESede/CBC/PKCS5Padding", "BC", ENCRYPT);
-        Cipher decrypter = Bruce.cipher(key, "DESede", "DESede/CBC/PKCS5Padding", "BC", DECRYPT);
+        Cipher encrypter = cipher(key, "DESede", "DESede/CBC/PKCS5Padding", "BC", ENCRYPT);
+        Cipher decrypter = cipher(key, "DESede", "DESede/CBC/PKCS5Padding", "BC", DECRYPT);
         byte[] plainText = "Hi there".getBytes(UTF_8);
         byte[] cypherText = encrypter.encrypt(iv, plainText);
         assertNotNull(cypherText);

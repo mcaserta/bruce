@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import java.security.SecureRandom;
 import java.util.Random;
 
-import static com.mirkocaserta.bruce.Bruce.cipher;
-import static com.mirkocaserta.bruce.Bruce.symmetricKey;
+import static com.mirkocaserta.bruce.Ciphers.cipher;
+import static com.mirkocaserta.bruce.Keystores.symmetricKey;
 import static com.mirkocaserta.bruce.cipher.Mode.DECRYPT;
 import static com.mirkocaserta.bruce.cipher.Mode.ENCRYPT;
 import static java.nio.charset.StandardCharsets.UTF_8;
