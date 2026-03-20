@@ -3,7 +3,7 @@ package com.mirkocaserta.bruce.impl.cipher;
 import com.mirkocaserta.bruce.BruceException;
 import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.cipher.Mode;
-import com.mirkocaserta.bruce.cipher.asymmetric.Cipher;
+import com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricCipher;
 import com.mirkocaserta.bruce.cipher.asymmetric.CipherByKey;
 import com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipher;
 import com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipherByKey;
@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 public final class AsymmetricCipherOperations {
     
     private static final String BLANK = "";
-    private static final ConcurrentMap<String, Cipher> cipherCache = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, AsymmetricCipher> cipherCache = new ConcurrentHashMap<>();
     
     private AsymmetricCipherOperations() {
         // utility class
@@ -38,7 +38,7 @@ public final class AsymmetricCipherOperations {
      * @param mode the operation mode (encrypt/decrypt)
      * @return an asymmetric cipher
      */
-    public static Cipher createCipher(Key key, String algorithm, Mode mode) {
+    public static AsymmetricCipher createCipher(Key key, String algorithm, Mode mode) {
         return createCipher(key, algorithm, BLANK, mode);
     }
     
@@ -51,7 +51,7 @@ public final class AsymmetricCipherOperations {
      * @param mode the operation mode
      * @return an asymmetric cipher
      */
-    public static Cipher createCipher(Key key, String algorithm, String provider, Mode mode) {
+    public static AsymmetricCipher createCipher(Key key, String algorithm, String provider, Mode mode) {
         if (mode == null) {
             throw new BruceException("mode cannot be null");
         }
@@ -157,7 +157,7 @@ public final class AsymmetricCipherOperations {
         };
     }
     
-    private static String crypt(Cipher cipher, String message, Mode mode, Bruce.Encoding encoding, Charset charset) {
+    private static String crypt(AsymmetricCipher cipher, String message, Mode mode, Bruce.Encoding encoding, Charset charset) {
         if (mode == Mode.ENCRYPT) {
             return EncodingUtils.encode(encoding, cipher.encrypt(message.getBytes(charset)));
         } else if (mode == Mode.DECRYPT) {
@@ -166,7 +166,7 @@ public final class AsymmetricCipherOperations {
         throw new BruceException("no such mode");
     }
     
-    private static Cipher getCipher(Map<String, Key> keys, String keyId, String algorithm, String provider, Mode mode) {
+    private static AsymmetricCipher getCipher(Map<String, Key> keys, String keyId, String algorithm, String provider, Mode mode) {
         return cipherCache.computeIfAbsent(cipherCacheKey(keyId, algorithm, provider, mode), ignored -> {
             var key = keys.get(keyId);
             if (key == null) {

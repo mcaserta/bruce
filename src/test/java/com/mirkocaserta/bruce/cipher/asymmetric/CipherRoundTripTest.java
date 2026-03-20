@@ -26,10 +26,10 @@ class CipherRoundTripTest {
 
     @Test
     void roundTrip() {
-        Cipher encryptForAlice = cipherBuilder().key(alicePublicKey).algorithm("RSA").mode(ENCRYPT).buildAsymmetricRaw();
-        Cipher decryptForAlice = cipherBuilder().key(alicePrivateKey).algorithm("RSA").mode(DECRYPT).buildAsymmetricRaw();
-        Cipher encryptForBob = cipherBuilder().key(bobPublicKey).algorithm("RSA").mode(ENCRYPT).buildAsymmetricRaw();
-        Cipher decryptForBob = cipherBuilder().key(bobPrivateKey).algorithm("RSA").mode(DECRYPT).buildAsymmetricRaw();
+        AsymmetricCipher encryptForAlice = cipherBuilder().key(alicePublicKey).algorithm("RSA").mode(ENCRYPT).buildAsymmetricRaw();
+        AsymmetricCipher decryptForAlice = cipherBuilder().key(alicePrivateKey).algorithm("RSA").mode(DECRYPT).buildAsymmetricRaw();
+        AsymmetricCipher encryptForBob = cipherBuilder().key(bobPublicKey).algorithm("RSA").mode(ENCRYPT).buildAsymmetricRaw();
+        AsymmetricCipher decryptForBob = cipherBuilder().key(bobPrivateKey).algorithm("RSA").mode(DECRYPT).buildAsymmetricRaw();
 
         // Alice writes to Bob
         byte[] aliceMsg01 = "Hello".getBytes(UTF_8);

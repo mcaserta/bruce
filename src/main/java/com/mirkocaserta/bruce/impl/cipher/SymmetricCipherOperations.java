@@ -87,7 +87,7 @@ public final class SymmetricCipherOperations {
      * @param mode the operation mode (encrypt/decrypt)
      * @return a symmetric cipher
      */
-    public static com.mirkocaserta.bruce.cipher.symmetric.Cipher createCipher(byte[] key, String keyAlgorithm, String cipherAlgorithm, Mode mode) {
+    public static com.mirkocaserta.bruce.cipher.symmetric.SymmetricCipher createCipher(byte[] key, String keyAlgorithm, String cipherAlgorithm, Mode mode) {
         return createCipher(key, keyAlgorithm, cipherAlgorithm, BLANK, mode);
     }
     
@@ -101,7 +101,7 @@ public final class SymmetricCipherOperations {
      * @param mode the operation mode (encrypt/decrypt)
      * @return a symmetric cipher
      */
-    public static com.mirkocaserta.bruce.cipher.symmetric.Cipher createCipher(byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode) {
+    public static com.mirkocaserta.bruce.cipher.symmetric.SymmetricCipher createCipher(byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider, Mode mode) {
         var cipher = createCipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode);
         return (iv, message) -> cipher.encrypt(key, iv, message);
     }
