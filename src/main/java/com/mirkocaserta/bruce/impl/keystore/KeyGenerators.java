@@ -3,6 +3,7 @@ package com.mirkocaserta.bruce.impl.keystore;
 import com.mirkocaserta.bruce.BruceException;
 import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.impl.util.EncodingUtils;
+import com.mirkocaserta.bruce.impl.util.Providers;
 
 import javax.crypto.KeyGenerator;
 import java.security.*;
@@ -64,10 +65,11 @@ public final class KeyGenerators {
      * @return the generated key pair
      */
     public static KeyPair generateKeyPair(String algorithm, String provider, int keySize, SecureRandom random) {
+        Provider resolvedProvider = Providers.resolve(provider);
         try {
-            var keyGen = provider == null || provider.isBlank() ?
+            var keyGen = resolvedProvider == null ?
                     KeyPairGenerator.getInstance(algorithm) :
-                    KeyPairGenerator.getInstance(algorithm, provider);
+                    KeyPairGenerator.getInstance(algorithm, resolvedProvider);
 
             if (random == null) {
                 keyGen.initialize(keySize);
@@ -79,8 +81,6 @@ public final class KeyGenerators {
             throw new BruceException(String.format("no such algorithm: %s", algorithm), e);
         } catch (InvalidParameterException e) {
             throw new BruceException(String.format("invalid key size: %d", keySize), e);
-        } catch (NoSuchProviderException e) {
-            throw new BruceException(String.format("no such provider: %s", provider), e);
         }
     }
     
@@ -102,13 +102,14 @@ public final class KeyGenerators {
      * @return the generated key bytes
      */
     public static byte[] generateSymmetricKey(String algorithm, String provider) {
+        Provider resolvedProvider = Providers.resolve(provider);
         try {
-            var generator = provider == null || provider.isBlank()
+            var generator = resolvedProvider == null
                     ? KeyGenerator.getInstance(algorithm)
-                    : KeyGenerator.getInstance(algorithm, provider);
+                    : KeyGenerator.getInstance(algorithm, resolvedProvider);
             generator.init(new SecureRandom());
             return generator.generateKey().getEncoded();
-        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new BruceException(String.format("cannot generate key: algorithm=%s, provider=%s", algorithm, provider), e);
         }
     }

@@ -3,6 +3,7 @@ package com.mirkocaserta.bruce.impl.signature;
 import com.mirkocaserta.bruce.BruceException;
 import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.impl.util.EncodingUtils;
+import com.mirkocaserta.bruce.impl.util.Providers;
 import com.mirkocaserta.bruce.signature.EncodingSigner;
 import com.mirkocaserta.bruce.signature.EncodingSignerByKey;
 import com.mirkocaserta.bruce.signature.EncodingVerifier;
@@ -52,6 +53,11 @@ public final class SignatureOperations {
      * @return a signer producing raw bytes
      */
     public static Signer createSigner(PrivateKey privateKey, String algorithm, String provider) {
+        return createSigner(privateKey, algorithm, Providers.resolve(provider));
+    }
+
+    public static Signer createSigner(PrivateKey privateKey, String algorithm, Provider provider) {
+        String providerName = provider == null ? BLANK : provider.getName();
         Signer signer = message -> {
             try {
                 var signature = getSignature(algorithm, provider);
@@ -59,7 +65,7 @@ public final class SignatureOperations {
                 signature.update(message);
                 return signature.sign();
             } catch (SignatureException | InvalidKeyException e) {
-                throw new BruceException(String.format("error generating the signature: algorithm=%s, provider=%s", algorithm, provider), e);
+                throw new BruceException(String.format("error generating the signature: algorithm=%s, provider=%s", algorithm, providerName), e);
             }
         };
 
@@ -91,6 +97,7 @@ public final class SignatureOperations {
      * @return a signer with runtime key selection
      */
     public static SignerByKey createSignerByKey(Map<String, PrivateKey> privateKeyMap, String algorithm, String provider) {
+        Provider resolvedProvider = Providers.resolve(provider);
         return (privateKeyId, message) -> {
             var privateKey = privateKeyMap.get(privateKeyId);
 
@@ -98,7 +105,7 @@ public final class SignatureOperations {
                 throw new BruceException(String.format("private key not found for id: %s", privateKeyId));
             }
 
-            return createSigner(privateKey, algorithm, provider).sign(message);
+            return createSigner(privateKey, algorithm, resolvedProvider).sign(message);
         };
     }
     
@@ -138,6 +145,7 @@ public final class SignatureOperations {
      * @return an encoding signer with runtime key selection
      */
     public static EncodingSignerByKey createEncodingSignerByKey(Map<String, PrivateKey> privateKeyMap, String algorithm, String provider, Charset charset, Bruce.Encoding encoding) {
+        Provider resolvedProvider = Providers.resolve(provider);
         return (privateKeyId, message) -> {
             var privateKey = privateKeyMap.get(privateKeyId);
 
@@ -145,7 +153,7 @@ public final class SignatureOperations {
                 throw new BruceException(String.format("private key not found for id: %s", privateKeyId));
             }
 
-            return createEncodingSigner(privateKey, algorithm, provider, charset, encoding).sign(message);
+            return createEncodingSigner(privateKey, algorithm, resolvedProvider, charset, encoding).sign(message);
         };
     }
     
@@ -185,6 +193,10 @@ public final class SignatureOperations {
      * @return an encoding signer
      */
     public static EncodingSigner createEncodingSigner(PrivateKey privateKey, String algorithm, String provider, Charset charset, Bruce.Encoding encoding) {
+        return createEncodingSigner(privateKey, algorithm, Providers.resolve(provider), charset, encoding);
+    }
+
+    public static EncodingSigner createEncodingSigner(PrivateKey privateKey, String algorithm, Provider provider, Charset charset, Bruce.Encoding encoding) {
         if (encoding == null) {
             throw new BruceException("Invalid encoding: null");
         }
@@ -217,6 +229,11 @@ public final class SignatureOperations {
      * @return a verifier of raw signature bytes
      */
     public static Verifier createVerifier(PublicKey publicKey, String algorithm, String provider) {
+        return createVerifier(publicKey, algorithm, Providers.resolve(provider));
+    }
+
+    public static Verifier createVerifier(PublicKey publicKey, String algorithm, Provider provider) {
+        String providerName = provider == null ? BLANK : provider.getName();
         return (message, signature) -> {
             try {
                 var signatureInstance = getSignature(algorithm, provider);
@@ -224,7 +241,7 @@ public final class SignatureOperations {
                 signatureInstance.update(message);
                 return signatureInstance.verify(signature);
             } catch (InvalidKeyException e) {
-                throw new BruceException(String.format("error verifying the signature: algorithm=%s, provider=%s", algorithm, provider), e);
+                throw new BruceException(String.format("error verifying the signature: algorithm=%s, provider=%s", algorithm, providerName), e);
             } catch (SignatureException e) {
                 return false;
             }
@@ -251,6 +268,7 @@ public final class SignatureOperations {
      * @return a verifier with runtime key selection
      */
     public static VerifierByKey createVerifierByKey(Map<String, PublicKey> publicKeyMap, String algorithm, String provider) {
+        Provider resolvedProvider = Providers.resolve(provider);
         return (publicKeyId, message, signature) -> {
             var publicKey = publicKeyMap.get(publicKeyId);
 
@@ -258,7 +276,7 @@ public final class SignatureOperations {
                 throw new BruceException(String.format("public key not found for id: %s", publicKeyId));
             }
 
-            return createVerifier(publicKey, algorithm, provider).verify(message, signature);
+            return createVerifier(publicKey, algorithm, resolvedProvider).verify(message, signature);
         };
     }
     
@@ -298,6 +316,10 @@ public final class SignatureOperations {
      * @return an encoding verifier
      */
     public static EncodingVerifier createEncodingVerifier(PublicKey publicKey, String algorithm, String provider, Charset charset, Bruce.Encoding encoding) {
+        return createEncodingVerifier(publicKey, algorithm, Providers.resolve(provider), charset, encoding);
+    }
+
+    public static EncodingVerifier createEncodingVerifier(PublicKey publicKey, String algorithm, Provider provider, Charset charset, Bruce.Encoding encoding) {
         if (encoding == null) {
             throw new BruceException("Invalid encoding: null");
         }
@@ -346,6 +368,7 @@ public final class SignatureOperations {
      * @return an encoding verifier with runtime key selection
      */
     public static EncodingVerifierByKey createEncodingVerifierByKey(Map<String, PublicKey> publicKeyMap, String algorithm, String provider, Charset charset, Bruce.Encoding encoding) {
+        Provider resolvedProvider = Providers.resolve(provider);
         return (publicKeyId, message, signature) -> {
             var publicKey = publicKeyMap.get(publicKeyId);
 
@@ -353,17 +376,18 @@ public final class SignatureOperations {
                 throw new BruceException(String.format("public key not found for id: %s", publicKeyId));
             }
 
-            return createEncodingVerifier(publicKey, algorithm, provider, charset, encoding).verify(message, signature);
+            return createEncodingVerifier(publicKey, algorithm, resolvedProvider, charset, encoding).verify(message, signature);
         };
     }
     
-    private static Signature getSignature(String algorithm, String provider) {
+    private static Signature getSignature(String algorithm, Provider provider) {
+        String providerName = provider == null ? BLANK : provider.getName();
         try {
-            return provider == null || provider.isBlank()
+            return provider == null
                     ? Signature.getInstance(algorithm)
                     : Signature.getInstance(algorithm, provider);
-        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-            throw new BruceException(String.format("error getting signer: algorithm=%s, provider=%s", algorithm, provider), e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new BruceException(String.format("error getting signer: algorithm=%s, provider=%s", algorithm, providerName), e);
         }
     }
 }
