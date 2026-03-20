@@ -18,7 +18,7 @@ class FeatureFacadeTest {
 
     @Test
     void keystoresAndSignaturesFacadeRoundTrip() {
-        KeyStore keystore = Keystores.keystore("classpath:/keystore.p12", "password".toCharArray(), Bruce.DEFAULT_KEYSTORE_TYPE);
+        KeyStore keystore = Keystores.keystore("classpath:/keystore.p12", "password".toCharArray(), Keystores.DEFAULT_KEYSTORE_TYPE);
         assertNotNull(keystore);
 
         var signer = Signatures.signer(
@@ -73,7 +73,7 @@ class FeatureFacadeTest {
         byte[] message = "message".getBytes(StandardCharsets.UTF_8);
         assertArrayEquals(MESSAGE_SHA1, Digests.digester("SHA1").digest(message));
 
-        KeyStore keystore = Keystores.keystore("classpath:/keystore.p12", "password".toCharArray(), Bruce.DEFAULT_KEYSTORE_TYPE);
+        KeyStore keystore = Keystores.keystore("classpath:/keystore.p12", "password".toCharArray(), Keystores.DEFAULT_KEYSTORE_TYPE);
         var key = Keystores.secretKey(keystore, "hmac", "password".toCharArray());
 
         String first = Macs.mac(key, "HmacSHA1", Bruce.Encoding.BASE64, StandardCharsets.UTF_8).get("Hello there");

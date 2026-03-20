@@ -6,9 +6,9 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Key;
 
-import static com.mirkocaserta.bruce.Bruce.keystore;
-import static com.mirkocaserta.bruce.Bruce.privateKey;
-import static com.mirkocaserta.bruce.Bruce.secretKey;
+import static com.mirkocaserta.bruce.Keystores.keystore;
+import static com.mirkocaserta.bruce.Keystores.privateKey;
+import static com.mirkocaserta.bruce.Keystores.secretKey;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

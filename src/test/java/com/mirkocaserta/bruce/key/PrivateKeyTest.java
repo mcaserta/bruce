@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 
-import static com.mirkocaserta.bruce.Bruce.keystore;
-import static com.mirkocaserta.bruce.Bruce.privateKey;
+import static com.mirkocaserta.bruce.Keystores.keystore;
+import static com.mirkocaserta.bruce.Keystores.privateKey;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 

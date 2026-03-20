@@ -9,8 +9,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 
-import static com.mirkocaserta.bruce.Bruce.DEFAULT_KEYSTORE_TYPE;
-import static com.mirkocaserta.bruce.Bruce.keystore;
+import static com.mirkocaserta.bruce.Keystores.DEFAULT_KEYSTORE_TYPE;
+import static com.mirkocaserta.bruce.Keystores.keystore;
 import static org.junit.jupiter.api.Assertions.*;
 
 class KeystoreTest {

@@ -8,8 +8,8 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.PublicKey;
 
-import static com.mirkocaserta.bruce.Bruce.keystore;
-import static com.mirkocaserta.bruce.Bruce.publicKey;
+import static com.mirkocaserta.bruce.Keystores.keystore;
+import static com.mirkocaserta.bruce.Keystores.publicKey;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PublicKeyTest {

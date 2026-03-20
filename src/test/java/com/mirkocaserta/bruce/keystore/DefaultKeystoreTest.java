@@ -1,6 +1,5 @@
 package com.mirkocaserta.bruce.keystore;
 
-import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.BruceException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,8 +10,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 
-import static com.mirkocaserta.bruce.Bruce.DEFAULT_KEYSTORE_TYPE;
-import static com.mirkocaserta.bruce.Bruce.keystore;
+import static com.mirkocaserta.bruce.Keystores.DEFAULT_KEYSTORE_TYPE;
+import static com.mirkocaserta.bruce.Keystores.keystore;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultKeystoreTest {
@@ -45,7 +44,7 @@ class DefaultKeystoreTest {
     void badLocations(String location) {
         System.setProperty("javax.net.ssl.keyStore", location);
         System.setProperty("javax.net.ssl.keyStorePassword", "wrong");
-        assertThrows(BruceException.class, Bruce::keystore);
+        assertThrows(BruceException.class, com.mirkocaserta.bruce.Keystores::keystore);
     }
 
     @AfterEach
