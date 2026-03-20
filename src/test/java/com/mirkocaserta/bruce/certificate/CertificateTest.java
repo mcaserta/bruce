@@ -8,8 +8,8 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 
-import static com.mirkocaserta.bruce.Bruce.certificate;
-import static com.mirkocaserta.bruce.Bruce.keystore;
+import static com.mirkocaserta.bruce.Keystores.certificate;
+import static com.mirkocaserta.bruce.Keystores.keystore;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 

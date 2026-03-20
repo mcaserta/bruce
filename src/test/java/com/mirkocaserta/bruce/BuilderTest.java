@@ -7,7 +7,11 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 
-import static com.mirkocaserta.bruce.Bruce.*;
+import static com.mirkocaserta.bruce.Bruce.Encoding;
+import static com.mirkocaserta.bruce.Bruce.cipherBuilder;
+import static com.mirkocaserta.bruce.Bruce.signerBuilder;
+import static com.mirkocaserta.bruce.Keystores.keyPair;
+import static com.mirkocaserta.bruce.Keystores.symmetricKey;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
