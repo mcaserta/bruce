@@ -6,7 +6,7 @@
 - [ ] Consolidate encoding/charset/provider overloads via builders to reduce duplication (prefer single builder with optional `provider`, `encoding`, `charset`).
 - [ ] Extract a `KeyStoreSource` strategy (classpath/file/http/https) and move protocol parsing out of operations; unit-test each source.
 - [ ] Centralize provider handling: add `Providers.resolve(String name): Provider` and pass `Provider` internally instead of `String`.
-- [ ] Add `@FunctionalInterface` where applicable (`Signer`, `Verifier`, `Mac`, `Digester`).
+- [x] Add `@FunctionalInterface` where applicable (`Signer`, `Verifier`, `Mac`, `Digester`).
 - [ ] Introduce argument validation utilities (e.g., `Preconditions`) for null/empty checks; standardize `BruceException` messages.
 - [ ] Ensure builders are immutable or defensively copy state on build; validate required parameters early.
 - [ ] Prefer `char[]` over `String` for passwords/keys; keep `String` overloads as convenience delegating to secure forms.

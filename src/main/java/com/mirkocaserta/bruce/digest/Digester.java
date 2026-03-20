@@ -8,6 +8,7 @@ import com.mirkocaserta.bruce.BruceException;
  *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
+@FunctionalInterface
 public interface Digester {
 
     /**
