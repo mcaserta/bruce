@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static com.mirkocaserta.bruce.Bruce.digester;
+import static com.mirkocaserta.bruce.Digests.digester;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DisplayName("Encoding digester tests")

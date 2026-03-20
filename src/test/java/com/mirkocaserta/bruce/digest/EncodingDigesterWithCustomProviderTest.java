@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.security.Security;
 
-import static com.mirkocaserta.bruce.Bruce.digester;
+import static com.mirkocaserta.bruce.Digests.digester;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DisplayName("Encoding digester tests with custom provider (Bouncy Castle)")

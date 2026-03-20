@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 
-import static com.mirkocaserta.bruce.Bruce.digester;
+import static com.mirkocaserta.bruce.Digests.digester;
 import static com.mirkocaserta.bruce.digest.DigesterConsts.*;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
