@@ -4,9 +4,6 @@ import com.mirkocaserta.bruce.BruceException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -91,15 +88,9 @@ public final class KeyStoreOperations {
             var keyStore = provider == null || provider.isBlank() ?
                     KeyStore.getInstance(type) :
                     KeyStore.getInstance(type, provider);
-            InputStream inputStream;
-            if (location.startsWith("classpath:")) {
-                inputStream = KeyStoreOperations.class.getResourceAsStream(location.replaceFirst("classpath:", BLANK));
-            } else if (location.matches("^https*://.*$")) {
-                inputStream = URI.create(location).toURL().openConnection().getInputStream();
-            } else {
-                inputStream = Files.newInputStream(Path.of(location.replaceFirst("file:", BLANK)));
+            try (InputStream inputStream = KeyStoreSources.open(location)) {
+                keyStore.load(inputStream, password);
             }
-            keyStore.load(inputStream, password);
             return keyStore;
         } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException e) {
             throw new BruceException(String.format("error loading keystore: location=%s", location), e);
