@@ -6,6 +6,7 @@ import com.mirkocaserta.bruce.digest.Digester;
 import com.mirkocaserta.bruce.digest.EncodingDigester;
 import com.mirkocaserta.bruce.digest.FileDigester;
 import com.mirkocaserta.bruce.impl.util.EncodingUtils;
+import com.mirkocaserta.bruce.impl.util.Providers;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -13,7 +14,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.security.Provider;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -80,9 +81,7 @@ public final class DigestOperations {
             throw new BruceException("Invalid encoding: null");
         }
 
-        var rawDigester = provider == null || provider.isBlank()
-                ? createRawDigester(algorithm)
-                : createRawDigester(algorithm, provider);
+        var rawDigester = createRawDigester(algorithm, Providers.resolve(provider));
 
         return message -> EncodingUtils.encode(encoding, rawDigester.digest(message.getBytes(charset)));
     }
@@ -111,23 +110,22 @@ public final class DigestOperations {
             throw new BruceException("Invalid encoding: null");
         }
 
+        Provider resolvedProvider = Providers.resolve(provider);
         try { // fail fast
-            if (provider == null || provider.isBlank()) {
+            if (resolvedProvider == null) {
                 MessageDigest.getInstance(algorithm);
             } else {
-                MessageDigest.getInstance(algorithm, provider);
+                MessageDigest.getInstance(algorithm, resolvedProvider);
             }
         } catch (NoSuchAlgorithmException e) {
             throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
-        } catch (NoSuchProviderException e) {
-            throw new BruceException(String.format("No such provider: %s", provider), e);
         }
 
         return file -> {
             try {
-                var digest = provider == null || provider.isBlank()
+                var digest = resolvedProvider == null
                         ? MessageDigest.getInstance(algorithm)
-                        : MessageDigest.getInstance(algorithm, provider);
+                        : MessageDigest.getInstance(algorithm, resolvedProvider);
                 try (var inputStream = new FileInputStream(file)) {
                     var buffer = new byte[8192];
                     int read;
@@ -139,8 +137,6 @@ public final class DigestOperations {
                 return EncodingUtils.encode(encoding, digest.digest());
             } catch (NoSuchAlgorithmException e) {
                 throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
-            } catch (NoSuchProviderException e) {
-                throw new BruceException(String.format("No such provider: %s", provider), e);
             } catch (FileNotFoundException e) {
                 throw new BruceException(String.format("No such file: %s", file), e);
             } catch (IOException e) {
@@ -157,16 +153,18 @@ public final class DigestOperations {
      * @return a raw digester
      */
     public static Digester createRawDigester(String algorithm, String provider) {
+        return createRawDigester(algorithm, Providers.resolve(provider));
+    }
+
+    public static Digester createRawDigester(String algorithm, Provider provider) {
         MessageDigest digester;
 
         try {
-            digester = provider == null || provider.isBlank()
+            digester = provider == null
                     ? MessageDigest.getInstance(algorithm)
                     : MessageDigest.getInstance(algorithm, provider);
         } catch (NoSuchAlgorithmException e) {
             throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
-        } catch (NoSuchProviderException e) {
-            throw new BruceException(String.format("No such provider: %s", provider), e);
         }
 
         return digester::digest;

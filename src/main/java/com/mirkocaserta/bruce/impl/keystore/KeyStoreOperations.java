@@ -1,6 +1,7 @@
 package com.mirkocaserta.bruce.impl.keystore;
 
 import com.mirkocaserta.bruce.BruceException;
+import com.mirkocaserta.bruce.impl.util.Providers;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,17 +86,16 @@ public final class KeyStoreOperations {
         }
 
         try {
-            var keyStore = provider == null || provider.isBlank() ?
+            Provider resolvedProvider = Providers.resolve(provider);
+            var keyStore = resolvedProvider == null ?
                     KeyStore.getInstance(type) :
-                    KeyStore.getInstance(type, provider);
+                    KeyStore.getInstance(type, resolvedProvider);
             try (InputStream inputStream = KeyStoreSources.open(location)) {
                 keyStore.load(inputStream, password);
             }
             return keyStore;
         } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException e) {
             throw new BruceException(String.format("error loading keystore: location=%s", location), e);
-        } catch (NoSuchProviderException e) {
-            throw new BruceException(String.format("error loading keystore, no such provider: provider=%s", provider), e);
         } catch (Exception e) {
             throw new BruceException("error loading keystore", e);
         }

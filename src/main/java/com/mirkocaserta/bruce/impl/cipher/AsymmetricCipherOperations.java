@@ -8,9 +8,11 @@ import com.mirkocaserta.bruce.cipher.asymmetric.CipherByKey;
 import com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipher;
 import com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipherByKey;
 import com.mirkocaserta.bruce.impl.util.EncodingUtils;
+import com.mirkocaserta.bruce.impl.util.Providers;
 
 import java.nio.charset.Charset;
 import java.security.Key;
+import java.security.Provider;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -39,7 +41,7 @@ public final class AsymmetricCipherOperations {
      * @return an asymmetric cipher
      */
     public static AsymmetricCipher createCipher(Key key, String algorithm, Mode mode) {
-        return createCipher(key, algorithm, BLANK, mode);
+        return createCipher(key, algorithm, (String) BLANK, mode);
     }
     
     /**
@@ -52,13 +54,17 @@ public final class AsymmetricCipherOperations {
      * @return an asymmetric cipher
      */
     public static AsymmetricCipher createCipher(Key key, String algorithm, String provider, Mode mode) {
+        return createCipher(key, algorithm, Providers.resolve(provider), mode);
+    }
+
+    public static AsymmetricCipher createCipher(Key key, String algorithm, Provider provider, Mode mode) {
         if (mode == null) {
             throw new BruceException("mode cannot be null");
         }
 
         return message -> {
             try {
-                var cipher = provider == null || provider.isBlank()
+                var cipher = provider == null
                         ? javax.crypto.Cipher.getInstance(algorithm)
                         : javax.crypto.Cipher.getInstance(algorithm, provider);
                 if (mode == Mode.ENCRYPT) {
@@ -93,8 +99,9 @@ public final class AsymmetricCipherOperations {
      * @return an asymmetric cipher supporting runtime key selection
      */
     public static CipherByKey createCipherByKey(Map<String, Key> keys, String algorithm, String provider) {
+        Provider resolvedProvider = Providers.resolve(provider);
         // we use a cipher cache here as getting a new one each time is a bit expensive
-        return (keyId, mode, message) -> getCipher(keys, keyId, algorithm, provider, mode).encrypt(message);
+        return (keyId, mode, message) -> getCipher(keys, keyId, algorithm, resolvedProvider, mode).encrypt(message);
     }
     
     /**
@@ -123,7 +130,7 @@ public final class AsymmetricCipherOperations {
      * @return an encoding asymmetric cipher
      */
     public static EncodingCipher createEncodingCipher(Key key, String algorithm, String provider, Mode mode, Bruce.Encoding encoding, Charset charset) {
-        var cipher = createCipher(key, algorithm, provider, mode);
+        var cipher = createCipher(key, algorithm, Providers.resolve(provider), mode);
         return message -> crypt(cipher, message, mode, encoding, charset);
     }
     
@@ -151,8 +158,9 @@ public final class AsymmetricCipherOperations {
      * @return an encoding asymmetric cipher with runtime key selection
      */
     public static EncodingCipherByKey createEncodingCipherByKey(Map<String, Key> keys, String algorithm, String provider, Bruce.Encoding encoding, Charset charset) {
+        Provider resolvedProvider = Providers.resolve(provider);
         return (keyId, mode, message) -> {
-            var cipher = getCipher(keys, keyId, algorithm, provider, mode);
+            var cipher = getCipher(keys, keyId, algorithm, resolvedProvider, mode);
             return crypt(cipher, message, mode, encoding, charset);
         };
     }
@@ -166,7 +174,7 @@ public final class AsymmetricCipherOperations {
         throw new BruceException("no such mode");
     }
     
-    private static AsymmetricCipher getCipher(Map<String, Key> keys, String keyId, String algorithm, String provider, Mode mode) {
+    private static AsymmetricCipher getCipher(Map<String, Key> keys, String keyId, String algorithm, Provider provider, Mode mode) {
         return cipherCache.computeIfAbsent(cipherCacheKey(keyId, algorithm, provider, mode), ignored -> {
             var key = keys.get(keyId);
             if (key == null) {
@@ -176,7 +184,8 @@ public final class AsymmetricCipherOperations {
         });
     }
     
-    private static String cipherCacheKey(String keyId, String algorithm, String provider, Mode mode) {
-        return keyId + "::" + algorithm + "::" + provider + "::" + mode;
+    private static String cipherCacheKey(String keyId, String algorithm, Provider provider, Mode mode) {
+        String providerName = provider == null ? BLANK : provider.getName();
+        return keyId + "::" + algorithm + "::" + providerName + "::" + mode;
     }
 }

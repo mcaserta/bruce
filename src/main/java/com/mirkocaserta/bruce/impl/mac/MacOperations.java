@@ -3,6 +3,7 @@ package com.mirkocaserta.bruce.impl.mac;
 import com.mirkocaserta.bruce.BruceException;
 import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.impl.util.EncodingUtils;
+import com.mirkocaserta.bruce.impl.util.Providers;
 import com.mirkocaserta.bruce.mac.EncodingMac;
 import com.mirkocaserta.bruce.mac.Mac;
 
@@ -10,7 +11,7 @@ import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.security.Provider;
 
 /**
  * Implementation class for MAC (Message Authentication Code) operations.
@@ -46,9 +47,13 @@ public final class MacOperations {
      * @return a MAC interface producing raw bytes
      */
     public static Mac createMac(Key key, String algorithm, String provider) {
+        return createMac(key, algorithm, Providers.resolve(provider));
+    }
+
+    public static Mac createMac(Key key, String algorithm, Provider provider) {
         return message -> {
             try {
-                var mac = provider == null || provider.isBlank()
+                var mac = provider == null
                         ? javax.crypto.Mac.getInstance(algorithm)
                         : javax.crypto.Mac.getInstance(algorithm, provider);
                 mac.init(key);
@@ -57,8 +62,6 @@ public final class MacOperations {
                 throw new BruceException(String.format("no such algorithm: %s", key.getAlgorithm()), e);
             } catch (InvalidKeyException e) {
                 throw new BruceException("invalid key", e);
-            } catch (NoSuchProviderException e) {
-                throw new BruceException(String.format("no such provider: %s", provider), e);
             }
         };
     }
@@ -87,7 +90,7 @@ public final class MacOperations {
      * @return an encoding MAC interface
      */
     public static EncodingMac createEncodingMac(Key key, String algorithm, String provider, Bruce.Encoding encoding, Charset charset) {
-        var mac = createMac(key, algorithm, provider);
+        var mac = createMac(key, algorithm, Providers.resolve(provider));
         return message -> EncodingUtils.encode(encoding, mac.get(message.getBytes(charset)));
     }
 }
