@@ -5,7 +5,11 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import java.security.KeyStore;
 import java.security.Security;
 
-import static com.mirkocaserta.bruce.Bruce.*;
+import static com.mirkocaserta.bruce.Keystores.keystore;
+import static com.mirkocaserta.bruce.Keystores.privateKey;
+import static com.mirkocaserta.bruce.Keystores.publicKey;
+import static com.mirkocaserta.bruce.Signatures.signer;
+import static com.mirkocaserta.bruce.Signatures.verifier;
 
 class SignerAndVerifierWithCustomProviderTest extends SignerAndVerifierCommonTest {
 

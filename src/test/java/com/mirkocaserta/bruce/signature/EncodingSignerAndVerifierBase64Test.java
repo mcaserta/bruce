@@ -3,7 +3,11 @@ package com.mirkocaserta.bruce.signature;
 import java.security.KeyStore;
 
 import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
-import static com.mirkocaserta.bruce.Bruce.*;
+import static com.mirkocaserta.bruce.Keystores.keystore;
+import static com.mirkocaserta.bruce.Keystores.privateKey;
+import static com.mirkocaserta.bruce.Keystores.publicKey;
+import static com.mirkocaserta.bruce.Signatures.signer;
+import static com.mirkocaserta.bruce.Signatures.verifier;
 
 class EncodingSignerAndVerifierBase64Test extends EncodingSignerAndVerifierCommonTest {
 
