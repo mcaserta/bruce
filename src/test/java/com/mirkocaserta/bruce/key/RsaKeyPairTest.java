@@ -3,7 +3,9 @@ package com.mirkocaserta.bruce.key;
 import com.mirkocaserta.bruce.BruceException;
 import org.junit.jupiter.api.Test;
 
-import static com.mirkocaserta.bruce.Bruce.*;
+import static com.mirkocaserta.bruce.Keystores.keyPair;
+import static com.mirkocaserta.bruce.Signatures.signer;
+import static com.mirkocaserta.bruce.Signatures.verifier;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;

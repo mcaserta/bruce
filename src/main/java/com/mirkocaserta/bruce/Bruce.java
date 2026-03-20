@@ -5,14 +5,6 @@ import com.mirkocaserta.bruce.cipher.asymmetric.Cipher;
 import com.mirkocaserta.bruce.cipher.symmetric.CipherByKey;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipher;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherByKey;
-import com.mirkocaserta.bruce.signature.EncodingSigner;
-import com.mirkocaserta.bruce.signature.EncodingSignerByKey;
-import com.mirkocaserta.bruce.signature.EncodingVerifier;
-import com.mirkocaserta.bruce.signature.EncodingVerifierByKey;
-import com.mirkocaserta.bruce.signature.Signer;
-import com.mirkocaserta.bruce.signature.SignerByKey;
-import com.mirkocaserta.bruce.signature.Verifier;
-import com.mirkocaserta.bruce.signature.VerifierByKey;
 
 import java.nio.charset.Charset;
 import java.security.Key;
@@ -129,85 +121,6 @@ public final class Bruce {
         return Keystores.keyPair(algorithm, provider, keySize, random);
     }
 
-    public static Signer signer(PrivateKey privateKey, String algorithm) {
-        return Signatures.signer(privateKey, algorithm);
-    }
-
-    public static Signer signer(PrivateKey privateKey, String algorithm, String provider) {
-        return Signatures.signer(privateKey, algorithm, provider);
-    }
-
-    public static SignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm) {
-        return Signatures.signer(privateKeyMap, algorithm);
-    }
-
-    public static SignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm, String provider) {
-        return Signatures.signer(privateKeyMap, algorithm, provider);
-    }
-
-    public static EncodingSignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm, Encoding encoding) {
-        return Signatures.signer(privateKeyMap, algorithm, encoding);
-    }
-
-    public static EncodingSignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm, Charset charset, Encoding encoding) {
-        return Signatures.signer(privateKeyMap, algorithm, charset, encoding);
-    }
-
-    public static EncodingSignerByKey signer(Map<String, PrivateKey> privateKeyMap, String algorithm, String provider, Charset charset, Encoding encoding) {
-        return Signatures.signer(privateKeyMap, algorithm, provider, charset, encoding);
-    }
-
-    public static EncodingSigner signer(PrivateKey privateKey, String algorithm, Encoding encoding) {
-        return Signatures.signer(privateKey, algorithm, encoding);
-    }
-
-    public static EncodingSigner signer(PrivateKey privateKey, String algorithm, Charset charset, Encoding encoding) {
-        return Signatures.signer(privateKey, algorithm, charset, encoding);
-    }
-
-    public static EncodingSigner signer(PrivateKey privateKey, String algorithm, String provider, Charset charset, Encoding encoding) {
-        return Signatures.signer(privateKey, algorithm, provider, charset, encoding);
-    }
-
-    public static Verifier verifier(PublicKey publicKey, String algorithm) {
-        return Signatures.verifier(publicKey, algorithm);
-    }
-
-    public static Verifier verifier(PublicKey publicKey, String algorithm, String provider) {
-        return Signatures.verifier(publicKey, algorithm, provider);
-    }
-
-    public static VerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm) {
-        return Signatures.verifier(publicKeyMap, algorithm);
-    }
-
-    public static VerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm, String provider) {
-        return Signatures.verifier(publicKeyMap, algorithm, provider);
-    }
-
-    public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, Encoding encoding) {
-        return Signatures.verifier(publicKey, algorithm, encoding);
-    }
-
-    public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, String provider, Encoding encoding) {
-        return Signatures.verifier(publicKey, algorithm, provider, encoding);
-    }
-
-    public static EncodingVerifier verifier(PublicKey publicKey, String algorithm, String provider, Charset charset, Encoding encoding) {
-        return Signatures.verifier(publicKey, algorithm, provider, charset, encoding);
-    }
-
-    public static EncodingVerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm, Encoding encoding) {
-        return Signatures.verifier(publicKeyMap, algorithm, encoding);
-    }
-
-    public static EncodingVerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm, Charset charset, Encoding encoding) {
-        return Signatures.verifier(publicKeyMap, algorithm, charset, encoding);
-    }
-
-    public static EncodingVerifierByKey verifier(Map<String, PublicKey> publicKeyMap, String algorithm, String provider, Charset charset, Encoding encoding) {
-        return Signatures.verifier(publicKeyMap, algorithm, provider, charset, encoding);
-    }
 
     public static byte[] symmetricKey(String algorithm) {
         return Keystores.symmetricKey(algorithm);

@@ -5,7 +5,11 @@ import org.junit.jupiter.api.Test;
 import java.security.KeyStore;
 import java.util.Map;
 
-import static com.mirkocaserta.bruce.Bruce.*;
+import static com.mirkocaserta.bruce.Keystores.keystore;
+import static com.mirkocaserta.bruce.Keystores.privateKey;
+import static com.mirkocaserta.bruce.Keystores.publicKey;
+import static com.mirkocaserta.bruce.Signatures.signer;
+import static com.mirkocaserta.bruce.Signatures.verifier;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

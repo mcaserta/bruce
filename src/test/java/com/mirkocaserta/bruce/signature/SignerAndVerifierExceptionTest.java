@@ -6,7 +6,9 @@ import org.junit.jupiter.api.Test;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 
-import static com.mirkocaserta.bruce.Bruce.*;
+import static com.mirkocaserta.bruce.Keystores.keystore;
+import static com.mirkocaserta.bruce.Keystores.privateKey;
+import static com.mirkocaserta.bruce.Signatures.signer;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
