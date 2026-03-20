@@ -104,9 +104,7 @@ public class VerifierBuilder {
      */
     public Verifier buildRaw() {
         validateSingleKeyVerifier();
-        return provider.isBlank()
-                ? SignatureOperations.createVerifier(publicKey, algorithm)
-                : SignatureOperations.createVerifier(publicKey, algorithm, provider);
+        return SignatureOperations.createVerifier(publicKey, algorithm, provider);
     }
     
     /**
@@ -128,9 +126,7 @@ public class VerifierBuilder {
      */
     public VerifierByKey buildRawByKey() {
         validateMultiKeyVerifier();
-        return provider.isBlank()
-                ? SignatureOperations.createVerifierByKey(publicKeyMap, algorithm)
-                : SignatureOperations.createVerifierByKey(publicKeyMap, algorithm, provider);
+        return SignatureOperations.createVerifierByKey(publicKeyMap, algorithm, provider);
     }
     
     /**
@@ -141,9 +137,7 @@ public class VerifierBuilder {
      */
     public EncodingVerifierByKey buildByKey() {
         validateMultiKeyVerifier();
-        return provider.isBlank()
-                ? SignatureOperations.createEncodingVerifierByKey(publicKeyMap, algorithm, charset, encoding)
-                : SignatureOperations.createEncodingVerifierByKey(publicKeyMap, algorithm, provider, charset, encoding);
+        return SignatureOperations.createEncodingVerifierByKey(publicKeyMap, algorithm, provider, charset, encoding);
     }
     
     private void validateSingleKeyVerifier() {

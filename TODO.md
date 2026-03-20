@@ -3,7 +3,7 @@
 - [x] Remove `Bruce` forwarding methods and keep only dedicated facades/builders as 2.0.0 entrypoints.
 - [x] Remove overload-heavy static APIs in favor of builders (`cipherBuilder()`, `signerBuilder()`, `verifierBuilder()`, `digestBuilder()`, `macBuilder()`).
 - [x] Rename `com.mirkocaserta.bruce.cipher.asymmetric.Cipher` and `com.mirkocaserta.bruce.cipher.symmetric.Cipher` to `AsymmetricCipher` and `SymmetricCipher` to avoid confusion with `java.security.Cipher`.
-- [ ] Consolidate encoding/charset/provider overloads via builders to reduce duplication (prefer single builder with optional `provider`, `encoding`, `charset`).
+- [x] Consolidate encoding/charset/provider overloads via builders to reduce duplication (prefer single builder with optional `provider`, `encoding`, `charset`).
 - [ ] Extract a `KeyStoreSource` strategy (classpath/file/http/https) and move protocol parsing out of operations; unit-test each source.
 - [ ] Centralize provider handling: add `Providers.resolve(String name): Provider` and pass `Provider` internally instead of `String`.
 - [x] Add `@FunctionalInterface` where applicable (`Signer`, `Verifier`, `Mac`, `Digester`).

@@ -77,9 +77,7 @@ public class DigestBuilder {
      */
     public Digester buildRaw() {
         validateParameters();
-        return provider.isBlank()
-                ? DigestOperations.createRawDigester(algorithm)
-                : DigestOperations.createRawDigester(algorithm, provider);
+        return DigestOperations.createRawDigester(algorithm, provider);
     }
     
     /**
@@ -90,9 +88,7 @@ public class DigestBuilder {
      */
     public EncodingDigester build() {
         validateParameters();
-        return provider.isBlank()
-                ? DigestOperations.createEncodingDigester(algorithm, encoding, charset)
-                : DigestOperations.createEncodingDigester(algorithm, provider, encoding, charset);
+        return DigestOperations.createEncodingDigester(algorithm, provider, encoding, charset);
     }
     
     /**
@@ -103,9 +99,7 @@ public class DigestBuilder {
      */
     public FileDigester buildFileDigester() {
         validateParameters();
-        return provider.isBlank()
-                ? DigestOperations.createFileDigester(algorithm, encoding)
-                : DigestOperations.createFileDigester(algorithm, provider, encoding);
+        return DigestOperations.createFileDigester(algorithm, provider, encoding);
     }
     
     private void validateParameters() {
