@@ -3,6 +3,7 @@ package com.mirkocaserta.bruce;
 import com.mirkocaserta.bruce.digest.Digester;
 import com.mirkocaserta.bruce.digest.EncodingDigester;
 import com.mirkocaserta.bruce.digest.FileDigester;
+import com.mirkocaserta.bruce.impl.digest.DigestOperations;
 
 import java.nio.charset.Charset;
 
@@ -76,7 +77,9 @@ public class DigestBuilder {
      */
     public Digester buildRaw() {
         validateParameters();
-        return Digests.digester(algorithm, provider);
+        return provider.isBlank()
+                ? DigestOperations.createRawDigester(algorithm)
+                : DigestOperations.createRawDigester(algorithm, provider);
     }
     
     /**
@@ -87,7 +90,9 @@ public class DigestBuilder {
      */
     public EncodingDigester build() {
         validateParameters();
-        return Digests.digester(algorithm, provider, encoding, charset);
+        return provider.isBlank()
+                ? DigestOperations.createEncodingDigester(algorithm, encoding, charset)
+                : DigestOperations.createEncodingDigester(algorithm, provider, encoding, charset);
     }
     
     /**
@@ -98,7 +103,9 @@ public class DigestBuilder {
      */
     public FileDigester buildFileDigester() {
         validateParameters();
-        return Digests.fileDigester(algorithm, provider, encoding);
+        return provider.isBlank()
+                ? DigestOperations.createFileDigester(algorithm, encoding)
+                : DigestOperations.createFileDigester(algorithm, provider, encoding);
     }
     
     private void validateParameters() {

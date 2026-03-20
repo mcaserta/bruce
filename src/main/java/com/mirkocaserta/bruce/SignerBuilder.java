@@ -2,6 +2,9 @@ package com.mirkocaserta.bruce;
 
 import com.mirkocaserta.bruce.signature.EncodingSigner;
 import com.mirkocaserta.bruce.signature.EncodingSignerByKey;
+import com.mirkocaserta.bruce.signature.Signer;
+import com.mirkocaserta.bruce.signature.SignerByKey;
+import com.mirkocaserta.bruce.impl.signature.SignatureOperations;
 
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
@@ -101,7 +104,9 @@ public class SignerBuilder {
      */
     public EncodingSigner build() {
         validateSingleKeySigner();
-        return Signatures.signer(privateKey, algorithm, provider, charset, encoding);
+        return provider.isBlank()
+                ? SignatureOperations.createEncodingSigner(privateKey, algorithm, charset, encoding)
+                : SignatureOperations.createEncodingSigner(privateKey, algorithm, provider, charset, encoding);
     }
     
     /**
@@ -112,7 +117,33 @@ public class SignerBuilder {
      */
     public EncodingSignerByKey buildByKey() {
         validateMultiKeySigner();
-        return Signatures.signer(privateKeyMap, algorithm, provider, charset, encoding);
+        return provider.isBlank()
+                ? SignatureOperations.createEncodingSignerByKey(privateKeyMap, algorithm, charset, encoding)
+                : SignatureOperations.createEncodingSignerByKey(privateKeyMap, algorithm, provider, charset, encoding);
+    }
+
+    /**
+     * Builds a raw signer with a single key.
+     *
+     * @return the signer
+     */
+    public Signer buildRaw() {
+        validateSingleKeySigner();
+        return provider.isBlank()
+                ? SignatureOperations.createSigner(privateKey, algorithm)
+                : SignatureOperations.createSigner(privateKey, algorithm, provider);
+    }
+
+    /**
+     * Builds a raw signer with runtime key selection.
+     *
+     * @return the signer by key
+     */
+    public SignerByKey buildRawByKey() {
+        validateMultiKeySigner();
+        return provider.isBlank()
+                ? SignatureOperations.createSignerByKey(privateKeyMap, algorithm)
+                : SignatureOperations.createSignerByKey(privateKeyMap, algorithm, provider);
     }
     
     private void validateSingleKeySigner() {

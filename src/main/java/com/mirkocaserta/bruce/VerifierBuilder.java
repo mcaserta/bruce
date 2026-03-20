@@ -4,6 +4,7 @@ import com.mirkocaserta.bruce.signature.EncodingVerifier;
 import com.mirkocaserta.bruce.signature.EncodingVerifierByKey;
 import com.mirkocaserta.bruce.signature.Verifier;
 import com.mirkocaserta.bruce.signature.VerifierByKey;
+import com.mirkocaserta.bruce.impl.signature.SignatureOperations;
 
 import java.nio.charset.Charset;
 import java.security.PublicKey;
@@ -103,7 +104,9 @@ public class VerifierBuilder {
      */
     public Verifier buildRaw() {
         validateSingleKeyVerifier();
-        return Signatures.verifier(publicKey, algorithm, provider);
+        return provider.isBlank()
+                ? SignatureOperations.createVerifier(publicKey, algorithm)
+                : SignatureOperations.createVerifier(publicKey, algorithm, provider);
     }
     
     /**
@@ -114,7 +117,7 @@ public class VerifierBuilder {
      */
     public EncodingVerifier build() {
         validateSingleKeyVerifier();
-        return Signatures.verifier(publicKey, algorithm, provider, charset, encoding);
+        return SignatureOperations.createEncodingVerifier(publicKey, algorithm, provider, charset, encoding);
     }
     
     /**
@@ -125,7 +128,9 @@ public class VerifierBuilder {
      */
     public VerifierByKey buildRawByKey() {
         validateMultiKeyVerifier();
-        return Signatures.verifier(publicKeyMap, algorithm, provider);
+        return provider.isBlank()
+                ? SignatureOperations.createVerifierByKey(publicKeyMap, algorithm)
+                : SignatureOperations.createVerifierByKey(publicKeyMap, algorithm, provider);
     }
     
     /**
@@ -136,7 +141,9 @@ public class VerifierBuilder {
      */
     public EncodingVerifierByKey buildByKey() {
         validateMultiKeyVerifier();
-        return Signatures.verifier(publicKeyMap, algorithm, provider, charset, encoding);
+        return provider.isBlank()
+                ? SignatureOperations.createEncodingVerifierByKey(publicKeyMap, algorithm, charset, encoding)
+                : SignatureOperations.createEncodingVerifierByKey(publicKeyMap, algorithm, provider, charset, encoding);
     }
     
     private void validateSingleKeyVerifier() {

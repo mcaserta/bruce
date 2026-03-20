@@ -6,11 +6,11 @@ import java.security.KeyStore;
 import java.util.Map;
 
 import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
+import static com.mirkocaserta.bruce.Bruce.signerBuilder;
+import static com.mirkocaserta.bruce.Bruce.verifierBuilder;
 import static com.mirkocaserta.bruce.Keystores.keystore;
 import static com.mirkocaserta.bruce.Keystores.privateKey;
 import static com.mirkocaserta.bruce.Keystores.publicKey;
-import static com.mirkocaserta.bruce.Signatures.signer;
-import static com.mirkocaserta.bruce.Signatures.verifier;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EncodingSignerAndVerifierByKeyTest {
@@ -20,16 +20,20 @@ class EncodingSignerAndVerifierByKeyTest {
     private final KeyStore bobKeystore = keystore("classpath:/keystore-bob.p12", "password".toCharArray(), "PKCS12");
 
     private final EncodingSignerByKey signer =
-            signer(
+            signerBuilder().keys(
                     Map.of("alice", privateKey(aliceKeystore, "alice", "password".toCharArray()),
-                            "bob", privateKey(bobKeystore, "bob", "password".toCharArray())),
-                    "SHA512withRSA", BASE64);
+                            "bob", privateKey(bobKeystore, "bob", "password".toCharArray())))
+                    .algorithm("SHA512withRSA")
+                    .encoding(BASE64)
+                    .buildByKey();
 
     private final EncodingVerifierByKey verifier =
-            verifier(
+            verifierBuilder().keys(
                     Map.of("alice", publicKey(aliceKeystore, "alice"),
-                            "bob", publicKey(bobKeystore, "bob")),
-                    "SHA512withRSA", BASE64);
+                            "bob", publicKey(bobKeystore, "bob")))
+                    .algorithm("SHA512withRSA")
+                    .encoding(BASE64)
+                    .buildByKey();
 
     @Test
     void aliceAndBobHaveASignedAndVerifiedConversation() {

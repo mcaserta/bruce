@@ -7,7 +7,7 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.util.Map;
 
-import static com.mirkocaserta.bruce.Ciphers.cipher;
+import static com.mirkocaserta.bruce.Bruce.cipherBuilder;
 import static com.mirkocaserta.bruce.Keystores.keystore;
 import static com.mirkocaserta.bruce.Keystores.privateKey;
 import static com.mirkocaserta.bruce.Keystores.publicKey;
@@ -34,7 +34,7 @@ class CipherByKeyRoundTripTest {
                 "bob-private", bobPrivateKey
         );
 
-        CipherByKey cipher = cipher(keys, "RSA");
+        CipherByKey cipher = cipherBuilder().keys(keys).algorithm("RSA").buildAsymmetricRawByKey();
 
         // Alice writes to Bob
         byte[] aliceMsg01 = "Hello".getBytes(UTF_8);

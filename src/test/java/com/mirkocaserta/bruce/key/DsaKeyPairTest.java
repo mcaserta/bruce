@@ -2,9 +2,9 @@ package com.mirkocaserta.bruce.key;
 
 import org.junit.jupiter.api.Test;
 
+import static com.mirkocaserta.bruce.Bruce.signerBuilder;
+import static com.mirkocaserta.bruce.Bruce.verifierBuilder;
 import static com.mirkocaserta.bruce.Keystores.keyPair;
-import static com.mirkocaserta.bruce.Signatures.signer;
-import static com.mirkocaserta.bruce.Signatures.verifier;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -15,8 +15,8 @@ class DsaKeyPairTest {
     @Test
     void generateAndUse() {
         var keyPair = keyPair("DSA", 2048);
-        var signer = signer(keyPair.getPrivate(), "SHA256withDSA");
-        var verifier = verifier(keyPair.getPublic(), "SHA256withDSA");
+        var signer = signerBuilder().key(keyPair.getPrivate()).algorithm("SHA256withDSA").buildRaw();
+        var verifier = verifierBuilder().key(keyPair.getPublic()).algorithm("SHA256withDSA").buildRaw();
         var signature = signer.sign(MESSAGE);
         assertTrue(verifier.verify(MESSAGE, signature));
     }

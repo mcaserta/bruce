@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 
 import java.security.Security;
 
+import static com.mirkocaserta.bruce.Bruce.signerBuilder;
+import static com.mirkocaserta.bruce.Bruce.verifierBuilder;
 import static com.mirkocaserta.bruce.Keystores.keyPair;
-import static com.mirkocaserta.bruce.Signatures.signer;
-import static com.mirkocaserta.bruce.Signatures.verifier;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,8 +24,8 @@ class RsaKeyPairWithCustomProviderTest {
     @Test
     void generateAndUse() {
         var keyPair = keyPair("RSA", "BC", 4096);
-        var signer = signer(keyPair.getPrivate(), "RIPEMD160withRSA/ISO9796-2");
-        var verifier = verifier(keyPair.getPublic(), "RIPEMD160withRSA/ISO9796-2");
+        var signer = signerBuilder().key(keyPair.getPrivate()).algorithm("RIPEMD160withRSA/ISO9796-2").buildRaw();
+        var verifier = verifierBuilder().key(keyPair.getPublic()).algorithm("RIPEMD160withRSA/ISO9796-2").buildRaw();
         var signature = signer.sign(MESSAGE);
         assertTrue(verifier.verify(MESSAGE, signature));
     }

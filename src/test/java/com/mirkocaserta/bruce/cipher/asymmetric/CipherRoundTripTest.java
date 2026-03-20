@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.security.Key;
 import java.security.KeyStore;
 
-import static com.mirkocaserta.bruce.Ciphers.cipher;
+import static com.mirkocaserta.bruce.Bruce.cipherBuilder;
 import static com.mirkocaserta.bruce.Keystores.keystore;
 import static com.mirkocaserta.bruce.Keystores.privateKey;
 import static com.mirkocaserta.bruce.Keystores.publicKey;
@@ -26,10 +26,10 @@ class CipherRoundTripTest {
 
     @Test
     void roundTrip() {
-        Cipher encryptForAlice = cipher(alicePublicKey, "RSA", ENCRYPT);
-        Cipher decryptForAlice = cipher(alicePrivateKey, "RSA", DECRYPT);
-        Cipher encryptForBob = cipher(bobPublicKey, "RSA", ENCRYPT);
-        Cipher decryptForBob = cipher(bobPrivateKey, "RSA", DECRYPT);
+        Cipher encryptForAlice = cipherBuilder().key(alicePublicKey).algorithm("RSA").mode(ENCRYPT).buildAsymmetricRaw();
+        Cipher decryptForAlice = cipherBuilder().key(alicePrivateKey).algorithm("RSA").mode(DECRYPT).buildAsymmetricRaw();
+        Cipher encryptForBob = cipherBuilder().key(bobPublicKey).algorithm("RSA").mode(ENCRYPT).buildAsymmetricRaw();
+        Cipher decryptForBob = cipherBuilder().key(bobPrivateKey).algorithm("RSA").mode(DECRYPT).buildAsymmetricRaw();
 
         // Alice writes to Bob
         byte[] aliceMsg01 = "Hello".getBytes(UTF_8);
