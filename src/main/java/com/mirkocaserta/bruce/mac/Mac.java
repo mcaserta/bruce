@@ -5,6 +5,7 @@ package com.mirkocaserta.bruce.mac;
  *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
 */
+@FunctionalInterface
 public interface Mac {
 
     /**
