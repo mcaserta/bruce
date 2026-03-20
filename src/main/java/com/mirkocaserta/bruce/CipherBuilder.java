@@ -163,9 +163,7 @@ public class CipherBuilder {
      */
     public com.mirkocaserta.bruce.cipher.symmetric.EncodingCipher buildSymmetric() {
         validateSymmetricCipher();
-        return provider.isBlank()
-                ? SymmetricCipherOperations.createEncodingCipher(key, keyAlgorithm, cipherAlgorithm, mode, charset, encoding)
-                : SymmetricCipherOperations.createEncodingCipher(key, keyAlgorithm, cipherAlgorithm, provider, mode, charset, encoding);
+        return SymmetricCipherOperations.createEncodingCipher(key, keyAlgorithm, cipherAlgorithm, provider, mode, charset, encoding);
     }
 
     /**
@@ -175,9 +173,7 @@ public class CipherBuilder {
      */
     public com.mirkocaserta.bruce.cipher.symmetric.SymmetricCipher buildSymmetricRaw() {
         validateSymmetricRawCipher();
-        return provider.isBlank()
-                ? SymmetricCipherOperations.createCipher(rawKey, keyAlgorithm, cipherAlgorithm, mode)
-                : SymmetricCipherOperations.createCipher(rawKey, keyAlgorithm, cipherAlgorithm, provider, mode);
+        return SymmetricCipherOperations.createCipher(rawKey, keyAlgorithm, cipherAlgorithm, provider, mode);
     }
 
     /**
@@ -187,9 +183,7 @@ public class CipherBuilder {
      */
     public com.mirkocaserta.bruce.cipher.symmetric.CipherByKey buildSymmetricRawByKey() {
         validateSymmetricByKeyCipher();
-        return provider.isBlank()
-                ? SymmetricCipherOperations.createCipherByKey(keyAlgorithm, cipherAlgorithm, mode)
-                : SymmetricCipherOperations.createCipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode);
+        return SymmetricCipherOperations.createCipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode);
     }
 
     /**
@@ -199,9 +193,7 @@ public class CipherBuilder {
      */
     public com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherByKey buildSymmetricByKey() {
         validateSymmetricByKeyCipher();
-        return provider.isBlank()
-                ? SymmetricCipherOperations.createEncodingCipherByKey(keyAlgorithm, cipherAlgorithm, mode, charset)
-                : SymmetricCipherOperations.createEncodingCipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode, charset);
+        return SymmetricCipherOperations.createEncodingCipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode, charset);
     }
     
     /**
@@ -212,9 +204,7 @@ public class CipherBuilder {
      */
     public com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipher buildAsymmetric() {
         validateAsymmetricCipher();
-        return provider.isBlank()
-                ? AsymmetricCipherOperations.createEncodingCipher(asymmetricKey, cipherAlgorithm, mode, encoding, charset)
-                : AsymmetricCipherOperations.createEncodingCipher(asymmetricKey, cipherAlgorithm, provider, mode, encoding, charset);
+        return AsymmetricCipherOperations.createEncodingCipher(asymmetricKey, cipherAlgorithm, provider, mode, encoding, charset);
     }
 
     /**
@@ -224,9 +214,7 @@ public class CipherBuilder {
      */
     public com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricCipher buildAsymmetricRaw() {
         validateAsymmetricCipher();
-        return provider.isBlank()
-                ? AsymmetricCipherOperations.createCipher(asymmetricKey, cipherAlgorithm, mode)
-                : AsymmetricCipherOperations.createCipher(asymmetricKey, cipherAlgorithm, provider, mode);
+        return AsymmetricCipherOperations.createCipher(asymmetricKey, cipherAlgorithm, provider, mode);
     }
 
     /**
@@ -236,9 +224,7 @@ public class CipherBuilder {
      */
     public com.mirkocaserta.bruce.cipher.asymmetric.CipherByKey buildAsymmetricRawByKey() {
         validateAsymmetricByKeyCipher();
-        return provider.isBlank()
-                ? AsymmetricCipherOperations.createCipherByKey(asymmetricKeys, cipherAlgorithm)
-                : AsymmetricCipherOperations.createCipherByKey(asymmetricKeys, cipherAlgorithm, provider);
+        return AsymmetricCipherOperations.createCipherByKey(asymmetricKeys, cipherAlgorithm, provider);
     }
 
     /**
@@ -248,9 +234,7 @@ public class CipherBuilder {
      */
     public com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipherByKey buildAsymmetricByKey() {
         validateAsymmetricByKeyCipher();
-        return provider.isBlank()
-                ? AsymmetricCipherOperations.createEncodingCipherByKey(asymmetricKeys, cipherAlgorithm, encoding, charset)
-                : AsymmetricCipherOperations.createEncodingCipherByKey(asymmetricKeys, cipherAlgorithm, provider, encoding, charset);
+        return AsymmetricCipherOperations.createEncodingCipherByKey(asymmetricKeys, cipherAlgorithm, provider, encoding, charset);
     }
     
     private void validateSymmetricCipher() {

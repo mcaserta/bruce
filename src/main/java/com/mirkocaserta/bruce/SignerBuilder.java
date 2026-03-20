@@ -104,9 +104,7 @@ public class SignerBuilder {
      */
     public EncodingSigner build() {
         validateSingleKeySigner();
-        return provider.isBlank()
-                ? SignatureOperations.createEncodingSigner(privateKey, algorithm, charset, encoding)
-                : SignatureOperations.createEncodingSigner(privateKey, algorithm, provider, charset, encoding);
+        return SignatureOperations.createEncodingSigner(privateKey, algorithm, provider, charset, encoding);
     }
     
     /**
@@ -117,9 +115,7 @@ public class SignerBuilder {
      */
     public EncodingSignerByKey buildByKey() {
         validateMultiKeySigner();
-        return provider.isBlank()
-                ? SignatureOperations.createEncodingSignerByKey(privateKeyMap, algorithm, charset, encoding)
-                : SignatureOperations.createEncodingSignerByKey(privateKeyMap, algorithm, provider, charset, encoding);
+        return SignatureOperations.createEncodingSignerByKey(privateKeyMap, algorithm, provider, charset, encoding);
     }
 
     /**
@@ -129,9 +125,7 @@ public class SignerBuilder {
      */
     public Signer buildRaw() {
         validateSingleKeySigner();
-        return provider.isBlank()
-                ? SignatureOperations.createSigner(privateKey, algorithm)
-                : SignatureOperations.createSigner(privateKey, algorithm, provider);
+        return SignatureOperations.createSigner(privateKey, algorithm, provider);
     }
 
     /**
@@ -141,9 +135,7 @@ public class SignerBuilder {
      */
     public SignerByKey buildRawByKey() {
         validateMultiKeySigner();
-        return provider.isBlank()
-                ? SignatureOperations.createSignerByKey(privateKeyMap, algorithm)
-                : SignatureOperations.createSignerByKey(privateKeyMap, algorithm, provider);
+        return SignatureOperations.createSignerByKey(privateKeyMap, algorithm, provider);
     }
     
     private void validateSingleKeySigner() {

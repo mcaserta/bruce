@@ -90,9 +90,7 @@ public class MacBuilder {
      */
     public Mac buildRaw() {
         validateParameters();
-        return provider.isBlank()
-                ? MacOperations.createMac(key, algorithm)
-                : MacOperations.createMac(key, algorithm, provider);
+        return MacOperations.createMac(key, algorithm, provider);
     }
     
     /**
@@ -103,9 +101,7 @@ public class MacBuilder {
      */
     public EncodingMac build() {
         validateParameters();
-        return provider.isBlank()
-                ? MacOperations.createEncodingMac(key, algorithm, encoding, charset)
-                : MacOperations.createEncodingMac(key, algorithm, provider, encoding, charset);
+        return MacOperations.createEncodingMac(key, algorithm, provider, encoding, charset);
     }
     
     private void validateParameters() {
