@@ -6,8 +6,9 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Random;
 
-import static com.mirkocaserta.bruce.Bruce.*;
 import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
+import static com.mirkocaserta.bruce.Ciphers.cipherByKey;
+import static com.mirkocaserta.bruce.Keystores.symmetricKey;
 import static com.mirkocaserta.bruce.cipher.Mode.DECRYPT;
 import static com.mirkocaserta.bruce.cipher.Mode.ENCRYPT;
 import static java.nio.charset.StandardCharsets.UTF_8;
