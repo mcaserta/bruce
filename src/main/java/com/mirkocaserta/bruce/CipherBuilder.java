@@ -136,7 +136,7 @@ public class CipherBuilder {
      */
     public com.mirkocaserta.bruce.cipher.symmetric.EncodingCipher buildSymmetric() {
         validateSymmetricCipher();
-        return Bruce.cipher(key, keyAlgorithm, cipherAlgorithm, provider, mode, charset, encoding);
+        return Ciphers.cipher(key, keyAlgorithm, cipherAlgorithm, provider, mode, charset, encoding);
     }
     
     /**
@@ -147,7 +147,7 @@ public class CipherBuilder {
      */
     public com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipher buildAsymmetric() {
         validateAsymmetricCipher();
-        return Bruce.cipher(asymmetricKey, cipherAlgorithm, provider, mode, encoding, charset);
+        return Ciphers.cipher(asymmetricKey, cipherAlgorithm, provider, mode, encoding, charset);
     }
     
     private void validateSymmetricCipher() {

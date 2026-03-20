@@ -103,7 +103,7 @@ public class VerifierBuilder {
      */
     public Verifier buildRaw() {
         validateSingleKeyVerifier();
-        return Bruce.verifier(publicKey, algorithm, provider);
+        return Signatures.verifier(publicKey, algorithm, provider);
     }
     
     /**
@@ -114,7 +114,7 @@ public class VerifierBuilder {
      */
     public EncodingVerifier build() {
         validateSingleKeyVerifier();
-        return Bruce.verifier(publicKey, algorithm, provider, charset, encoding);
+        return Signatures.verifier(publicKey, algorithm, provider, charset, encoding);
     }
     
     /**
@@ -125,7 +125,7 @@ public class VerifierBuilder {
      */
     public VerifierByKey buildRawByKey() {
         validateMultiKeyVerifier();
-        return Bruce.verifier(publicKeyMap, algorithm, provider);
+        return Signatures.verifier(publicKeyMap, algorithm, provider);
     }
     
     /**
@@ -136,7 +136,7 @@ public class VerifierBuilder {
      */
     public EncodingVerifierByKey buildByKey() {
         validateMultiKeyVerifier();
-        return Bruce.verifier(publicKeyMap, algorithm, provider, charset, encoding);
+        return Signatures.verifier(publicKeyMap, algorithm, provider, charset, encoding);
     }
     
     private void validateSingleKeyVerifier() {

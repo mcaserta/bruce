@@ -101,7 +101,7 @@ public class SignerBuilder {
      */
     public EncodingSigner build() {
         validateSingleKeySigner();
-        return Bruce.signer(privateKey, algorithm, provider, charset, encoding);
+        return Signatures.signer(privateKey, algorithm, provider, charset, encoding);
     }
     
     /**
@@ -112,7 +112,7 @@ public class SignerBuilder {
      */
     public EncodingSignerByKey buildByKey() {
         validateMultiKeySigner();
-        return Bruce.signer(privateKeyMap, algorithm, provider, charset, encoding);
+        return Signatures.signer(privateKeyMap, algorithm, provider, charset, encoding);
     }
     
     private void validateSingleKeySigner() {
