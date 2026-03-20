@@ -5,11 +5,6 @@ import com.mirkocaserta.bruce.cipher.asymmetric.Cipher;
 import com.mirkocaserta.bruce.cipher.symmetric.CipherByKey;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipher;
 import com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherByKey;
-import com.mirkocaserta.bruce.digest.Digester;
-import com.mirkocaserta.bruce.digest.EncodingDigester;
-import com.mirkocaserta.bruce.digest.FileDigester;
-import com.mirkocaserta.bruce.mac.EncodingMac;
-import com.mirkocaserta.bruce.mac.Mac;
 import com.mirkocaserta.bruce.signature.EncodingSigner;
 import com.mirkocaserta.bruce.signature.EncodingSignerByKey;
 import com.mirkocaserta.bruce.signature.EncodingVerifier;
@@ -132,38 +127,6 @@ public final class Bruce {
 
     public static KeyPair keyPair(String algorithm, String provider, int keySize, SecureRandom random) {
         return Keystores.keyPair(algorithm, provider, keySize, random);
-    }
-
-    public static EncodingDigester digester(String algorithm, Encoding encoding) {
-        return Digests.digester(algorithm, encoding);
-    }
-
-    public static EncodingDigester digester(String algorithm, Encoding encoding, Charset charset) {
-        return Digests.digester(algorithm, encoding, charset);
-    }
-
-    public static EncodingDigester digester(String algorithm, String provider, Encoding encoding) {
-        return Digests.digester(algorithm, provider, encoding);
-    }
-
-    public static EncodingDigester digester(String algorithm, String provider, Encoding encoding, Charset charset) {
-        return Digests.digester(algorithm, provider, encoding, charset);
-    }
-
-    public static FileDigester fileDigester(String algorithm, Encoding encoding) {
-        return Digests.fileDigester(algorithm, encoding);
-    }
-
-    public static FileDigester fileDigester(String algorithm, String provider, Encoding encoding) {
-        return Digests.fileDigester(algorithm, provider, encoding);
-    }
-
-    public static Digester digester(String algorithm, String provider) {
-        return Digests.digester(algorithm, provider);
-    }
-
-    public static Digester digester(String algorithm) {
-        return Digests.digester(algorithm);
     }
 
     public static Signer signer(PrivateKey privateKey, String algorithm) {
@@ -326,21 +289,6 @@ public final class Bruce {
         return Ciphers.cipher(keys, algorithm, provider, encoding, charset);
     }
 
-    public static Mac mac(Key key, String algorithm) {
-        return Macs.mac(key, algorithm);
-    }
-
-    public static Mac mac(Key key, String algorithm, String provider) {
-        return Macs.mac(key, algorithm, provider);
-    }
-
-    public static EncodingMac mac(Key key, String algorithm, Encoding encoding, Charset charset) {
-        return Macs.mac(key, algorithm, encoding, charset);
-    }
-
-    public static EncodingMac mac(Key key, String algorithm, String provider, Encoding encoding, Charset charset) {
-        return Macs.mac(key, algorithm, provider, encoding, charset);
-    }
 
     public enum Encoding {
         HEX,

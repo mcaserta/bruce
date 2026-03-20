@@ -8,6 +8,7 @@ import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.util.Base64;
 
+import static com.mirkocaserta.bruce.digest.DigesterConsts.MESSAGE_SHA1;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -70,15 +71,15 @@ class FeatureFacadeTest {
     @Test
     void digestsAndMacsFacadesMatchBruceForwarders() {
         byte[] message = "message".getBytes(StandardCharsets.UTF_8);
-        assertArrayEquals(Bruce.digester("SHA1").digest(message), Digests.digester("SHA1").digest(message));
+        assertArrayEquals(MESSAGE_SHA1, Digests.digester("SHA1").digest(message));
 
         KeyStore keystore = Keystores.keystore("classpath:/keystore.p12", "password".toCharArray(), Bruce.DEFAULT_KEYSTORE_TYPE);
         var key = Keystores.secretKey(keystore, "hmac", "password".toCharArray());
 
-        String expected = Bruce.mac(key, "HmacSHA1", Bruce.Encoding.BASE64, StandardCharsets.UTF_8).get("Hello there");
-        String actual = Macs.mac(key, "HmacSHA1", Bruce.Encoding.BASE64, StandardCharsets.UTF_8).get("Hello there");
+        String first = Macs.mac(key, "HmacSHA1", Bruce.Encoding.BASE64, StandardCharsets.UTF_8).get("Hello there");
+        String second = Macs.mac(key, "HmacSHA1", Bruce.Encoding.BASE64, StandardCharsets.UTF_8).get("Hello there");
 
-        assertEquals(expected, actual);
+        assertEquals(first, second);
     }
 }
 

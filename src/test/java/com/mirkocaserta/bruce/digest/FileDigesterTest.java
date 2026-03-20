@@ -1,6 +1,6 @@
 package com.mirkocaserta.bruce.digest;
 
-import static com.mirkocaserta.bruce.Bruce.fileDigester;
+import static com.mirkocaserta.bruce.Digests.fileDigester;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;

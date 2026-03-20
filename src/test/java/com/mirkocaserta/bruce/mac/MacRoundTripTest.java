@@ -5,7 +5,9 @@ import org.junit.jupiter.api.Test;
 import java.security.Key;
 import java.security.KeyStore;
 
-import static com.mirkocaserta.bruce.Bruce.*;
+import static com.mirkocaserta.bruce.Keystores.keystore;
+import static com.mirkocaserta.bruce.Keystores.secretKey;
+import static com.mirkocaserta.bruce.Macs.mac;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 

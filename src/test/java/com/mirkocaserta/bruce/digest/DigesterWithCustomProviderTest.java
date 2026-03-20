@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
 
-import static com.mirkocaserta.bruce.Bruce.digester;
+import static com.mirkocaserta.bruce.Digests.digester;
 
 @DisplayName("Raw digester tests with custom provider (Bouncy Castle)")
 class DigesterWithCustomProviderTest {
