@@ -89,7 +89,7 @@ public class MacBuilder {
      */
     public Mac buildRaw() {
         validateParameters();
-        return Bruce.mac(key, algorithm, provider);
+        return Macs.mac(key, algorithm, provider);
     }
     
     /**
@@ -100,7 +100,7 @@ public class MacBuilder {
      */
     public EncodingMac build() {
         validateParameters();
-        return Bruce.mac(key, algorithm, provider, encoding, charset);
+        return Macs.mac(key, algorithm, provider, encoding, charset);
     }
     
     private void validateParameters() {

@@ -1,6 +1,6 @@
 # Refactoring TODOs
 
-- [ ] Split `Bruce` facade into feature-focused facades (cipher, signature, digest, mac, keystore); keep `Bruce` as thin static forwarder for backward compatibility.
+- [x] Split `Bruce` facade into feature-focused facades (cipher, signature, digest, mac, keystore); keep `Bruce` as thin static forwarder for backward compatibility.
 - [ ] Deprecate overload-heavy static APIs in favor of builders (`cipherBuilder()`, `signerBuilder()`, `verifierBuilder()`, `digestBuilder()`, `macBuilder()`); add `@Deprecated` with Javadoc pointing to builders.
 - [ ] Rename `com.mirkocaserta.bruce.cipher.asymmetric.Cipher` and `com.mirkocaserta.bruce.cipher.symmetric.Cipher` to `AsymmetricCipher` and `SymmetricCipher` to avoid confusion with `java.security.Cipher`; provide deprecated type aliases for one release.
 - [ ] Consolidate encoding/charset/provider overloads via builders to reduce duplication (prefer single builder with optional `provider`, `encoding`, `charset`).

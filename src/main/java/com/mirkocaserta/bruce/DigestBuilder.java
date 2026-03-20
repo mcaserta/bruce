@@ -76,7 +76,7 @@ public class DigestBuilder {
      */
     public Digester buildRaw() {
         validateParameters();
-        return Bruce.digester(algorithm, provider);
+        return Digests.digester(algorithm, provider);
     }
     
     /**
@@ -87,7 +87,7 @@ public class DigestBuilder {
      */
     public EncodingDigester build() {
         validateParameters();
-        return Bruce.digester(algorithm, provider, encoding, charset);
+        return Digests.digester(algorithm, provider, encoding, charset);
     }
     
     /**
@@ -98,7 +98,7 @@ public class DigestBuilder {
      */
     public FileDigester buildFileDigester() {
         validateParameters();
-        return Bruce.fileDigester(algorithm, provider, encoding);
+        return Digests.fileDigester(algorithm, provider, encoding);
     }
     
     private void validateParameters() {
