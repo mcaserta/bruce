@@ -2,6 +2,7 @@ package com.mirkocaserta.bruce.mac;
 
 import com.mirkocaserta.bruce.Bytes;
 
+
 /**
  * Unified contract for producing Message Authentication Codes.
  *
@@ -23,4 +24,5 @@ public interface Mac {
      * @return the MAC wrapped in {@link Bytes}
      */
     Bytes get(Bytes message);
+
 }

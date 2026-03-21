@@ -1,7 +1,8 @@
 package com.mirkocaserta.bruce;
 
-import com.mirkocaserta.bruce.mac.Mac;
 import com.mirkocaserta.bruce.impl.mac.MacOperations;
+import com.mirkocaserta.bruce.impl.util.Preconditions;
+import com.mirkocaserta.bruce.mac.Mac;
 
 import java.security.Key;
 
@@ -65,11 +66,7 @@ public class MacBuilder {
     }
     
     private void validateParameters() {
-        if (key == null) {
-            throw new BruceException("key is required for MAC generator");
-        }
-        if (algorithm == null) {
-            throw new BruceException("algorithm is required for MAC generator");
-        }
+        Preconditions.requireNonNull(key, "key");
+        Preconditions.requireNonBlank(algorithm, "algorithm");
     }
 }

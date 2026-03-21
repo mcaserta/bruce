@@ -2,14 +2,23 @@ package com.mirkocaserta.bruce;
 
 import com.mirkocaserta.bruce.impl.keystore.KeyGenerators;
 import com.mirkocaserta.bruce.impl.keystore.KeyStoreOperations;
+import com.mirkocaserta.bruce.impl.util.PemUtils;
 
 import java.security.Key;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.io.ByteArrayInputStream;
 
 /**
  * Feature-focused facade for keystore and key-management operations.
@@ -277,5 +286,96 @@ public final class Keystores {
     public static String symmetricKey(String algorithm, String provider, Bruce.Encoding encoding) {
         return KeyGenerators.generateEncodedSymmetricKey(algorithm, provider, encoding);
     }
-}
 
+    // ── PEM helpers ──────────────────────────────────────────────────────────
+
+    /**
+     * Loads a {@link PrivateKey} from a PEM-encoded string (PKCS#8 format).
+     *
+     * @param pem       PEM string with {@code -----BEGIN PRIVATE KEY-----} header
+     * @param algorithm key algorithm (e.g., {@code "RSA"}, {@code "EC"})
+     * @return the private key
+     * @throws BruceException if the PEM is invalid or the algorithm is unknown
+     */
+    public static PrivateKey privateKeyFromPem(String pem, String algorithm) {
+        try {
+            var spec = new PKCS8EncodedKeySpec(PemUtils.decode(pem));
+            return KeyFactory.getInstance(algorithm).generatePrivate(spec);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new BruceException("error loading private key from PEM: algorithm=" + algorithm, e);
+        }
+    }
+
+    /**
+     * Loads a {@link PublicKey} from a PEM-encoded string (X.509/SubjectPublicKeyInfo format).
+     *
+     * @param pem       PEM string with {@code -----BEGIN PUBLIC KEY-----} header
+     * @param algorithm key algorithm (e.g., {@code "RSA"}, {@code "EC"})
+     * @return the public key
+     * @throws BruceException if the PEM is invalid or the algorithm is unknown
+     */
+    public static PublicKey publicKeyFromPem(String pem, String algorithm) {
+        try {
+            var spec = new X509EncodedKeySpec(PemUtils.decode(pem));
+            return KeyFactory.getInstance(algorithm).generatePublic(spec);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new BruceException("error loading public key from PEM: algorithm=" + algorithm, e);
+        }
+    }
+
+    /**
+     * Loads an X.509 {@link Certificate} from a PEM-encoded string.
+     *
+     * @param pem PEM string with {@code -----BEGIN CERTIFICATE-----} header
+     * @return the certificate
+     * @throws BruceException if the PEM is invalid or the certificate cannot be parsed
+     */
+    public static Certificate certificateFromPem(String pem) {
+        try {
+            var factory = CertificateFactory.getInstance("X.509");
+            var der = PemUtils.decode(pem);
+            return factory.generateCertificate(new ByteArrayInputStream(der));
+        } catch (CertificateException e) {
+            throw new BruceException("error loading certificate from PEM", e);
+        }
+    }
+
+    /**
+     * Encodes a {@link Key} (public or private) as a PEM string.
+     *
+     * <p>Uses the key's own encoded form and applies the appropriate PEM label:
+     * {@link PemType#PRIVATE_KEY} for private keys, {@link PemType#PUBLIC_KEY} for public keys,
+     * and {@link PemType#SECRET_KEY} for secret (symmetric) keys.</p>
+     *
+     * @param key the key to encode
+     * @return the PEM-encoded string
+     * @throws BruceException if the key has no encoded form
+     */
+    public static String keyToPem(Key key) {
+        var encoded = key.getEncoded();
+        if (encoded == null) {
+            throw new BruceException("key has no encoded form and cannot be PEM-encoded");
+        }
+        var type = switch (key) {
+            case PrivateKey ignored -> PemType.PRIVATE_KEY;
+            case PublicKey  ignored -> PemType.PUBLIC_KEY;
+            default                 -> PemType.SECRET_KEY;
+        };
+        return PemUtils.encode(type, encoded);
+    }
+
+    /**
+     * Encodes an X.509 {@link Certificate} as a PEM string.
+     *
+     * @param certificate the certificate to encode
+     * @return the PEM-encoded string
+     * @throws BruceException if the certificate cannot be encoded
+     */
+    public static String certificateToPem(Certificate certificate) {
+        try {
+            return PemUtils.encode(PemType.CERTIFICATE, certificate.getEncoded());
+        } catch (CertificateException e) {
+            throw new BruceException("error encoding certificate to PEM", e);
+        }
+    }
+}
