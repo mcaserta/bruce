@@ -1,6 +1,6 @@
 plugins {
     id 'java-library'
-    id 'org.sonarqube' version '5.1.0.4882'
+    id 'org.sonarqube' version '7.2.3.7755'
     id 'jacoco'
     id 'maven-publish'
 }
@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.bouncycastle:bcprov-jdk15on:1.70'
+    testImplementation 'org.bouncycastle:bcprov-jdk18on:1.83'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
