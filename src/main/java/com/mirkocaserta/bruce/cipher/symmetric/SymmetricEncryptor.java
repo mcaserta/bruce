@@ -1,6 +1,7 @@
 package com.mirkocaserta.bruce.cipher.symmetric;
 
 import com.mirkocaserta.bruce.Bruce;
+import com.mirkocaserta.bruce.Bytes;
 import com.mirkocaserta.bruce.impl.util.EncodingUtils;
 
 import java.nio.charset.Charset;
@@ -64,6 +65,18 @@ public interface SymmetricEncryptor {
 
     default String encryptToString(String iv, String plaintext) {
         return encryptToString(iv, encoding(), plaintext, charset(), encoding());
+    }
+
+    /**
+     * Encrypts the given {@link Bytes} plaintext using the given {@link Bytes} IV
+     * and returns the ciphertext as {@link Bytes}.
+     *
+     * @param iv        the initialization vector
+     * @param plaintext the plaintext to encrypt
+     * @return the ciphertext wrapped in {@link Bytes}
+     */
+    default Bytes encrypt(Bytes iv, Bytes plaintext) {
+        return Bytes.from(encrypt(iv.asBytes(), plaintext.asBytes()));
     }
 }
 

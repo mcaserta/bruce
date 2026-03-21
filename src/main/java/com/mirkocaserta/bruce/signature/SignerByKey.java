@@ -1,6 +1,7 @@
 package com.mirkocaserta.bruce.signature;
 
 import com.mirkocaserta.bruce.Bruce;
+import com.mirkocaserta.bruce.Bytes;
 import com.mirkocaserta.bruce.impl.util.EncodingUtils;
 
 import java.nio.charset.Charset;
@@ -48,5 +49,17 @@ public interface SignerByKey {
 
     default String signToString(String privateKeyId, String message) {
         return signToString(privateKeyId, message, charset(), encoding());
+    }
+
+    /**
+     * Signs the given {@link Bytes} message with the key identified by {@code privateKeyId}
+     * and returns the signature as {@link Bytes}.
+     *
+     * @param privateKeyId the key identifier
+     * @param message      the message to sign
+     * @return the raw signature wrapped in {@link Bytes}
+     */
+    default Bytes sign(String privateKeyId, Bytes message) {
+        return Bytes.from(sign(privateKeyId, message.asBytes()));
     }
 }

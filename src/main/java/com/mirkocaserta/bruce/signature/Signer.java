@@ -1,6 +1,7 @@
 package com.mirkocaserta.bruce.signature;
 
 import com.mirkocaserta.bruce.Bruce;
+import com.mirkocaserta.bruce.Bytes;
 import com.mirkocaserta.bruce.impl.util.EncodingUtils;
 
 import java.nio.charset.Charset;
@@ -48,5 +49,15 @@ public interface Signer {
 
     default String signToString(String message) {
         return signToString(message, charset(), encoding());
+    }
+
+    /**
+     * Signs the given {@link Bytes} message and returns the signature as {@link Bytes}.
+     *
+     * @param message the message to sign
+     * @return the raw signature wrapped in {@link Bytes}
+     */
+    default Bytes sign(Bytes message) {
+        return Bytes.from(sign(message.asBytes()));
     }
 }

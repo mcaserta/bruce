@@ -1,6 +1,7 @@
 package com.mirkocaserta.bruce.cipher.asymmetric;
 
 import com.mirkocaserta.bruce.Bruce;
+import com.mirkocaserta.bruce.Bytes;
 import com.mirkocaserta.bruce.impl.util.EncodingUtils;
 
 import java.nio.charset.Charset;
@@ -48,6 +49,16 @@ public interface AsymmetricEncryptor {
 
     default String encryptToString(String plaintext) {
         return encryptToString(plaintext, charset(), encoding());
+    }
+
+    /**
+     * Encrypts the given {@link Bytes} plaintext and returns the ciphertext as {@link Bytes}.
+     *
+     * @param plaintext the plaintext to encrypt
+     * @return the ciphertext wrapped in {@link Bytes}
+     */
+    default Bytes encrypt(Bytes plaintext) {
+        return Bytes.from(encrypt(plaintext.asBytes()));
     }
 }
 

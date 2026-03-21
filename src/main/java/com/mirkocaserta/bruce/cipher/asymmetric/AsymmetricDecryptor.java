@@ -1,6 +1,7 @@
 package com.mirkocaserta.bruce.cipher.asymmetric;
 
 import com.mirkocaserta.bruce.Bruce;
+import com.mirkocaserta.bruce.Bytes;
 import com.mirkocaserta.bruce.impl.util.EncodingUtils;
 
 import java.nio.charset.Charset;
@@ -48,6 +49,16 @@ public interface AsymmetricDecryptor {
 
     default String decryptToString(String ciphertext) {
         return decryptToString(ciphertext, encoding(), charset());
+    }
+
+    /**
+     * Decrypts the given {@link Bytes} ciphertext and returns the plaintext as {@link Bytes}.
+     *
+     * @param ciphertext the ciphertext to decrypt
+     * @return the plaintext wrapped in {@link Bytes}
+     */
+    default Bytes decrypt(Bytes ciphertext) {
+        return Bytes.from(decrypt(ciphertext.asBytes()));
     }
 }
 
