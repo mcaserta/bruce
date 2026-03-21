@@ -1,17 +1,12 @@
 # Asymmetric Ciphers
 
+All asymmetric cipher instances are created via `cipherBuilder()` (static import
+from `Bruce`). Input and output use the [`Bytes`](bytes.md) universal type.
+
 ## Encryptor
 
-Returns an `AsymmetricEncryptor` that encrypts messages with an asymmetric public key.
-
-```java
-// bytes → bytes
-AsymmetricEncryptor encryptor(PublicKey key, String algorithm);
-AsymmetricEncryptor encryptor(PublicKey key, String algorithm, String provider);
-
-// String → String (BASE64 output, UTF-8 input by default)
-AsymmetricEncryptor encryptor(PublicKey key, String algorithm, Encoding encoding, Charset charset);
-```
+Returns an `AsymmetricEncryptor` that encrypts messages with an asymmetric
+public key.
 
 ### Usage examples
 
@@ -19,38 +14,37 @@ AsymmetricEncryptor encryptor(PublicKey key, String algorithm, Encoding encoding
 KeyStore bobKeystore = keystore("classpath:/keystore-bob.p12", "password".toCharArray(), "PKCS12");
 PublicKey bobPublicKey = publicKey(bobKeystore, "bob");
 
-AsymmetricEncryptor encryptor = encryptorBuilder()
+AsymmetricEncryptor encryptor = cipherBuilder()
     .key(bobPublicKey)
     .algorithm("RSA")
-    .build();
+    .buildAsymmetricEncryptor();
 
-// bytes → bytes
-byte[] encrypted = encryptor.encrypt("Hello Bob".getBytes(UTF_8));
+// raw bytes → Bytes
+Bytes encrypted = encryptor.encrypt(Bytes.from("Hello Bob".getBytes(UTF_8)));
 
-// String → BASE64 string (default encoding)
-String enc64 = encryptor.encryptToString("Hello Bob");
+// UTF-8 text → BASE64 string
+String enc64 = encryptor.encrypt(Bytes.from("Hello Bob")).encode(BASE64);
 
-// String → HEX string
-String encHex = encryptor.encryptToString("Hello Bob", Bruce.Encoding.HEX);
+// UTF-8 text → HEX string
+String encHex = encryptor.encrypt(Bytes.from("Hello Bob")).encode(HEX);
 ```
 
 ### Builder options
 
 ```java
-AsymmetricEncryptor encryptor = encryptorBuilder()
+AsymmetricEncryptor encryptor = cipherBuilder()
     .key(publicKey)
     .algorithm("RSA")
     .provider("BC")          // optional
-    .charset(UTF_8)          // default input charset
-    .encoding(BASE64)        // default output encoding
-    .build();
+    .buildAsymmetricEncryptor();
 ```
 
 ---
 
 ## Decryptor
 
-Returns an `AsymmetricDecryptor` that decrypts messages with an asymmetric private key.
+Returns an `AsymmetricDecryptor` that decrypts messages with an asymmetric
+private key.
 
 ### Usage examples
 
@@ -58,19 +52,20 @@ Returns an `AsymmetricDecryptor` that decrypts messages with an asymmetric priva
 KeyStore bobKeystore = keystore("classpath:/keystore-bob.p12", "password".toCharArray(), "PKCS12");
 PrivateKey bobPrivateKey = privateKey(bobKeystore, "bob", "password".toCharArray());
 
-AsymmetricDecryptor decryptor = decryptorBuilder()
+AsymmetricDecryptor decryptor = cipherBuilder()
     .key(bobPrivateKey)
     .algorithm("RSA")
-    .build();
+    .buildAsymmetricDecryptor();
 
-// bytes → bytes
-byte[] plain = decryptor.decrypt(encryptedBytes);
+// Bytes → Bytes
+Bytes plain = decryptor.decrypt(encrypted);
+String text = plain.asString();
 
 // BASE64 string → String
-String plain2 = decryptor.decryptToString(base64Encrypted);
+String plain2 = decryptor.decrypt(Bytes.from(enc64, BASE64)).asString();
 
 // HEX string → String
-String plain3 = decryptor.decryptToString(hexEncrypted, Bruce.Encoding.HEX);
+String plain3 = decryptor.decrypt(Bytes.from(encHex, HEX)).asString();
 ```
 
 ---
@@ -81,21 +76,21 @@ String plain3 = decryptor.decryptToString(hexEncrypted, Bruce.Encoding.HEX);
 KeyStore aliceKs = keystore("classpath:/keystore-alice.p12", "password".toCharArray(), "PKCS12");
 KeyStore bobKs   = keystore("classpath:/keystore-bob.p12",   "password".toCharArray(), "PKCS12");
 
-AsymmetricEncryptor encryptForBob   = encryptorBuilder().key(publicKey(bobKs,  "bob")).algorithm("RSA").build();
-AsymmetricDecryptor decryptAsBob    = decryptorBuilder().key(privateKey(bobKs,  "bob", "password".toCharArray())).algorithm("RSA").build();
-AsymmetricEncryptor encryptForAlice = encryptorBuilder().key(publicKey(aliceKs, "alice")).algorithm("RSA").build();
-AsymmetricDecryptor decryptAsAlice  = decryptorBuilder().key(privateKey(aliceKs, "alice", "password".toCharArray())).algorithm("RSA").build();
+AsymmetricEncryptor encryptForBob   = cipherBuilder().key(publicKey(bobKs, "bob")).algorithm("RSA").buildAsymmetricEncryptor();
+AsymmetricDecryptor decryptAsBob    = cipherBuilder().key(privateKey(bobKs, "bob", "password".toCharArray())).algorithm("RSA").buildAsymmetricDecryptor();
+AsymmetricEncryptor encryptForAlice = cipherBuilder().key(publicKey(aliceKs, "alice")).algorithm("RSA").buildAsymmetricEncryptor();
+AsymmetricDecryptor decryptAsAlice  = cipherBuilder().key(privateKey(aliceKs, "alice", "password".toCharArray())).algorithm("RSA").buildAsymmetricDecryptor();
 
-// Alice → Bob (bytes)
-byte[] aliceMsg    = "Hello Bob".getBytes(UTF_8);
-byte[] encrypted   = encryptForBob.encrypt(aliceMsg);
-byte[] decrypted   = decryptAsBob.decrypt(encrypted);
-assertArrayEquals(aliceMsg, decrypted);
+// Alice → Bob (raw bytes)
+Bytes aliceMsg  = Bytes.from("Hello Bob");
+Bytes encrypted = encryptForBob.encrypt(aliceMsg);
+Bytes decrypted = decryptAsBob.decrypt(encrypted);
+assertEquals(aliceMsg, decrypted);
 
-// Bob → Alice (String / BASE64)
-String bobMsg      = "Hey Alice!";
-String enc64       = encryptForAlice.encryptToString(bobMsg);
-String dec64       = decryptAsAlice.decryptToString(enc64);
+// Bob → Alice (via BASE64 strings)
+String bobMsg  = "Hey Alice!";
+String enc64   = encryptForAlice.encrypt(Bytes.from(bobMsg)).encode(BASE64);
+String dec64   = decryptAsAlice.decrypt(Bytes.from(enc64, BASE64)).asString();
 assertEquals(bobMsg, dec64);
 ```
 
@@ -106,12 +101,36 @@ assertEquals(bobMsg, dec64);
 For runtime key selection:
 
 ```java
-Map<String, PublicKey>  pubKeys  = Map.of("alice", alicePub, "bob", bobPub);
-Map<String, PrivateKey> privKeys = Map.of("alice", alicePriv, "bob", bobPriv);
+Map<String, Key> pubKeys  = Map.of("alice", alicePub, "bob", bobPub);
+Map<String, Key> privKeys = Map.of("alice", alicePriv, "bob", bobPriv);
 
-AsymmetricEncryptorByKey encryptors = encryptorByKeyBuilder().keys(pubKeys).algorithm("RSA").build();
-AsymmetricDecryptorByKey decryptors = decryptorByKeyBuilder().keys(privKeys).algorithm("RSA").build();
+AsymmetricEncryptorByKey encryptors = cipherBuilder().keys(pubKeys).algorithm("RSA").buildAsymmetricEncryptorByKey();
+AsymmetricDecryptorByKey decryptors = cipherBuilder().keys(privKeys).algorithm("RSA").buildAsymmetricDecryptorByKey();
 
-byte[] enc = encryptors.encrypt("bob", "Hello Bob".getBytes(UTF_8));
-byte[] dec = decryptors.decrypt("bob", enc);
+Bytes enc = encryptors.encrypt("bob", Bytes.from("Hello Bob"));
+Bytes dec = decryptors.decrypt("bob", enc);
+```
+
+### Interfaces
+
+```java
+@FunctionalInterface
+public interface AsymmetricEncryptor {
+    Bytes encrypt(Bytes plaintext);
+}
+
+@FunctionalInterface
+public interface AsymmetricDecryptor {
+    Bytes decrypt(Bytes ciphertext);
+}
+
+@FunctionalInterface
+public interface AsymmetricEncryptorByKey {
+    Bytes encrypt(String keyId, Bytes plaintext);
+}
+
+@FunctionalInterface
+public interface AsymmetricDecryptorByKey {
+    Bytes decrypt(String keyId, Bytes ciphertext);
+}
 ```

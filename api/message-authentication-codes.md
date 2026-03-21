@@ -2,13 +2,8 @@
 
 ## Mac
 
-```java
-Mac mac(Key key, String algorithm);
-Mac mac(Key key, String algorithm, String provider);
-```
-
-Returns a `Mac` for the given key and algorithm. The built object carries default `BASE64` output encoding
-and `UTF-8` input charset; both can be overridden per-call.
+Returns a `Mac` for the given key and algorithm. All input and output use the
+[`Bytes`](bytes.md) universal type.
 
 ### Usage examples
 
@@ -18,23 +13,28 @@ Key key = secretKey(keystore, "hmac", "password".toCharArray());
 
 Mac mac = macBuilder().key(key).algorithm("HmacSHA256").build();
 
-// bytes → bytes
-byte[] rawMac = mac.get("Hello there".getBytes(UTF_8));
+// raw bytes → Bytes
+Bytes rawMac = mac.get(Bytes.from("Hello there".getBytes(UTF_8)));
 
-// String → String (BASE64 by default)
-String encoded = mac.getToString("Hello there");
+// UTF-8 text → BASE64 string
+String b64 = mac.get(Bytes.from("Hello there")).encode(BASE64);
 
-// String → HEX string
-String hex = mac.getToString("Hello there", Bruce.Encoding.HEX);
+// UTF-8 text → HEX string
+String hex = mac.get(Bytes.from("Hello there")).encode(HEX);
 
-// String with explicit charset → BASE64 string
-String encoded2 = mac.getToString("Hello 👋🏻", UTF_16, Bruce.Encoding.BASE64);
+// explicit charset → BASE64 string
+String b64_2 = mac.get(Bytes.from("Hello 👋🏻", UTF_16)).encode(BASE64);
 
 // Verify both parties produce the same MAC
 Mac alice = macBuilder().key(key).algorithm("HmacSHA256").build();
 Mac bob   = macBuilder().key(key).algorithm("HmacSHA256").build();
-assertArrayEquals(alice.get("Hi Bob".getBytes(UTF_8)), bob.get("Hi Bob".getBytes(UTF_8)));
-assertEquals(alice.getToString("Hi Bob"), bob.getToString("Hi Bob"));
+
+Bytes aliceMac = alice.get(Bytes.from("Hi Bob"));
+Bytes bobMac   = bob.get(Bytes.from("Hi Bob"));
+assertEquals(aliceMac, bobMac);
+
+// compare as encoded strings
+assertEquals(aliceMac.encode(BASE64), bobMac.encode(BASE64));
 ```
 
 ### Builder options
@@ -44,20 +44,23 @@ Mac mac = macBuilder()
     .key(secretKey)
     .algorithm("HmacSHA256")
     .provider("BC")          // optional, defaults to system provider
-    .charset(UTF_8)          // default input charset for String overloads
-    .encoding(BASE64)        // default output encoding for String overloads
     .build();
+```
+
+### Interface
+
+```java
+@FunctionalInterface
+public interface Mac {
+    Bytes get(Bytes message);
+}
 ```
 
 ### Input / output combinations
 
-| Method | Input | Output |
-|---|---|---|
-| `get(byte[])` | raw bytes | raw bytes |
-| `get(String)` | text (default charset) | raw bytes |
-| `get(String, Charset)` | text (explicit charset) | raw bytes |
-| `getToString(byte[])` | raw bytes | encoded string (default encoding) |
-| `getToString(byte[], Encoding)` | raw bytes | encoded string |
-| `getToString(String)` | text | encoded string (both defaults) |
-| `getToString(String, Encoding)` | text | encoded string (explicit encoding) |
-| `getToString(String, Charset, Encoding)` | text | encoded string (explicit both) |
+| Input          | How to construct                      | Consume output                     |
+| -------------- | ------------------------------------- | ---------------------------------- |
+| raw `byte[]`   | `Bytes.from(rawBytes)`                | `.asBytes()`                       |
+| UTF-8 text     | `Bytes.from("text")`                  | `.encode(HEX)` / `.encode(BASE64)` |
+| custom charset | `Bytes.from("text", charset)`         | `.encode(...)`                     |
+| encoded string | `Bytes.from("abc…", Encoding.BASE64)` | `.encode(...)`                     |

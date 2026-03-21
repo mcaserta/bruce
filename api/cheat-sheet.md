@@ -1,13 +1,36 @@
 # Cheat Sheet
 
 Complete list of available builder methods and functional interfaces.
-All static imports come from `com.mirkocaserta.bruce.Bruce`.
+
+- Keystore / key helpers → static imports from
+  `com.mirkocaserta.bruce.Keystores`
+- Builder factories → static imports from `com.mirkocaserta.bruce.Bruce`
+- Encoding constants → static imports from
+  `com.mirkocaserta.bruce.Bruce.Encoding`
+- Universal I/O type → `com.mirkocaserta.bruce.Bytes`
 
 ```java
-// Supported encodings
+// ─── Encoding enum (Bruce.Encoding) ─────────────────────────────────────────
 public enum Encoding { HEX, BASE64, URL, MIME }
 
-// ─── Keystore ───────────────────────────────────────────────────────────────
+// ─── Bytes ───────────────────────────────────────────────────────────────────
+// Construction
+Bytes.from(byte[]);
+Bytes.from(String);                         // UTF-8
+Bytes.from(String, Charset);
+Bytes.from(String, Encoding);               // decode encoded string
+Bytes.fromFile(Path);
+Bytes.fromFile(File);
+
+// Consumption
+byte[]  b.asBytes();
+String  b.encode(Encoding);
+String  b.asString();                       // UTF-8
+String  b.asString(Charset);
+int     b.length();
+boolean b.isEmpty();
+
+// ─── Keystore (com.mirkocaserta.bruce.Keystores) ─────────────────────────────
 KeyStore keystore();
 KeyStore keystore(String type);
 KeyStore keystore(String location, char[] password);
@@ -17,10 +40,10 @@ KeyStore keystore(String location, String password, String type);
 KeyStore keystore(String location, char[] password, String type, String provider);
 KeyStore keystore(String location, String password, String type, String provider);
 
-// ─── Certificates ───────────────────────────────────────────────────────────
+// ─── Certificates (com.mirkocaserta.bruce.Keystores) ─────────────────────────
 Certificate certificate(KeyStore keystore, String alias);
 
-// ─── Keys ───────────────────────────────────────────────────────────────────
+// ─── Keys (com.mirkocaserta.bruce.Keystores) ─────────────────────────────────
 PublicKey  publicKey(KeyStore keystore, String alias);
 PrivateKey privateKey(KeyStore keystore, String alias, char[] password);
 PrivateKey privateKey(KeyStore keystore, String alias, String password);
@@ -35,109 +58,87 @@ byte[]     symmetricKey(String algorithm, String provider);
 String     symmetricKey(String algorithm, Encoding encoding);
 String     symmetricKey(String algorithm, String provider, Encoding encoding);
 
-// ─── Digests ────────────────────────────────────────────────────────────────
-// Builder approach (preferred)
-DigestBuilder digestBuilder();   // → .algorithm(...) .provider(...) .charset(...) .encoding(...) .build()
+// ─── Digests (Bruce.digestBuilder) ──────────────────────────────────────────
+DigestBuilder digestBuilder()
+  .algorithm(String)
+  .provider(String)    // optional
+  .build()             // → Digester
 
-// Factory shortcut
-Digester digester(String algorithm);
-Digester digester(String algorithm, String provider);
+// Digester interface
+Bytes  Digester.digest(Bytes input)
+Bytes  Digester.digest(Path file)     // streaming
+Bytes  Digester.digest(File file)     // delegates to Path variant
 
-// Digester methods  (bytes↔bytes  and  String↔String)
-byte[]  Digester.digest(byte[]);
-byte[]  Digester.digest(String);
-byte[]  Digester.digest(String, Charset);
-String  Digester.digestToString(byte[]);
-String  Digester.digestToString(byte[], Encoding);
-String  Digester.digestToString(String);
-String  Digester.digestToString(String, Encoding);
-String  Digester.digestToString(String, Charset, Encoding);
-String  Digester.digestToString(Path);
-String  Digester.digestToString(Path, Encoding);
-String  Digester.digestToString(File);
-String  Digester.digestToString(File, Encoding);
+// ─── Signatures (Bruce.signerBuilder / verifierBuilder) ─────────────────────
+SignerBuilder signerBuilder()
+  .key(PrivateKey)                    // single key
+  .keys(Map<String, PrivateKey>)      // multi-key
+  .algorithm(String)
+  .provider(String)                   // optional
+  .build()                            // → Signer
+  .buildByKey()                       // → SignerByKey
 
-// ─── Signatures ─────────────────────────────────────────────────────────────
-// Builder approach (preferred)
-SignerBuilder   signerBuilder();    // → .key(pk) .keys(map) .algorithm(...) .provider(...) .charset(...) .encoding(...) .build() / .buildByKey()
-VerifierBuilder verifierBuilder(); // → .key(pk) .keys(map) .algorithm(...) .provider(...) .charset(...) .encoding(...) .build() / .buildByKey()
+VerifierBuilder verifierBuilder()
+  .key(PublicKey)                     // single key
+  .keys(Map<String, PublicKey>)       // multi-key
+  .algorithm(String)
+  .provider(String)                   // optional
+  .build()                            // → Verifier
+  .buildByKey()                       // → VerifierByKey
 
-// Signer methods
-byte[]  Signer.sign(byte[]);
-byte[]  Signer.sign(String);
-byte[]  Signer.sign(String, Charset);
-String  Signer.signToString(byte[]);
-String  Signer.signToString(byte[], Encoding);
-String  Signer.signToString(String);
-String  Signer.signToString(String, Encoding);
-String  Signer.signToString(String, Charset, Encoding);
+// Signer / SignerByKey interfaces
+Bytes  Signer.sign(Bytes message)
+Bytes  SignerByKey.sign(String keyId, Bytes message)
 
-// SignerByKey methods
-byte[]  SignerByKey.sign(String keyId, byte[]);
-byte[]  SignerByKey.sign(String keyId, String);
-String  SignerByKey.signToString(String keyId, String);
-String  SignerByKey.signToString(String keyId, String, Encoding);
+// Verifier / VerifierByKey interfaces
+boolean  Verifier.verify(Bytes message, Bytes signature)
+boolean  VerifierByKey.verify(String keyId, Bytes message, Bytes signature)
 
-// Verifier methods
-boolean  Verifier.verify(byte[], byte[]);
-boolean  Verifier.verify(String, byte[]);
-boolean  Verifier.verify(String, Charset, byte[]);
-boolean  Verifier.verify(String, String);
-boolean  Verifier.verify(String, String, Encoding);
-boolean  Verifier.verify(String, Charset, String, Encoding);
+// ─── Ciphers (Bruce.cipherBuilder) ──────────────────────────────────────────
+CipherBuilder cipherBuilder()
+  // symmetric fixed-key
+  .key(byte[])                        // raw bytes
+  .key(Bytes)                         // or Bytes
+  .keyAlgorithm(String)              // e.g. "AES"
+  .algorithm(String)                 // e.g. "AES/CBC/PKCS5Padding"
+  .algorithms(String keyAlgo, String cipherAlgo)  // convenience
+  .provider(String)                  // optional
+  .buildSymmetricEncryptor()         // → SymmetricEncryptor
+  .buildSymmetricDecryptor()         // → SymmetricDecryptor
+  .buildSymmetricEncryptorByKey()    // → SymmetricEncryptorByKey (no fixed key)
+  .buildSymmetricDecryptorByKey()    // → SymmetricDecryptorByKey
 
-// VerifierByKey methods
-boolean  VerifierByKey.verify(String keyId, byte[], byte[]);
-boolean  VerifierByKey.verify(String keyId, String, String);
-boolean  VerifierByKey.verify(String keyId, String, String, Encoding);
+  // asymmetric fixed-key
+  .key(Key)                          // PublicKey or PrivateKey
+  .algorithm(String)                 // e.g. "RSA"
+  .provider(String)                  // optional
+  .buildAsymmetricEncryptor()        // → AsymmetricEncryptor
+  .buildAsymmetricDecryptor()        // → AsymmetricDecryptor
 
-// ─── Asymmetric Ciphers ─────────────────────────────────────────────────────
-AsymmetricEncryptorBuilder   encryptorBuilder();         // → .key(pubKey)  .algorithm(...) .provider(...) .charset(...) .encoding(...) .build()
-AsymmetricDecryptorBuilder   decryptorBuilder();         // → .key(privKey) .algorithm(...) .provider(...) .charset(...) .encoding(...) .build()
-AsymmetricEncryptorByKeyBuilder encryptorByKeyBuilder(); // → .keys(map) ...
-AsymmetricDecryptorByKeyBuilder decryptorByKeyBuilder(); // → .keys(map) ...
+  // asymmetric by-key
+  .keys(Map<String, Key>)
+  .buildAsymmetricEncryptorByKey()   // → AsymmetricEncryptorByKey
+  .buildAsymmetricDecryptorByKey()   // → AsymmetricDecryptorByKey
 
-// AsymmetricEncryptor methods
-byte[]  AsymmetricEncryptor.encrypt(byte[]);
-String  AsymmetricEncryptor.encryptToString(String);
-String  AsymmetricEncryptor.encryptToString(String, Encoding);
+// Symmetric interfaces
+Bytes  SymmetricEncryptor.encrypt(Bytes iv, Bytes plaintext)
+Bytes  SymmetricDecryptor.decrypt(Bytes iv, Bytes ciphertext)
+Bytes  SymmetricEncryptorByKey.encrypt(Bytes key, Bytes iv, Bytes plaintext)
+Bytes  SymmetricDecryptorByKey.decrypt(Bytes key, Bytes iv, Bytes ciphertext)
 
-// AsymmetricDecryptor methods
-byte[]  AsymmetricDecryptor.decrypt(byte[]);
-String  AsymmetricDecryptor.decryptToString(String);
-String  AsymmetricDecryptor.decryptToString(String, Encoding);
+// Asymmetric interfaces
+Bytes  AsymmetricEncryptor.encrypt(Bytes plaintext)
+Bytes  AsymmetricDecryptor.decrypt(Bytes ciphertext)
+Bytes  AsymmetricEncryptorByKey.encrypt(String keyId, Bytes plaintext)
+Bytes  AsymmetricDecryptorByKey.decrypt(String keyId, Bytes ciphertext)
 
-// ─── Symmetric Ciphers ──────────────────────────────────────────────────────
-SymmetricEncryptorBuilder      symmetricEncryptorBuilder();      // → .key(bytes) .keyAlgorithm(...) .algorithm(...) .provider(...) .charset(...) .encoding(...) .build()
-SymmetricDecryptorBuilder      symmetricDecryptorBuilder();      // → same options
-SymmetricEncryptorByKeyBuilder symmetricEncryptorByKeyBuilder(); // → .keyAlgorithm(...) .algorithm(...) ...
-SymmetricDecryptorByKeyBuilder symmetricDecryptorByKeyBuilder(); // → same options
+// ─── Message Authentication Codes (Bruce.macBuilder) ─────────────────────────
+MacBuilder macBuilder()
+  .key(Key)
+  .algorithm(String)                 // e.g. "HmacSHA256"
+  .provider(String)                  // optional
+  .build()                           // → Mac
 
-// SymmetricEncryptor methods
-byte[]  SymmetricEncryptor.encrypt(byte[] iv, byte[] plaintext);
-String  SymmetricEncryptor.encryptToString(String iv, String plaintext);
-String  SymmetricEncryptor.encryptToString(String iv, String plaintext, Encoding);
-
-// SymmetricDecryptor methods
-byte[]  SymmetricDecryptor.decrypt(byte[] iv, byte[] ciphertext);
-String  SymmetricDecryptor.decryptToString(String iv, String ciphertext);
-String  SymmetricDecryptor.decryptToString(String iv, String ciphertext, Encoding);
-
-// ─── Message Authentication Codes ───────────────────────────────────────────
-MacBuilder macBuilder(); // → .key(...) .algorithm(...) .provider(...) .charset(...) .encoding(...) .build()
-
-// Mac factory shortcut
-Mac mac(Key key, String algorithm);
-Mac mac(Key key, String algorithm, String provider);
-
-// Mac methods
-byte[]  Mac.get(byte[]);
-byte[]  Mac.get(String);
-byte[]  Mac.get(String, Charset);
-String  Mac.getToString(byte[]);
-String  Mac.getToString(byte[], Encoding);
-String  Mac.getToString(String);
-String  Mac.getToString(String, Encoding);
-String  Mac.getToString(String, Charset, Encoding);
+// Mac interface
+Bytes  Mac.get(Bytes message)
 ```
-
