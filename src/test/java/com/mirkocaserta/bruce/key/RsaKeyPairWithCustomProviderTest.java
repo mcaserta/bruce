@@ -24,8 +24,8 @@ class RsaKeyPairWithCustomProviderTest {
     @Test
     void generateAndUse() {
         var keyPair = keyPair("RSA", "BC", 4096);
-        var signer = signerBuilder().key(keyPair.getPrivate()).algorithm("RIPEMD160withRSA/ISO9796-2").buildRaw();
-        var verifier = verifierBuilder().key(keyPair.getPublic()).algorithm("RIPEMD160withRSA/ISO9796-2").buildRaw();
+        var signer = signerBuilder().key(keyPair.getPrivate()).algorithm("RIPEMD160withRSA/ISO9796-2").build();
+        var verifier = verifierBuilder().key(keyPair.getPublic()).algorithm("RIPEMD160withRSA/ISO9796-2").build();
         var signature = signer.sign(MESSAGE);
         assertTrue(verifier.verify(MESSAGE, signature));
     }

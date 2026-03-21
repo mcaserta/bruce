@@ -1,191 +1,125 @@
 package com.mirkocaserta.bruce.impl.cipher;
 
-import com.mirkocaserta.bruce.BruceException;
 import com.mirkocaserta.bruce.Bruce;
-import com.mirkocaserta.bruce.cipher.Mode;
-import com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricCipher;
-import com.mirkocaserta.bruce.cipher.asymmetric.CipherByKey;
-import com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipher;
-import com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipherByKey;
-import com.mirkocaserta.bruce.impl.util.EncodingUtils;
+import com.mirkocaserta.bruce.BruceException;
+import com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricDecryptor;
+import com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricDecryptorByKey;
+import com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricEncryptor;
+import com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricEncryptorByKey;
 import com.mirkocaserta.bruce.impl.util.Providers;
 
 import java.nio.charset.Charset;
 import java.security.Key;
 import java.security.Provider;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * Implementation class for asymmetric cipher operations.
  * This class is package-private and should only be accessed through the Bruce facade.
- * 
+ *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
 public final class AsymmetricCipherOperations {
-    
-    private static final String BLANK = "";
-    private static final ConcurrentMap<String, AsymmetricCipher> cipherCache = new ConcurrentHashMap<>();
-    
+
     private AsymmetricCipherOperations() {
         // utility class
     }
-    
-    /**
-     * Creates a raw asymmetric cipher.
-     *
-     * @param key the key to initialize the cipher with
-     * @param algorithm the transformation (e.g., RSA/ECB/PKCS1Padding)
-     * @param mode the operation mode (encrypt/decrypt)
-     * @return an asymmetric cipher
-     */
-    public static AsymmetricCipher createCipher(Key key, String algorithm, Mode mode) {
-        return createCipher(key, algorithm, (String) BLANK, mode);
-    }
-    
-    /**
-     * Creates a raw asymmetric cipher using a specific provider.
-     *
-     * @param key the key to initialize the cipher with
-     * @param algorithm the transformation
-     * @param provider the JCA provider name
-     * @param mode the operation mode
-     * @return an asymmetric cipher
-     */
-    public static AsymmetricCipher createCipher(Key key, String algorithm, String provider, Mode mode) {
-        return createCipher(key, algorithm, Providers.resolve(provider), mode);
-    }
 
-    public static AsymmetricCipher createCipher(Key key, String algorithm, Provider provider, Mode mode) {
-        if (mode == null) {
-            throw new BruceException("mode cannot be null");
-        }
+    public static AsymmetricEncryptor createEncryptor(Key key, String algorithm, String provider, Charset charset, Bruce.Encoding encoding) {
+        Provider resolvedProvider = Providers.resolve(provider);
+        return new AsymmetricEncryptor() {
+            @Override
+            public Charset charset() {
+                return charset;
+            }
 
-        return message -> {
-            try {
-                var cipher = provider == null
-                        ? javax.crypto.Cipher.getInstance(algorithm)
-                        : javax.crypto.Cipher.getInstance(algorithm, provider);
-                if (mode == Mode.ENCRYPT) {
-                    cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, key);
-                } else if (mode == Mode.DECRYPT) {
-                    cipher.init(javax.crypto.Cipher.DECRYPT_MODE, key);
-                }
-                return cipher.doFinal(message);
-            } catch (Exception e) {
-                throw new BruceException(String.format("error encrypting/decrypting message; mode=%s", mode), e);
+            @Override
+            public Bruce.Encoding encoding() {
+                return encoding;
+            }
+
+            @Override
+            public byte[] encrypt(byte[] plaintext) {
+                return crypt(key, algorithm, resolvedProvider, javax.crypto.Cipher.ENCRYPT_MODE, plaintext, "encrypting");
             }
         };
     }
-    
-    /**
-     * Creates an asymmetric cipher where the key is selected at runtime via key id.
-     *
-     * @param keys a map of key id to key
-     * @param algorithm the transformation
-     * @return an asymmetric cipher supporting runtime key selection
-     */
-    public static CipherByKey createCipherByKey(Map<String, Key> keys, String algorithm) {
-        return createCipherByKey(keys, algorithm, BLANK);
-    }
-    
-    /**
-     * Creates an asymmetric cipher with runtime key selection using a specific provider.
-     *
-     * @param keys a map of key id to key
-     * @param algorithm the transformation
-     * @param provider the JCA provider name
-     * @return an asymmetric cipher supporting runtime key selection
-     */
-    public static CipherByKey createCipherByKey(Map<String, Key> keys, String algorithm, String provider) {
+
+    public static AsymmetricDecryptor createDecryptor(Key key, String algorithm, String provider, Charset charset, Bruce.Encoding encoding) {
         Provider resolvedProvider = Providers.resolve(provider);
-        // we use a cipher cache here as getting a new one each time is a bit expensive
-        return (keyId, mode, message) -> getCipher(keys, keyId, algorithm, resolvedProvider, mode).encrypt(message);
-    }
-    
-    /**
-     * Creates a text-based asymmetric cipher.
-     *
-     * @param key the key
-     * @param algorithm the transformation
-     * @param mode the operation mode
-     * @param encoding the message encoding
-     * @param charset the message charset
-     * @return an encoding asymmetric cipher
-     */
-    public static EncodingCipher createEncodingCipher(Key key, String algorithm, Mode mode, Bruce.Encoding encoding, Charset charset) {
-        return createEncodingCipher(key, algorithm, BLANK, mode, encoding, charset);
-    }
-    
-    /**
-     * Creates a text-based asymmetric cipher using a specific provider.
-     *
-     * @param key the key
-     * @param algorithm the transformation
-     * @param provider the JCA provider name
-     * @param mode the operation mode
-     * @param encoding the message encoding
-     * @param charset the message charset
-     * @return an encoding asymmetric cipher
-     */
-    public static EncodingCipher createEncodingCipher(Key key, String algorithm, String provider, Mode mode, Bruce.Encoding encoding, Charset charset) {
-        var cipher = createCipher(key, algorithm, Providers.resolve(provider), mode);
-        return message -> crypt(cipher, message, mode, encoding, charset);
-    }
-    
-    /**
-     * Creates a text-based asymmetric cipher with runtime key selection.
-     *
-     * @param keys a map of key id to key
-     * @param algorithm the transformation
-     * @param encoding the message encoding
-     * @param charset the message charset
-     * @return an encoding asymmetric cipher with runtime key selection
-     */
-    public static EncodingCipherByKey createEncodingCipherByKey(Map<String, Key> keys, String algorithm, Bruce.Encoding encoding, Charset charset) {
-        return createEncodingCipherByKey(keys, algorithm, BLANK, encoding, charset);
-    }
-    
-    /**
-     * Creates a text-based asymmetric cipher with runtime key selection using a specific provider.
-     *
-     * @param keys a map of key id to key
-     * @param algorithm the transformation
-     * @param provider the JCA provider name
-     * @param encoding the message encoding
-     * @param charset the message charset
-     * @return an encoding asymmetric cipher with runtime key selection
-     */
-    public static EncodingCipherByKey createEncodingCipherByKey(Map<String, Key> keys, String algorithm, String provider, Bruce.Encoding encoding, Charset charset) {
-        Provider resolvedProvider = Providers.resolve(provider);
-        return (keyId, mode, message) -> {
-            var cipher = getCipher(keys, keyId, algorithm, resolvedProvider, mode);
-            return crypt(cipher, message, mode, encoding, charset);
+        return new AsymmetricDecryptor() {
+            @Override
+            public Charset charset() {
+                return charset;
+            }
+
+            @Override
+            public Bruce.Encoding encoding() {
+                return encoding;
+            }
+
+            @Override
+            public byte[] decrypt(byte[] ciphertext) {
+                return crypt(key, algorithm, resolvedProvider, javax.crypto.Cipher.DECRYPT_MODE, ciphertext, "decrypting");
+            }
         };
     }
-    
-    private static String crypt(AsymmetricCipher cipher, String message, Mode mode, Bruce.Encoding encoding, Charset charset) {
-        if (mode == Mode.ENCRYPT) {
-            return EncodingUtils.encode(encoding, cipher.encrypt(message.getBytes(charset)));
-        } else if (mode == Mode.DECRYPT) {
-            return new String(cipher.encrypt(EncodingUtils.decode(encoding, message)), charset);
-        }
-        throw new BruceException("no such mode");
-    }
-    
-    private static AsymmetricCipher getCipher(Map<String, Key> keys, String keyId, String algorithm, Provider provider, Mode mode) {
-        return cipherCache.computeIfAbsent(cipherCacheKey(keyId, algorithm, provider, mode), ignored -> {
-            var key = keys.get(keyId);
-            if (key == null) {
-                throw new BruceException(String.format("no such key: %s", keyId));
+
+    public static AsymmetricEncryptorByKey createEncryptorByKey(Map<String, Key> keys, String algorithm, String provider, Charset charset, Bruce.Encoding encoding) {
+        return new AsymmetricEncryptorByKey() {
+            @Override
+            public Charset charset() {
+                return charset;
             }
-            return createCipher(key, algorithm, provider, mode);
-        });
+
+            @Override
+            public Bruce.Encoding encoding() {
+                return encoding;
+            }
+
+            @Override
+            public byte[] encrypt(String keyId, byte[] plaintext) {
+                return createEncryptor(resolveKey(keys, keyId), algorithm, provider, charset, encoding).encrypt(plaintext);
+            }
+        };
     }
-    
-    private static String cipherCacheKey(String keyId, String algorithm, Provider provider, Mode mode) {
-        String providerName = provider == null ? BLANK : provider.getName();
-        return keyId + "::" + algorithm + "::" + providerName + "::" + mode;
+
+    public static AsymmetricDecryptorByKey createDecryptorByKey(Map<String, Key> keys, String algorithm, String provider, Charset charset, Bruce.Encoding encoding) {
+        return new AsymmetricDecryptorByKey() {
+            @Override
+            public Charset charset() {
+                return charset;
+            }
+
+            @Override
+            public Bruce.Encoding encoding() {
+                return encoding;
+            }
+
+            @Override
+            public byte[] decrypt(String keyId, byte[] ciphertext) {
+                return createDecryptor(resolveKey(keys, keyId), algorithm, provider, charset, encoding).decrypt(ciphertext);
+            }
+        };
+    }
+
+    private static Key resolveKey(Map<String, Key> keys, String keyId) {
+        var key = keys.get(keyId);
+        if (key == null) {
+            throw new BruceException(String.format("no such key: %s", keyId));
+        }
+        return key;
+    }
+
+    private static byte[] crypt(Key key, String algorithm, Provider provider, int mode, byte[] message, String operation) {
+        try {
+            var cipher = provider == null
+                    ? javax.crypto.Cipher.getInstance(algorithm)
+                    : javax.crypto.Cipher.getInstance(algorithm, provider);
+            cipher.init(mode, key);
+            return cipher.doFinal(message);
+        } catch (Exception e) {
+            throw new BruceException(String.format("error %s message", operation), e);
+        }
     }
 }

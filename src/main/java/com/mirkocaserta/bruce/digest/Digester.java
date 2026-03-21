@@ -1,23 +1,76 @@
 package com.mirkocaserta.bruce.digest;
 
-import com.mirkocaserta.bruce.BruceException;
+import com.mirkocaserta.bruce.Bruce;
+import com.mirkocaserta.bruce.impl.util.EncodingUtils;
+
+import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
 
 /**
- * Generic interface for getting message digests
- * in raw bytes format.
+ * Unified digest contract supporting both raw bytes and encoded strings.
  *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
-@FunctionalInterface
 public interface Digester {
 
-    /**
-     * Returns the message digest in raw bytes format.
-     *
-     * @param message the message
-     * @return the message digest in raw bytes format
-     * @throws BruceException on digesting errors
-     */
+    Charset charset();
+
+    Bruce.Encoding encoding();
+
     byte[] digest(byte[] message);
 
+    default byte[] digest(String message, Charset charset) {
+        return digest(message.getBytes(charset));
+    }
+
+    default byte[] digest(String message) {
+        return digest(message, charset());
+    }
+
+    default String digestToString(byte[] message, Bruce.Encoding encoding) {
+        return EncodingUtils.encode(encoding, digest(message));
+    }
+
+    default String digestToString(byte[] message) {
+        return digestToString(message, encoding());
+    }
+
+    default String digestToString(String message, Charset charset, Bruce.Encoding encoding) {
+        return EncodingUtils.encode(encoding, digest(message, charset));
+    }
+
+    default String digestToString(String message, Charset charset) {
+        return digestToString(message, charset, encoding());
+    }
+
+    default String digestToString(String message, Bruce.Encoding encoding) {
+        return digestToString(message, charset(), encoding);
+    }
+
+    default String digestToString(String message) {
+        return digestToString(message, charset(), encoding());
+    }
+
+    byte[] digest(Path file);
+
+    default byte[] digest(File file) {
+        return digest(file.toPath());
+    }
+
+    default String digestToString(Path file, Bruce.Encoding encoding) {
+        return EncodingUtils.encode(encoding, digest(file));
+    }
+
+    default String digestToString(Path file) {
+        return digestToString(file, encoding());
+    }
+
+    default String digestToString(File file, Bruce.Encoding encoding) {
+        return digestToString(file.toPath(), encoding);
+    }
+
+    default String digestToString(File file) {
+        return digestToString(file.toPath(), encoding());
+    }
 }

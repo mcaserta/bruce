@@ -1,220 +1,150 @@
 package com.mirkocaserta.bruce;
 
-import com.mirkocaserta.bruce.cipher.Mode;
+import com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricDecryptor;
+import com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricEncryptor;
+import com.mirkocaserta.bruce.cipher.symmetric.SymmetricDecryptor;
+import com.mirkocaserta.bruce.cipher.symmetric.SymmetricEncryptor;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
-import java.security.PrivateKey;
+import java.security.KeyStore;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Map;
 
-import static com.mirkocaserta.bruce.Bruce.Encoding;
-import static com.mirkocaserta.bruce.Bruce.cipherBuilder;
-import static com.mirkocaserta.bruce.Bruce.macBuilder;
-import static com.mirkocaserta.bruce.Bruce.signerBuilder;
-import static com.mirkocaserta.bruce.Bruce.verifierBuilder;
 import static com.mirkocaserta.bruce.Keystores.keyPair;
 import static com.mirkocaserta.bruce.Keystores.keystore;
 import static com.mirkocaserta.bruce.Keystores.secretKey;
 import static com.mirkocaserta.bruce.Keystores.symmetricKey;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Test the builder pattern implementations for reducing parameter overload.
- */
 class BuilderTest {
 
     @Test
-    void testSignerBuilder() {
-        // Generate a key pair for testing
+    void signerAndVerifierBuildersSupportRawAndEncodedRepresentations() {
         KeyPair keyPair = keyPair("RSA", 2048);
-        PrivateKey privateKey = keyPair.getPrivate();
-        
-        // Test the builder pattern (use default provider instead of SunJSSE)
-        var signer = signerBuilder()
-                .key(privateKey)
+
+        var signer = Bruce.signerBuilder()
+                .key(keyPair.getPrivate())
                 .algorithm("SHA256withRSA")
-                .charset(StandardCharsets.UTF_8)
-                .encoding(Encoding.BASE64)
                 .build();
-        
-        assertNotNull(signer);
-        
-        // Test signing functionality
-        String signature = signer.sign("Hello World");
-        assertNotNull(signature);
-        assertFalse(signature.isEmpty());
-    }
-
-    @Test
-    void testCipherBuilderSymmetric() {
-        String testKey = symmetricKey("AES", Encoding.BASE64);
-        
-        // Test symmetric cipher builder creation (don't test actual encryption due to complexity)
-        var cipher = cipherBuilder()
-                .key(testKey)
-                .keyAlgorithm("AES")
-                .algorithm("AES")
-                .mode(Mode.ENCRYPT)
-                .charset(StandardCharsets.UTF_8)
-                .encoding(Encoding.BASE64)
-                .buildSymmetric();
-        
-        assertNotNull(cipher);
-        // Builder successfully created a cipher - that's what we're testing
-    }
-
-    @Test
-    void testCipherBuilderAsymmetric() {
-        KeyPair keyPair = keyPair("RSA", 2048);
-        
-        // Test asymmetric cipher builder
-        var cipher = cipherBuilder()
+        var verifier = Bruce.verifierBuilder()
                 .key(keyPair.getPublic())
-                .algorithm("RSA")
-                .mode(Mode.ENCRYPT)
-                .charset(StandardCharsets.UTF_8)
-                .encoding(Encoding.BASE64)
-                .buildAsymmetric();
-        
-        assertNotNull(cipher);
-        
-        // Test encryption functionality
-        String encrypted = cipher.encrypt("Hello");
-        assertNotNull(encrypted);
-        assertFalse(encrypted.isEmpty());
+                .algorithm("SHA256withRSA")
+                .build();
+
+        byte[] rawSignature = signer.sign("hello".getBytes(StandardCharsets.UTF_8));
+        String base64Signature = signer.signToString("hello");
+
+        assertTrue(verifier.verify("hello", rawSignature));
+        assertTrue(verifier.verify("hello", base64Signature));
     }
 
     @Test
-    void testBuilderValidation() {
-        // Test that builders validate required parameters
-        assertThrows(BruceException.class, () -> {
-            signerBuilder().build(); // Missing required parameters
-        });
-        
-        assertThrows(BruceException.class, () -> {
-            cipherBuilder().buildSymmetric(); // Missing required parameters
-        });
-        
-        assertThrows(BruceException.class, () -> {
-            cipherBuilder().buildAsymmetric(); // Missing required parameters
-        });
+    void digestAndMacBuildersUseDefaultBase64Encoding() {
+        var digester = Bruce.digestBuilder().algorithm("SHA-256").build();
+        assertFalse(digester.digestToString("hello").isBlank());
+        assertArrayEquals(digester.digest("hello"), Base64.getDecoder().decode(digester.digestToString("hello")));
+
+        KeyStore keyStore = keystore("classpath:/keystore.p12", "password".toCharArray(), Keystores.DEFAULT_KEYSTORE_TYPE);
+        var hmacKey = secretKey(keyStore, "hmac", "password".toCharArray());
+        var mac = Bruce.macBuilder().key(hmacKey).algorithm("HmacSHA1").build();
+        assertNotNull(mac.getToString("payload"));
     }
 
     @Test
-    void testBuilderProviderAndConvenienceMethods() {
-        String key = symmetricKey("AES", Encoding.BASE64);
+    void symmetricCipherBuilderRoundTrip() {
+        byte[] iv = new byte[16];
+        new SecureRandom().nextBytes(iv);
+        String key = symmetricKey("AES", Bruce.Encoding.BASE64);
 
-        var cipher = cipherBuilder()
+        SymmetricEncryptor encryptor = Bruce.cipherBuilder()
                 .key(key)
-                .algorithms("AES", "AES")
-                .provider(null)
-                .mode(Mode.ENCRYPT)
-                .charset(StandardCharsets.UTF_8)
-                .encoding(Encoding.BASE64)
-                .buildSymmetric();
+                .keyAlgorithm("AES")
+                .algorithm("AES/CBC/PKCS5Padding")
+                .buildSymmetricEncryptor();
+        SymmetricDecryptor decryptor = Bruce.cipherBuilder()
+                .key(key)
+                .keyAlgorithm("AES")
+                .algorithm("AES/CBC/PKCS5Padding")
+                .buildSymmetricDecryptor();
 
-        assertNotNull(cipher);
+        String cipherText = encryptor.encryptToString(iv, "Hello symmetric world");
+        String plainText = decryptor.decryptToString(iv, cipherText);
 
-        var digester = Bruce.digestBuilder()
-                .algorithm("SHA1")
-                .provider(null)
-                .charset(StandardCharsets.UTF_8)
-                .encoding(Encoding.HEX)
-                .build();
-        assertNotNull(digester.digest("builder"));
-
-        KeyPair kp = keyPair("RSA", 2048);
-        assertNotNull(Bruce.signerBuilder().key(kp.getPrivate()).algorithm("SHA256withRSA").provider(null).buildRaw());
-        assertNotNull(Bruce.verifierBuilder().key(kp.getPublic()).algorithm("SHA256withRSA").provider(null).buildRaw());
+        assertEquals("Hello symmetric world", plainText);
     }
 
     @Test
-    void testCipherBuilderValidationBranches() {
-        assertThrows(BruceException.class, () -> cipherBuilder()
-                .keyAlgorithm("AES")
-                .algorithm("AES")
-                .mode(Mode.ENCRYPT)
-                .buildSymmetricRaw());
-
-        assertThrows(BruceException.class, () -> cipherBuilder()
-                .algorithm("AES")
-                .mode(Mode.ENCRYPT)
-                .buildSymmetricRawByKey());
-
-        assertThrows(BruceException.class, () -> cipherBuilder()
-                .keyAlgorithm("AES")
-                .mode(Mode.ENCRYPT)
-                .buildSymmetricRawByKey());
-
-        assertThrows(BruceException.class, () -> cipherBuilder()
-                .keyAlgorithm("AES")
-                .algorithm("AES")
-                .buildSymmetricRawByKey());
-
-        assertThrows(BruceException.class, () -> cipherBuilder()
-                .keys(Collections.emptyMap())
-                .algorithm("RSA")
-                .buildAsymmetricByKey());
-
+    void asymmetricCipherBuilderRoundTrip() {
         KeyPair keyPair = keyPair("RSA", 2048);
-        Map<String, java.security.Key> keys = Map.of("id", keyPair.getPublic());
-        assertThrows(BruceException.class, () -> cipherBuilder().keys(keys).buildAsymmetricByKey());
 
-        assertThrows(BruceException.class, () -> cipherBuilder()
-                .key("abc")
-                .algorithm("AES")
-                .mode(Mode.ENCRYPT)
-                .buildSymmetric());
-
-        assertThrows(BruceException.class, () -> cipherBuilder()
-                .key("abc")
-                .keyAlgorithm("AES")
-                .mode(Mode.ENCRYPT)
-                .buildSymmetric());
-
-        assertThrows(BruceException.class, () -> cipherBuilder()
-                .key("abc")
-                .keyAlgorithm("AES")
-                .algorithm("AES")
-                .buildSymmetric());
-
-        assertThrows(BruceException.class, () -> cipherBuilder()
-                .key(keyPair.getPublic())
-                .mode(Mode.ENCRYPT)
-                .buildAsymmetric());
-
-        assertThrows(BruceException.class, () -> cipherBuilder()
+        AsymmetricEncryptor encryptor = Bruce.cipherBuilder()
                 .key(keyPair.getPublic())
                 .algorithm("RSA")
-                .buildAsymmetric());
+                .buildAsymmetricEncryptor();
+        AsymmetricDecryptor decryptor = Bruce.cipherBuilder()
+                .key(keyPair.getPrivate())
+                .algorithm("RSA")
+                .buildAsymmetricDecryptor();
 
-        assertNotNull(cipherBuilder().keys(keys).algorithm("RSA").buildAsymmetricRawByKey());
+        String cipherText = encryptor.encryptToString("Hello asymmetric world");
+        String plainText = decryptor.decryptToString(cipherText);
 
-        assertThrows(BruceException.class, () -> cipherBuilder().keys(keys).buildAsymmetricRawByKey());
+        assertEquals("Hello asymmetric world", plainText);
     }
 
     @Test
-    void testSignerVerifierMacDigestValidationBranches() {
+    void builderValidationRejectsMissingRequiredParameters() {
+        assertThrows(BruceException.class, () -> Bruce.digestBuilder().build());
+        assertThrows(BruceException.class, () -> Bruce.macBuilder().build());
+        assertThrows(BruceException.class, () -> Bruce.signerBuilder().build());
+        assertThrows(BruceException.class, () -> Bruce.verifierBuilder().build());
+        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().buildSymmetricEncryptor());
+        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().buildAsymmetricEncryptor());
+        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().buildSymmetricEncryptorByKey());
+        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().buildAsymmetricEncryptorByKey());
+    }
+
+    @Test
+    void builderByKeyVariantsWork() {
         KeyPair keyPair = keyPair("RSA", 2048);
+        var signer = Bruce.signerBuilder()
+                .keys(Map.of("main", keyPair.getPrivate()))
+                .algorithm("SHA256withRSA")
+                .buildByKey();
+        var verifier = Bruce.verifierBuilder()
+                .keys(Map.of("main", keyPair.getPublic()))
+                .algorithm("SHA256withRSA")
+                .buildByKey();
 
-        assertThrows(BruceException.class, () -> signerBuilder().key(keyPair.getPrivate()).buildRaw());
-        assertThrows(BruceException.class, () -> signerBuilder().keys(Collections.emptyMap()).algorithm("SHA256withRSA").buildRawByKey());
-        assertThrows(BruceException.class, () -> signerBuilder().keys(Map.of("kid", keyPair.getPrivate())).buildRawByKey());
-        assertNotNull(signerBuilder().keys(Map.of("kid", keyPair.getPrivate())).algorithm("SHA256withRSA").provider(null).buildRawByKey());
+        String signature = signer.signToString("main", "hello-by-key");
+        assertTrue(verifier.verify("main", "hello-by-key", signature));
+    }
 
-        assertThrows(BruceException.class, () -> verifierBuilder().key(keyPair.getPublic()).buildRaw());
-        assertThrows(BruceException.class, () -> verifierBuilder().keys(Collections.emptyMap()).algorithm("SHA256withRSA").buildRawByKey());
-        assertThrows(BruceException.class, () -> verifierBuilder().keys(Map.of("kid", keyPair.getPublic())).buildRawByKey());
-        assertNotNull(verifierBuilder().keys(Map.of("kid", keyPair.getPublic())).algorithm("SHA256withRSA").provider(null).buildRawByKey());
+    @Test
+    void builderValidationCoversBranchCases() {
+        KeyPair keyPair = keyPair("RSA", 2048);
+        KeyStore keyStore = keystore("classpath:/keystore.p12", "password".toCharArray(), Keystores.DEFAULT_KEYSTORE_TYPE);
+        var hmacKey = secretKey(keyStore, "hmac", "password".toCharArray());
 
-        var ks = keystore("classpath:/keystore.p12", "password".toCharArray(), "PKCS12");
-        var hmacKey = secretKey(ks, "hmac", "password".toCharArray());
-        assertThrows(BruceException.class, () -> macBuilder().algorithm("HmacSHA1").buildRaw());
-        assertThrows(BruceException.class, () -> macBuilder().key(hmacKey).buildRaw());
-        assertNotNull(macBuilder().key(hmacKey).algorithm("HmacSHA1").provider(null).buildRaw());
-
-        assertThrows(BruceException.class, () -> Bruce.digestBuilder().buildRaw());
+        assertThrows(BruceException.class, () -> Bruce.signerBuilder().key(keyPair.getPrivate()).build());
+        assertThrows(BruceException.class, () -> Bruce.signerBuilder().keys(Collections.emptyMap()).algorithm("SHA256withRSA").buildByKey());
+        assertThrows(BruceException.class, () -> Bruce.verifierBuilder().key(keyPair.getPublic()).build());
+        assertThrows(BruceException.class, () -> Bruce.verifierBuilder().keys(Collections.emptyMap()).algorithm("SHA256withRSA").buildByKey());
+        assertThrows(BruceException.class, () -> Bruce.macBuilder().algorithm("HmacSHA1").build());
+        assertThrows(BruceException.class, () -> Bruce.macBuilder().key(hmacKey).build());
+        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().algorithm("AES/CBC/PKCS5Padding").buildSymmetricEncryptorByKey());
+        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().keyAlgorithm("AES").buildSymmetricEncryptorByKey());
+        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().keys(Collections.emptyMap()).algorithm("RSA").buildAsymmetricEncryptorByKey());
+        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().keys(Map.of("key", keyPair.getPublic())).buildAsymmetricEncryptorByKey());
+        assertNotNull(Bruce.macBuilder().key(hmacKey).algorithm("HmacSHA1").provider(null).build());
     }
 }

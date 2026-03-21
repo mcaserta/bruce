@@ -1,7 +1,5 @@
 package com.mirkocaserta.bruce;
 
-import com.mirkocaserta.bruce.signature.EncodingSigner;
-import com.mirkocaserta.bruce.signature.EncodingSignerByKey;
 import com.mirkocaserta.bruce.signature.Signer;
 import com.mirkocaserta.bruce.signature.SignerByKey;
 import com.mirkocaserta.bruce.impl.signature.SignatureOperations;
@@ -9,8 +7,6 @@ import com.mirkocaserta.bruce.impl.signature.SignatureOperations;
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.util.Map;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Builder for creating signers with fluent API to reduce parameter overload.
@@ -23,8 +19,8 @@ public class SignerBuilder {
     private Map<String, PrivateKey> privateKeyMap;
     private String algorithm;
     private String provider = "";
-    private Charset charset = UTF_8;
-    private Bruce.Encoding encoding = Bruce.Encoding.BASE64;
+    private Charset charset = Bruce.DEFAULT_CHARSET;
+    private Bruce.Encoding encoding = Bruce.DEFAULT_ENCODING;
     
     SignerBuilder() {
         // package-private constructor
@@ -96,46 +92,14 @@ public class SignerBuilder {
         return this;
     }
     
-    /**
-     * Builds an encoding signer with a single key.
-     * 
-     * @return the signer
-     * @throws BruceException if required parameters are missing
-     */
-    public EncodingSigner build() {
+    public Signer build() {
         validateSingleKeySigner();
-        return SignatureOperations.createEncodingSigner(privateKey, algorithm, provider, charset, encoding);
+        return SignatureOperations.createSigner(privateKey, algorithm, provider, charset, encoding);
     }
     
-    /**
-     * Builds an encoding signer with multiple keys for runtime selection.
-     * 
-     * @return the signer
-     * @throws BruceException if required parameters are missing
-     */
-    public EncodingSignerByKey buildByKey() {
+    public SignerByKey buildByKey() {
         validateMultiKeySigner();
-        return SignatureOperations.createEncodingSignerByKey(privateKeyMap, algorithm, provider, charset, encoding);
-    }
-
-    /**
-     * Builds a raw signer with a single key.
-     *
-     * @return the signer
-     */
-    public Signer buildRaw() {
-        validateSingleKeySigner();
-        return SignatureOperations.createSigner(privateKey, algorithm, provider);
-    }
-
-    /**
-     * Builds a raw signer with runtime key selection.
-     *
-     * @return the signer by key
-     */
-    public SignerByKey buildRawByKey() {
-        validateMultiKeySigner();
-        return SignatureOperations.createSignerByKey(privateKeyMap, algorithm, provider);
+        return SignatureOperations.createSignerByKey(privateKeyMap, algorithm, provider, charset, encoding);
     }
     
     private void validateSingleKeySigner() {

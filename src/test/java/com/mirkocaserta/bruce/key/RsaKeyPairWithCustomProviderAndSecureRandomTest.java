@@ -25,8 +25,8 @@ class RsaKeyPairWithCustomProviderAndSecureRandomTest {
     void generateAndUse() throws NoSuchAlgorithmException {
         var random = SecureRandom.getInstanceStrong();
         var keyPair = keyPair("RSA", "BC", 4096, random);
-        var signer = signerBuilder().key(keyPair.getPrivate()).algorithm("WHIRLPOOLwithRSA/X9.31").buildRaw();
-        var verifier = verifierBuilder().key(keyPair.getPublic()).algorithm("WHIRLPOOLwithRSA/X9.31").buildRaw();
+        var signer = signerBuilder().key(keyPair.getPrivate()).algorithm("WHIRLPOOLwithRSA/X9.31").build();
+        var verifier = verifierBuilder().key(keyPair.getPublic()).algorithm("WHIRLPOOLwithRSA/X9.31").build();
         var signature = signer.sign(MESSAGE);
         assertTrue(verifier.verify(MESSAGE, signature));
     }

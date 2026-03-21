@@ -1,13 +1,10 @@
 package com.mirkocaserta.bruce;
 
-import com.mirkocaserta.bruce.mac.EncodingMac;
 import com.mirkocaserta.bruce.mac.Mac;
 import com.mirkocaserta.bruce.impl.mac.MacOperations;
 
 import java.nio.charset.Charset;
 import java.security.Key;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Builder for creating MAC (Message Authentication Code) generators with fluent API 
@@ -20,8 +17,8 @@ public class MacBuilder {
     private Key key;
     private String algorithm;
     private String provider = "";
-    private Charset charset = UTF_8;
-    private Bruce.Encoding encoding = Bruce.Encoding.BASE64;
+    private Charset charset = Bruce.DEFAULT_CHARSET;
+    private Bruce.Encoding encoding = Bruce.DEFAULT_ENCODING;
     
     MacBuilder() {
         // package-private constructor
@@ -82,26 +79,9 @@ public class MacBuilder {
         return this;
     }
     
-    /**
-     * Builds a raw byte array MAC generator.
-     * 
-     * @return the MAC generator
-     * @throws BruceException if required parameters are missing
-     */
-    public Mac buildRaw() {
+    public Mac build() {
         validateParameters();
-        return MacOperations.createMac(key, algorithm, provider);
-    }
-    
-    /**
-     * Builds an encoding MAC generator for string messages.
-     * 
-     * @return the MAC generator
-     * @throws BruceException if required parameters are missing
-     */
-    public EncodingMac build() {
-        validateParameters();
-        return MacOperations.createEncodingMac(key, algorithm, provider, encoding, charset);
+        return MacOperations.createMac(key, algorithm, provider, charset, encoding);
     }
     
     private void validateParameters() {
