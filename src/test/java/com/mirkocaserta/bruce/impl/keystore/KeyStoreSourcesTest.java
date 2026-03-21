@@ -68,5 +68,14 @@ class KeyStoreSourcesTest {
             }
         });
     }
+
+    @Test
+    void resolverFailsForUnsupportedLocation() {
+        assertThrows(IOException.class, () -> {
+            try (var ignored = KeyStoreSources.open("ftp://example.com/keystore.p12")) {
+                // no-op
+            }
+        });
+    }
 }
 

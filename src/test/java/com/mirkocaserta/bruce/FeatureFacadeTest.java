@@ -12,9 +12,22 @@ import static com.mirkocaserta.bruce.digest.DigesterConsts.MESSAGE_SHA1;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FeatureFacadeTest {
+
+    @Test
+    void featureFacadesExposeBuilders() {
+        assertNotNull(Ciphers.builder());
+        assertNotNull(Digests.builder());
+        assertNotNull(Macs.builder());
+        assertNotNull(Signatures.signerBuilder());
+        assertNotNull(Signatures.verifierBuilder());
+
+        assertNotSame(Ciphers.builder(), Ciphers.builder());
+        assertNotSame(Digests.builder(), Digests.builder());
+    }
 
     @Test
     void keystoresAndSignaturesFacadeRoundTrip() {
