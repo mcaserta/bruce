@@ -2,8 +2,9 @@
 
 ## Signer
 
-Returns a `Signer` for the given private key and algorithm. The built object carries default `BASE64`
-output encoding and `UTF-8` input charset; both can be overridden per-call.
+Returns a `Signer` for the given private key and algorithm. All input and output
+use the [`Bytes`](bytes.md) universal type — wrap your plaintext with
+`Bytes.from(...)` and call `.encode(...)` or `.asString()` on the result.
 
 ### Usage examples
 
@@ -16,17 +17,18 @@ Signer signer = signerBuilder()
     .algorithm("SHA512withRSA")
     .build();
 
-// bytes → bytes (raw signature)
-byte[] rawSig = signer.sign("Hello Bob".getBytes(UTF_8));
+// raw bytes → raw bytes
+Bytes rawSig = signer.sign(Bytes.from("Hello Bob".getBytes(UTF_8)));
 
-// String → String (BASE64 encoded signature, UTF-8 input)
-String sig = signer.signToString("Hello Bob");
+// UTF-8 text → BASE64 signature string
+Bytes sig    = signer.sign(Bytes.from("Hello Bob"));
+String b64   = sig.encode(BASE64);
 
-// bytes → HEX signature
-String hexSig = signer.signToString("Hello Bob".getBytes(UTF_8), Bruce.Encoding.HEX);
+// UTF-8 text → HEX signature string
+String hex   = signer.sign(Bytes.from("Hello Bob")).encode(HEX);
 
-// String with explicit charset → BASE64 signature
-String sig2 = signer.signToString("Hello Bob", ISO_8859_1, Bruce.Encoding.BASE64);
+// ISO-8859-1 text → BASE64 signature string
+Bytes sig2   = signer.sign(Bytes.from("Hello Bob", ISO_8859_1));
 ```
 
 ### Builder options
@@ -36,46 +38,53 @@ Signer signer = signerBuilder()
     .key(privateKey)
     .algorithm("SHA512withRSA")
     .provider("BC")          // optional, defaults to system provider
-    .charset(UTF_8)          // default input charset for String overloads
-    .encoding(BASE64)        // default output encoding for signToString overloads
     .build();
 ```
 
-### Input / output combinations
+### Interface
 
-| Method | Input | Output |
-|---|---|---|
-| `sign(byte[])` | raw bytes | raw bytes |
-| `sign(String)` | text (default charset) | raw bytes |
-| `sign(String, Charset)` | text (explicit charset) | raw bytes |
-| `signToString(byte[])` | raw bytes | encoded string (default encoding) |
-| `signToString(byte[], Encoding)` | raw bytes | encoded string |
-| `signToString(String)` | text | encoded string (both defaults) |
-| `signToString(String, Encoding)` | text | encoded string (explicit encoding) |
-| `signToString(String, Charset, Encoding)` | text | encoded string (explicit both) |
+```java
+@FunctionalInterface
+public interface Signer {
+    Bytes sign(Bytes message);
+}
+```
+
+Use [`Bytes`](bytes.md) factory methods to construct the message and `.encode()`
+/ `.asString()` to consume the returned signature.
 
 ---
 
 ## Signer by Key
 
-Returns a `SignerByKey` that resolves the private key at runtime from a preconfigured map.
+Returns a `SignerByKey` that resolves the private key at runtime from a
+preconfigured map.
 
 ### Usage examples
 
 ```java
-Map<String, PrivateKey> keys = Map.of("alice", aKey, "bob", bKey);
+Map<String, PrivateKey> keys = Map.of("alice", aliceKey, "bob", bobKey);
 
 SignerByKey signer = signerBuilder()
     .keys(keys)
     .algorithm("SHA512withRSA")
     .buildByKey();
 
-// bytes → bytes
-byte[] sig = signer.sign("alice", "Hello Bob".getBytes(UTF_8));
+// raw bytes → raw bytes
+Bytes sig    = signer.sign("alice", Bytes.from("Hello Bob".getBytes(UTF_8)));
 
-// String → BASE64 string
-String sig2 = signer.signToString("alice", "Hello Bob");
+// UTF-8 text → BASE64 signature string
+String b64   = signer.sign("alice", Bytes.from("Hello Bob")).encode(BASE64);
 
-// String → HEX string
-String hexSig = signer.signToString("bob", "Hello Alice", Bruce.Encoding.HEX);
+// UTF-8 text → HEX signature string
+String hex   = signer.sign("bob", Bytes.from("Hello Alice")).encode(HEX);
+```
+
+### Interface
+
+```java
+@FunctionalInterface
+public interface SignerByKey {
+    Bytes sign(String privateKeyId, Bytes message);
+}
 ```

@@ -1,80 +1,70 @@
 # Symmetric Ciphers
 
+All symmetric cipher instances are created via `cipherBuilder()` (static import
+from `Bruce`). Input and output use the [`Bytes`](bytes.md) universal type.
+
 ## Encryptor
 
-Returns a `SymmetricEncryptor` that encrypts messages with a symmetric key.
+Returns a `SymmetricEncryptor` that encrypts messages with a fixed symmetric
+key.
 
 ### Usage examples
 
 ```java
-// Raw bytes API
+// Generate a key and IV
 byte[] keyBytes = symmetricKey("AES");
-SymmetricEncryptor encryptor = symmetricEncryptorBuilder()
+byte[] ivBytes  = new byte[16];
+new SecureRandom().nextBytes(ivBytes);
+
+SymmetricEncryptor encryptor = cipherBuilder()
     .key(keyBytes)
     .keyAlgorithm("AES")
     .algorithm("AES/CBC/PKCS5Padding")
-    .build();
+    .buildSymmetricEncryptor();
 
-SecureRandom rng = new SecureRandom();
-byte[] iv = new byte[16];
-rng.nextBytes(iv);
+Bytes iv         = Bytes.from(ivBytes);
+Bytes ciphertext = encryptor.encrypt(iv, Bytes.from("Hello World"));
 
-byte[] encrypted = encryptor.encrypt(iv, "Hello World".getBytes(UTF_8));
-
-// String API (BASE64 output and input encoding, UTF-8 plaintext charset by default)
-SymmetricEncryptor strEncryptor = symmetricEncryptorBuilder()
-    .key(keyBytes)
-    .keyAlgorithm("AES")
-    .algorithm("AES/CBC/PKCS5Padding")
-    .charset(UTF_8)
-    .encoding(BASE64)
-    .build();
-
-String ivB64  = Base64.getEncoder().encodeToString(iv);
-String encB64 = strEncryptor.encryptToString(ivB64, "Hello World");
+// serialize to BASE64 for transport
+String ivB64  = iv.encode(BASE64);
+String encB64 = ciphertext.encode(BASE64);
 ```
 
 ### Builder options
 
 ```java
-SymmetricEncryptor encryptor = symmetricEncryptorBuilder()
-    .key(keyBytes)           // raw bytes or encoded String
+SymmetricEncryptor encryptor = cipherBuilder()
+    .key(keyBytes)               // raw byte[] or Bytes
     .keyAlgorithm("AES")
     .algorithm("AES/CBC/PKCS5Padding")
-    .provider("BC")          // optional
-    .charset(UTF_8)          // default plaintext charset for String overloads
-    .encoding(BASE64)        // default iv/output encoding for String overloads
-    .build();
+    .provider("BC")              // optional
+    .buildSymmetricEncryptor();
 ```
 
 ---
 
 ## Decryptor
 
-Returns a `SymmetricDecryptor` that decrypts messages with a symmetric key.
+Returns a `SymmetricDecryptor` that decrypts messages with a fixed symmetric
+key.
 
 ### Usage examples
 
 ```java
-SymmetricDecryptor decryptor = symmetricDecryptorBuilder()
+SymmetricDecryptor decryptor = cipherBuilder()
     .key(keyBytes)
     .keyAlgorithm("AES")
     .algorithm("AES/CBC/PKCS5Padding")
-    .build();
+    .buildSymmetricDecryptor();
 
-// bytes → bytes
-byte[] plain = decryptor.decrypt(iv, encryptedBytes);
+// raw bytes → Bytes
+Bytes plaintext = decryptor.decrypt(iv, ciphertext);
+String text     = plaintext.asString();   // UTF-8
 
-// BASE64 IV + BASE64 ciphertext → String
-SymmetricDecryptor strDecryptor = symmetricDecryptorBuilder()
-    .key(keyBytes)
-    .keyAlgorithm("AES")
-    .algorithm("AES/CBC/PKCS5Padding")
-    .charset(UTF_8)
-    .encoding(BASE64)
-    .build();
-
-String plainText = strDecryptor.decryptToString(ivB64, encB64);
+// BASE64 strings → String
+Bytes ivFromB64  = Bytes.from(ivB64, BASE64);
+Bytes encFromB64 = Bytes.from(encB64, BASE64);
+String decrypted = decryptor.decrypt(ivFromB64, encFromB64).asString();
 ```
 
 ---
@@ -83,36 +73,66 @@ String plainText = strDecryptor.decryptToString(ivB64, encB64);
 
 ```java
 byte[] keyBytes = symmetricKey("DESede");
-SymmetricEncryptor enc = symmetricEncryptorBuilder()
-    .key(keyBytes).keyAlgorithm("DESede").algorithm("DESede/CBC/PKCS5Padding").build();
-SymmetricDecryptor dec = symmetricDecryptorBuilder()
-    .key(keyBytes).keyAlgorithm("DESede").algorithm("DESede/CBC/PKCS5Padding").build();
+SymmetricEncryptor enc = cipherBuilder()
+    .key(keyBytes).keyAlgorithm("DESede").algorithm("DESede/CBC/PKCS5Padding")
+    .buildSymmetricEncryptor();
+SymmetricDecryptor dec = cipherBuilder()
+    .key(keyBytes).keyAlgorithm("DESede").algorithm("DESede/CBC/PKCS5Padding")
+    .buildSymmetricDecryptor();
 
-byte[] iv = new byte[8];
-new SecureRandom().nextBytes(iv);
+byte[] rawIv    = new byte[8];
+new SecureRandom().nextBytes(rawIv);
+Bytes iv        = Bytes.from(rawIv);
 
-byte[] clearText    = "Hi there".getBytes(UTF_8);
-byte[] cipherText   = enc.encrypt(iv, clearText);
-byte[] decryptedText = dec.decrypt(iv, cipherText);
-assertArrayEquals(clearText, decryptedText);
+Bytes clearText    = Bytes.from("Hi there");
+Bytes cipherText   = enc.encrypt(iv, clearText);
+Bytes decryptedText = dec.decrypt(iv, cipherText);
+assertEquals(clearText, decryptedText);
 ```
 
 ---
 
 ## Encryptor / Decryptor by Key
 
-For runtime key selection:
+For use-cases where the key is supplied at call time (e.g., per-user keys):
 
 ```java
-SymmetricEncryptorByKey encryptors = symmetricEncryptorByKeyBuilder()
-    .keyAlgorithm("AES").algorithm("AES/CBC/PKCS5Padding").build();
-SymmetricDecryptorByKey decryptors = symmetricDecryptorByKeyBuilder()
-    .keyAlgorithm("AES").algorithm("AES/CBC/PKCS5Padding").build();
+SymmetricEncryptorByKey encByKey = cipherBuilder()
+    .keyAlgorithm("AES")
+    .algorithm("AES/CBC/PKCS5Padding")
+    .buildSymmetricEncryptorByKey();
 
-byte[] k1 = symmetricKey("AES");
-byte[] k2 = symmetricKey("AES");
+SymmetricDecryptorByKey decByKey = cipherBuilder()
+    .keyAlgorithm("AES")
+    .algorithm("AES/CBC/PKCS5Padding")
+    .buildSymmetricDecryptorByKey();
 
-byte[] encrypted = encryptors.encrypt(k1, iv, plaintext);
-byte[] decrypted = decryptors.decrypt(k1, iv, encrypted);
-assertArrayEquals(plaintext, decrypted);
+Bytes key        = Bytes.from(keyBytes);
+Bytes iv         = Bytes.from(ivBytes);
+Bytes ciphertext = encByKey.encrypt(key, iv, Bytes.from("Hello World"));
+Bytes plaintext  = decByKey.decrypt(key, iv, ciphertext);
+```
+
+### Interfaces
+
+```java
+@FunctionalInterface
+public interface SymmetricEncryptor {
+    Bytes encrypt(Bytes iv, Bytes plaintext);
+}
+
+@FunctionalInterface
+public interface SymmetricDecryptor {
+    Bytes decrypt(Bytes iv, Bytes ciphertext);
+}
+
+@FunctionalInterface
+public interface SymmetricEncryptorByKey {
+    Bytes encrypt(Bytes key, Bytes iv, Bytes plaintext);
+}
+
+@FunctionalInterface
+public interface SymmetricDecryptorByKey {
+    Bytes decrypt(Bytes key, Bytes iv, Bytes ciphertext);
+}
 ```

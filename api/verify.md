@@ -2,8 +2,9 @@
 
 ## Verifier
 
-Returns a `Verifier` for the given public key and algorithm. The built object carries default `BASE64`
-signature encoding and `UTF-8` plaintext charset; both can be overridden per-call.
+Returns a `Verifier` for the given public key and algorithm. Both the message
+and signature are passed as [`Bytes`](bytes.md); construct signatures from
+encoded strings with `Bytes.from(encoded, encoding)`.
 
 ### Usage examples
 
@@ -16,17 +17,25 @@ Verifier verifier = verifierBuilder()
     .algorithm("SHA512withRSA")
     .build();
 
-// bytes + bytes → boolean
-boolean ok = verifier.verify("Hello Bob".getBytes(UTF_8), rawSignature);
+// raw bytes + raw bytes → boolean
+boolean ok = verifier.verify(
+    Bytes.from("Hello Bob".getBytes(UTF_8)),
+    rawSignature);
 
-// String + BASE64 signature → boolean (defaults)
-boolean ok2 = verifier.verify("Hello Bob", base64Signature);
+// UTF-8 text + BASE64 signature → boolean
+boolean ok2 = verifier.verify(
+    Bytes.from("Hello Bob"),
+    Bytes.from(base64Signature, BASE64));
 
-// String + HEX signature → boolean
-boolean ok3 = verifier.verify("Hello Bob", hexSignature, Bruce.Encoding.HEX);
+// UTF-8 text + HEX signature → boolean
+boolean ok3 = verifier.verify(
+    Bytes.from("Hello Bob"),
+    Bytes.from(hexSignature, HEX));
 
-// String (explicit charset) + BASE64 signature → boolean
-boolean ok4 = verifier.verify("Hello Bob", ISO_8859_1, base64Signature, Bruce.Encoding.BASE64);
+// ISO-8859-1 text + BASE64 signature → boolean
+boolean ok4 = verifier.verify(
+    Bytes.from("Hello Bob", ISO_8859_1),
+    Bytes.from(base64Signature, BASE64));
 ```
 
 ### Builder options
@@ -36,44 +45,55 @@ Verifier verifier = verifierBuilder()
     .key(publicKey)
     .algorithm("SHA512withRSA")
     .provider("BC")          // optional, defaults to system provider
-    .charset(UTF_8)          // default plaintext charset for String overloads
-    .encoding(BASE64)        // default signature encoding for String overloads
     .build();
 ```
 
-### Input / output combinations
+### Interface
 
-| Method | Message | Signature | Output |
-|---|---|---|---|
-| `verify(byte[], byte[])` | raw bytes | raw bytes | `boolean` |
-| `verify(String, byte[])` | text (default charset) | raw bytes | `boolean` |
-| `verify(String, Charset, byte[])` | text (explicit charset) | raw bytes | `boolean` |
-| `verify(String, String)` | text | encoded sig (default encoding) | `boolean` |
-| `verify(String, String, Encoding)` | text | encoded sig (explicit) | `boolean` |
-| `verify(String, Charset, String, Encoding)` | text | encoded sig | `boolean` |
+```java
+@FunctionalInterface
+public interface Verifier {
+    boolean verify(Bytes message, Bytes signature);
+}
+```
 
 ---
 
 ## Verifier by Key
 
-Returns a `VerifierByKey` that resolves the public key at runtime from a preconfigured map.
+Returns a `VerifierByKey` that resolves the public key at runtime from a
+preconfigured map.
 
 ### Usage examples
 
 ```java
-Map<String, PublicKey> keys = Map.of("alice", aPublicKey, "bob", bPublicKey);
+Map<String, PublicKey> keys = Map.of("alice", alicePublicKey, "bob", bobPublicKey);
 
 VerifierByKey verifier = verifierBuilder()
     .keys(keys)
     .algorithm("SHA512withRSA")
     .buildByKey();
 
-// bytes + bytes → boolean
-boolean ok = verifier.verify("alice", "Hello Bob".getBytes(UTF_8), rawSignature);
+// raw bytes + raw bytes → boolean
+boolean ok = verifier.verify("alice",
+    Bytes.from("Hello Bob".getBytes(UTF_8)), rawSignature);
 
-// String + BASE64 string → boolean
-boolean ok2 = verifier.verify("alice", "Hello Bob", base64Signature);
+// UTF-8 text + BASE64 signature → boolean
+boolean ok2 = verifier.verify("alice",
+    Bytes.from("Hello Bob"),
+    Bytes.from(base64Signature, BASE64));
 
-// String + HEX string → boolean
-boolean ok3 = verifier.verify("bob", "Hello Alice", hexSignature, Bruce.Encoding.HEX);
+// UTF-8 text + HEX signature → boolean
+boolean ok3 = verifier.verify("bob",
+    Bytes.from("Hello Alice"),
+    Bytes.from(hexSignature, HEX));
+```
+
+### Interface
+
+```java
+@FunctionalInterface
+public interface VerifierByKey {
+    boolean verify(String publicKeyId, Bytes message, Bytes signature);
+}
 ```

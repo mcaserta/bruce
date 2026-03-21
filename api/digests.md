@@ -2,13 +2,8 @@
 
 ## Digester
 
-```java
-Digester digester(String algorithm);
-Digester digester(String algorithm, String provider);
-```
-
-Returns a `Digester` for the given algorithm. The built object carries default `BASE64` output encoding
-and `UTF-8` input charset; both can be overridden per-call.
+Returns a `Digester` for the given algorithm. All input and output use the
+[`Bytes`](bytes.md) universal type.
 
 ### Usage examples
 
@@ -16,23 +11,25 @@ and `UTF-8` input charset; both can be overridden per-call.
 // Build once
 Digester digester = digestBuilder().algorithm("SHA-256").build();
 
-// bytes → bytes
-byte[] raw = digester.digest("hello".getBytes(UTF_8));
+// raw bytes → Bytes
+Bytes raw = digester.digest(Bytes.from("hello".getBytes(UTF_8)));
 
-// String → String (BASE64 by default)
-String encoded = digester.digestToString("hello");
+// UTF-8 text → BASE64 string
+String b64 = digester.digest(Bytes.from("hello")).encode(BASE64);
 
-// String → HEX string (explicit encoding)
-String hex = digester.digestToString("hello", Bruce.Encoding.HEX);
+// UTF-8 text → HEX string
+String hex = digester.digest(Bytes.from("hello")).encode(HEX);
 
-// String with explicit charset → BASE64 string
-String encoded2 = digester.digestToString("hello 👋🏻", UTF_16, Bruce.Encoding.BASE64);
+// explicit charset → BASE64 string
+String b64_2 = digester.digest(Bytes.from("hello 👋🏻", UTF_16)).encode(BASE64);
 
-// File path → BASE64 string
-String fileHash = digester.digestToString(Path.of("src/test/resources/test-file-1"));
+// file path → BASE64 string (streaming, no full file load)
+String fileHash = digester.digest(Path.of("src/test/resources/test-file-1"))
+                          .encode(BASE64);
 
 // java.io.File → HEX string
-String fileHex = digester.digestToString(new File("src/test/resources/test-file-1"), Bruce.Encoding.HEX);
+String fileHex = digester.digest(new File("src/test/resources/test-file-1"))
+                         .encode(HEX);
 ```
 
 ### Builder options
@@ -41,24 +38,25 @@ String fileHex = digester.digestToString(new File("src/test/resources/test-file-
 Digester digester = digestBuilder()
     .algorithm("SHA-256")
     .provider("BC")          // optional, defaults to system provider
-    .charset(UTF_8)          // default input charset for String overloads
-    .encoding(BASE64)        // default output encoding for String overloads
     .build();
+```
+
+### Interface
+
+```java
+public interface Digester {
+    Bytes digest(Bytes input);
+    Bytes digest(Path file);                // streaming file read
+    default Bytes digest(File file) { ... } // delegates to digest(Path)
+}
 ```
 
 ### Input / output combinations
 
-| Method | Input | Output |
-|---|---|---|
-| `digest(byte[])` | raw bytes | raw bytes |
-| `digest(String)` | text (default charset) | raw bytes |
-| `digest(String, Charset)` | text (explicit charset) | raw bytes |
-| `digestToString(byte[])` | raw bytes | encoded string (default encoding) |
-| `digestToString(byte[], Encoding)` | raw bytes | encoded string |
-| `digestToString(String)` | text | encoded string (both defaults) |
-| `digestToString(String, Encoding)` | text | encoded string (explicit encoding) |
-| `digestToString(String, Charset, Encoding)` | text | encoded string (explicit both) |
-| `digestToString(Path)` | file | encoded string (default encoding) |
-| `digestToString(Path, Encoding)` | file | encoded string |
-| `digestToString(File)` | file | encoded string (default encoding) |
-| `digestToString(File, Encoding)` | file | encoded string |
+| Input          | How to construct                   | Consume output                                     |
+| -------------- | ---------------------------------- | -------------------------------------------------- |
+| raw `byte[]`   | `Bytes.from(rawBytes)`             | `.asBytes()`                                       |
+| UTF-8 text     | `Bytes.from("text")`               | `.encode(HEX)` / `.encode(BASE64)` / `.asString()` |
+| custom charset | `Bytes.from("text", charset)`      | `.encode(...)`                                     |
+| encoded string | `Bytes.from("abc…", Encoding.HEX)` | `.encode(...)`                                     |
+| file           | pass `Path` / `File` directly      | `.encode(...)`                                     |
