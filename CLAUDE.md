@@ -91,7 +91,7 @@ others).
 
 **Test-only:**
 
-- Bouncy Castle (`bcprov-jdk15on`) for extended cryptographic algorithm testing
+- Bouncy Castle (`bcprov-jdk18on`) for extended cryptographic algorithm testing
 - JUnit 5 for testing framework
 - Mockito for mocking
 
