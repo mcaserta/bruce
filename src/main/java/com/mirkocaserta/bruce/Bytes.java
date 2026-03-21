@@ -1,14 +1,16 @@
 package com.mirkocaserta.bruce;
 
 import com.mirkocaserta.bruce.impl.util.EncodingUtils;
+import com.mirkocaserta.bruce.impl.util.PemUtils;
+import com.mirkocaserta.bruce.impl.util.Preconditions;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -26,7 +28,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Bytes b = Bytes.from("Hello", ISO_8859_1);       // explicit charset
  * Bytes b = Bytes.from("cafebabe", Bruce.Encoding.HEX);    // decode hex
  * Bytes b = Bytes.from("c2lnbg==", Bruce.Encoding.BASE64); // decode base64
- * Bytes b = Bytes.fromFile(Path.of("secret.bin")); // file contents
+ * Bytes b = Bytes.from(Path.of("secret.bin")); // file contents
  *
  * // Consumption
  * byte[] raw     = b.asBytes();
@@ -59,7 +61,7 @@ public final class Bytes {
      * @throws NullPointerException if {@code bytes} is {@code null}
      */
     public static Bytes from(byte[] bytes) {
-        Objects.requireNonNull(bytes, "bytes must not be null");
+        Preconditions.requireNonNull(bytes, "bytes");
         return new Bytes(bytes);
     }
 
@@ -83,8 +85,8 @@ public final class Bytes {
      * @throws NullPointerException if {@code text} or {@code charset} is {@code null}
      */
     public static Bytes from(String text, Charset charset) {
-        Objects.requireNonNull(text, "text must not be null");
-        Objects.requireNonNull(charset, "charset must not be null");
+        Preconditions.requireNonNull(text, "text");
+        Preconditions.requireNonNull(charset, "charset");
         return new Bytes(text.getBytes(charset));
     }
 
@@ -98,8 +100,8 @@ public final class Bytes {
      * @throws BruceException       if the string is not valid for the given encoding
      */
     public static Bytes from(String encoded, Bruce.Encoding encoding) {
-        Objects.requireNonNull(encoded, "encoded must not be null");
-        Objects.requireNonNull(encoding, "encoding must not be null");
+        Preconditions.requireNonNull(encoded, "encoded");
+        Preconditions.requireNonNull(encoding, "encoding");
         return new Bytes(EncodingUtils.decode(encoding, encoded));
     }
 
@@ -111,8 +113,8 @@ public final class Bytes {
      * @throws NullPointerException if {@code path} is {@code null}
      * @throws BruceException       if the file cannot be read
      */
-    public static Bytes fromFile(Path path) {
-        Objects.requireNonNull(path, "path must not be null");
+    public static Bytes from(Path path) {
+        Preconditions.requireNonNull(path, "path");
         try {
             return new Bytes(Files.readAllBytes(path));
         } catch (IOException e) {
@@ -128,9 +130,39 @@ public final class Bytes {
      * @throws NullPointerException if {@code file} is {@code null}
      * @throws BruceException       if the file cannot be read
      */
-    public static Bytes fromFile(File file) {
-        Objects.requireNonNull(file, "file must not be null");
-        return fromFile(file.toPath());
+    public static Bytes from(File file) {
+        Preconditions.requireNonNull(file, "file");
+        return from(file.toPath());
+    }
+
+    /**
+     * Creates a {@code Bytes} instance by reading all bytes from the given stream.
+     * The stream is read to exhaustion but is <em>not</em> closed by this method.
+     *
+     * @param stream the input stream; must not be {@code null}
+     * @return a new {@code Bytes} instance
+     * @throws NullPointerException if {@code stream} is {@code null}
+     * @throws BruceException       if the stream cannot be read
+     */
+    public static Bytes from(InputStream stream) {
+        Preconditions.requireNonNull(stream, "stream");
+        try {
+            return new Bytes(stream.readAllBytes());
+        } catch (IOException e) {
+            throw new BruceException("error reading stream", e);
+        }
+    }
+
+    /**
+     * Creates a {@code Bytes} instance by decoding a PEM-encoded string.
+     * The PEM header/footer lines are stripped and the Base64 body is decoded.
+     *
+     * @param pem the PEM string; must not be {@code null} or blank
+     * @return a new {@code Bytes} instance holding the DER-encoded bytes
+     * @throws BruceException if the input is not valid PEM
+     */
+    public static Bytes fromPem(String pem) {
+        return new Bytes(PemUtils.decode(pem));
     }
 
     // ── Views ────────────────────────────────────────────────────────────────
@@ -151,9 +183,22 @@ public final class Bytes {
      * @return the encoded string representation
      */
     public String encode(Bruce.Encoding encoding) {
-        Objects.requireNonNull(encoding, "encoding must not be null");
+        Preconditions.requireNonNull(encoding, "encoding");
         return EncodingUtils.encode(encoding, bytes);
     }
+
+    /**
+     * Encodes the raw bytes as a PEM string with the given type.
+     *
+     * @param type the PEM type; must not be {@code null}
+     * @return the PEM-encoded string
+     * @throws NullPointerException if {@code type} is {@code null}
+     */
+    public String toPem(PemType type) {
+        Preconditions.requireNonNull(type, "type");
+        return PemUtils.encode(type, bytes);
+    }
+
 
     /**
      * Decodes the raw bytes as a UTF-8 string.
@@ -171,7 +216,7 @@ public final class Bytes {
      * @return the string value
      */
     public String asString(Charset charset) {
-        Objects.requireNonNull(charset, "charset must not be null");
+        Preconditions.requireNonNull(charset, "charset");
         return new String(bytes, charset);
     }
 

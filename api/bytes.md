@@ -26,8 +26,14 @@ Bytes b = Bytes.from("cafebabe", HEX);
 Bytes b = Bytes.from("c2lnbg==", BASE64);
 
 // from a file's full contents
-Bytes b = Bytes.fromFile(Path.of("secret.bin"));
-Bytes b = Bytes.fromFile(new File("secret.bin"));
+Bytes b = Bytes.from(Path.of("secret.bin"));
+Bytes b = Bytes.from(new File("secret.bin"));
+
+// from an input stream
+Bytes b = Bytes.from(inputStream);
+
+// by decoding a PEM-encoded string
+Bytes b = Bytes.fromPem("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----");
 ```
 
 ## Consumption
@@ -41,6 +47,9 @@ String base64 = b.encode(BASE64);
 String hex    = b.encode(HEX);
 String url    = b.encode(URL);
 String mime   = b.encode(MIME);
+
+// encode as PEM string
+String pem    = b.toPem("CERTIFICATE");  // or "PRIVATE KEY", "PUBLIC KEY", etc.
 
 // decode as UTF-8 string
 String text   = b.asString();

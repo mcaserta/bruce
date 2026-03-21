@@ -89,7 +89,7 @@ class BytesTest {
         byte[] content = {7, 8, 9};
         Path file = tempDir.resolve("test.bin");
         Files.write(file, content);
-        Bytes b = Bytes.fromFile(file);
+        Bytes b = Bytes.from(file);
         assertArrayEquals(content, b.asBytes());
     }
 
@@ -98,55 +98,55 @@ class BytesTest {
         byte[] content = {4, 5, 6};
         Path file = tempDir.resolve("test2.bin");
         Files.write(file, content);
-        Bytes b = Bytes.fromFile(file.toFile());
+        Bytes b = Bytes.from(file.toFile());
         assertArrayEquals(content, b.asBytes());
     }
 
     @Test
     void fromFileThrowsOnMissingFile(@TempDir Path tempDir) {
-        assertThrows(BruceException.class, () -> Bytes.fromFile(tempDir.resolve("missing.bin")));
+        assertThrows(BruceException.class, () -> Bytes.from(tempDir.resolve("missing.bin")));
     }
 
     // ── Null guards ──────────────────────────────────────────────────────────
 
     @Test
     void nullBytesArrayThrows() {
-        assertThrows(NullPointerException.class, () -> Bytes.from((byte[]) null));
+        assertThrows(BruceException.class, () -> Bytes.from((byte[]) null));
     }
 
     @Test
     void nullStringThrows() {
-        assertThrows(NullPointerException.class, () -> Bytes.from((String) null));
+        assertThrows(BruceException.class, () -> Bytes.from((String) null));
     }
 
     @Test
     void nullStringWithCharsetThrows() {
-        assertThrows(NullPointerException.class, () -> Bytes.from(null, StandardCharsets.UTF_8));
+        assertThrows(BruceException.class, () -> Bytes.from(null, StandardCharsets.UTF_8));
     }
 
     @Test
     void nullCharsetThrows() {
-        assertThrows(NullPointerException.class, () -> Bytes.from("hello", (java.nio.charset.Charset) null));
+        assertThrows(BruceException.class, () -> Bytes.from("hello", (java.nio.charset.Charset) null));
     }
 
     @Test
     void nullEncodedStringThrows() {
-        assertThrows(NullPointerException.class, () -> Bytes.from(null, Bruce.Encoding.BASE64));
+        assertThrows(BruceException.class, () -> Bytes.from(null, Bruce.Encoding.BASE64));
     }
 
     @Test
     void nullEncodingThrows() {
-        assertThrows(NullPointerException.class, () -> Bytes.from("abc", (Bruce.Encoding) null));
+        assertThrows(BruceException.class, () -> Bytes.from("abc", (Bruce.Encoding) null));
     }
 
     @Test
     void nullFilePathThrows() {
-        assertThrows(NullPointerException.class, () -> Bytes.fromFile((Path) null));
+        assertThrows(BruceException.class, () -> Bytes.from((Path) null));
     }
 
     @Test
     void nullFileThrows() {
-        assertThrows(NullPointerException.class, () -> Bytes.fromFile((java.io.File) null));
+        assertThrows(BruceException.class, () -> Bytes.from((java.io.File) null));
     }
 
     // ── Views ────────────────────────────────────────────────────────────────
@@ -188,7 +188,7 @@ class BytesTest {
 
     @Test
     void encodeNullEncodingThrows() {
-        assertThrows(NullPointerException.class, () -> Bytes.from("x").encode(null));
+        assertThrows(BruceException.class, () -> Bytes.from("x").encode(null));
     }
 
     // ── Object contract ──────────────────────────────────────────────────────
@@ -209,7 +209,7 @@ class BytesTest {
     @Test
     void reflexiveEquality() {
         Bytes b = Bytes.from("test");
-        assertEquals(b, b);
+        assertSame(b, b);
     }
 
     @Test

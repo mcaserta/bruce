@@ -2,6 +2,7 @@ package com.mirkocaserta.bruce.signature;
 
 import com.mirkocaserta.bruce.Bytes;
 
+
 /**
  * Unified contract for verifying digital signatures.
  *
@@ -25,4 +26,5 @@ public interface Verifier {
      * @return {@code true} if the signature is valid
      */
     boolean verify(Bytes message, Bytes signature);
+
 }

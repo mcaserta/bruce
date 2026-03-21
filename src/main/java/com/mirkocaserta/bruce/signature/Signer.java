@@ -2,6 +2,7 @@ package com.mirkocaserta.bruce.signature;
 
 import com.mirkocaserta.bruce.Bytes;
 
+
 /**
  * Unified contract for producing digital signatures.
  *
@@ -23,4 +24,5 @@ public interface Signer {
      * @return the raw signature wrapped in {@link Bytes}
      */
     Bytes sign(Bytes message);
+
 }

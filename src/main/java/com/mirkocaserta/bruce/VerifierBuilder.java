@@ -1,8 +1,9 @@
 package com.mirkocaserta.bruce;
 
+import com.mirkocaserta.bruce.impl.signature.SignatureOperations;
+import com.mirkocaserta.bruce.impl.util.Preconditions;
 import com.mirkocaserta.bruce.signature.Verifier;
 import com.mirkocaserta.bruce.signature.VerifierByKey;
-import com.mirkocaserta.bruce.impl.signature.SignatureOperations;
 
 import java.security.PublicKey;
 import java.util.Map;
@@ -82,16 +83,16 @@ public class VerifierBuilder {
      */
     public VerifierByKey buildByKey() {
         validateMultiKeyVerifier();
-        return SignatureOperations.createVerifierByKey(publicKeyMap, algorithm, provider);
+        return SignatureOperations.createVerifierByKey(Map.copyOf(publicKeyMap), algorithm, provider);
     }
 
     private void validateSingleKeyVerifier() {
-        if (publicKey == null) throw new BruceException("publicKey is required for single key verifier");
-        if (algorithm == null) throw new BruceException("algorithm is required for verifier");
+        Preconditions.requireNonNull(publicKey, "publicKey");
+        Preconditions.requireNonBlank(algorithm, "algorithm");
     }
 
     private void validateMultiKeyVerifier() {
-        if (publicKeyMap == null || publicKeyMap.isEmpty()) throw new BruceException("publicKeyMap is required for multi-key verifier");
-        if (algorithm == null) throw new BruceException("algorithm is required for verifier");
+        Preconditions.requireNonEmpty(publicKeyMap, "publicKeyMap");
+        Preconditions.requireNonBlank(algorithm, "algorithm");
     }
 }

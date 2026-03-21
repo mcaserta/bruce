@@ -3,6 +3,7 @@ plugins {
     id 'org.sonarqube' version '7.2.3.7755'
     id 'jacoco'
     id 'maven-publish'
+    id 'signing'
 }
 
 repositories {
@@ -11,10 +12,9 @@ repositories {
 
 dependencies {
     testImplementation 'org.bouncycastle:bcprov-jdk18on:1.83'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.mockito:mockito-core:5.23.0'
 }
 
@@ -40,12 +40,59 @@ tasks.named('compileJava') {
     options.encoding = 'UTF-8'
     options.javaModuleVersion = provider { project.version }
 }
+
 publishing {
     publications {
-        myLibrary(MavenPublication) {
+        mavenJava(MavenPublication) {
             from components.java
+            pom {
+                name = 'Bruce'
+                description = project.description
+                url = 'https://github.com/mcaserta/bruce'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'mcaserta'
+                        name = 'Mirko Caserta'
+                        email = 'mirko.caserta@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/mcaserta/bruce.git'
+                    developerConnection = 'scm:git:ssh://github.com/mcaserta/bruce.git'
+                    url = 'https://github.com/mcaserta/bruce'
+                }
+            }
         }
     }
+    repositories {
+        maven {
+            name = 'mavenCentral'
+            def isSnapshot = version.toString().endsWith('-SNAPSHOT')
+            url = isSnapshot
+                    ? 'https://central.sonatype.com/repository/maven-snapshots/'
+                    : 'https://central.sonatype.com/api/v1/publisher/deployment/upload'
+            credentials {
+                username = findProperty('mavenCentralUsername') ?: System.getenv('MAVEN_CENTRAL_USERNAME')
+                password = findProperty('mavenCentralPassword') ?: System.getenv('MAVEN_CENTRAL_PASSWORD')
+            }
+        }
+    }
+}
+
+signing {
+    def signingKey     = findProperty('signingKey')     ?: System.getenv('GPG_SIGNING_KEY')
+    def signingKeyId   = findProperty('signingKeyId')   ?: System.getenv('GPG_SIGNING_KEY_ID')
+    def signingPassword = findProperty('signingPassword') ?: System.getenv('GPG_SIGNING_PASSWORD')
+    if (signingKey) {
+        useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+    }
+    sign publishing.publications.mavenJava
 }
 
 sonarqube {

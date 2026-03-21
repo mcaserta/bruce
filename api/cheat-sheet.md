@@ -19,12 +19,15 @@ Bytes.from(byte[]);
 Bytes.from(String);                         // UTF-8
 Bytes.from(String, Charset);
 Bytes.from(String, Encoding);               // decode encoded string
-Bytes.fromFile(Path);
-Bytes.fromFile(File);
+Bytes.from(Path);
+Bytes.from(File);
+Bytes.from(InputStream);
+Bytes.fromPem(String);
 
 // Consumption
 byte[]  b.asBytes();
 String  b.encode(Encoding);
+String  b.toPem(String type);               // e.g. "CERTIFICATE", "PRIVATE KEY"
 String  b.asString();                       // UTF-8
 String  b.asString(Charset);
 int     b.length();

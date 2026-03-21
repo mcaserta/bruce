@@ -2,6 +2,7 @@ package com.mirkocaserta.bruce;
 
 import com.mirkocaserta.bruce.digest.Digester;
 import com.mirkocaserta.bruce.impl.digest.DigestOperations;
+import com.mirkocaserta.bruce.impl.util.Preconditions;
 
 /**
  * Builder for creating {@link Digester} instances.
@@ -43,7 +44,7 @@ public class DigestBuilder {
      * @return configured {@link Digester}
      */
     public Digester build() {
-        if (algorithm == null) throw new BruceException("algorithm is required for digester");
+        Preconditions.requireNonBlank(algorithm, "algorithm");
         return DigestOperations.createDigester(algorithm, provider);
     }
 }

@@ -146,4 +146,50 @@ class BuilderTest {
         assertThrows(BruceException.class, () -> Bruce.cipherBuilder().keys(Map.of("key", keyPair.getPublic())).buildAsymmetricEncryptorByKey());
         assertNotNull(Bruce.macBuilder().key(hmacKey).algorithm("HmacSHA1").provider(null).build());
     }
+
+    @Test
+    void symmetricByKeyBuilderRoundTripAndAlgorithmsShortcut() {
+        byte[] rawKey = symmetricKey("AES");
+        byte[] rawIv = new byte[16];
+        new SecureRandom().nextBytes(rawIv);
+
+        Bytes key = Bytes.from(rawKey);
+        Bytes iv = Bytes.from(rawIv);
+        Bytes plaintext = Bytes.from("hello-symmetric-by-key");
+
+        var encryptorByKey = Bruce.cipherBuilder()
+                .algorithms("AES", "AES/CBC/PKCS5Padding")
+                .buildSymmetricEncryptorByKey();
+        var decryptorByKey = Bruce.cipherBuilder()
+                .algorithms("AES", "AES/CBC/PKCS5Padding")
+                .buildSymmetricDecryptorByKey();
+
+        Bytes ciphertext = encryptorByKey.encrypt(key, iv, plaintext);
+        Bytes decrypted = decryptorByKey.decrypt(key, iv, ciphertext);
+
+        assertEquals(plaintext, decrypted);
+    }
+
+    @Test
+    void signerByKeyIsUnaffectedBySubsequentMapMutation() {
+        var keyPair = keyPair("RSA", 2048);
+        var mutableMap = new java.util.HashMap<String, java.security.PrivateKey>();
+        mutableMap.put("alice", keyPair.getPrivate());
+
+        var signer = Bruce.signerBuilder()
+                .keys(mutableMap)
+                .algorithm("SHA256withRSA")
+                .buildByKey();
+
+        var verifier = Bruce.verifierBuilder().key(keyPair.getPublic()).algorithm("SHA256withRSA").build();
+
+        Bytes msg = Bytes.from("hello");
+        Bytes sig = signer.sign("alice", msg);
+        assertTrue(verifier.verify(msg, sig));
+
+        // Mutate original map — should not affect already-built signer
+        mutableMap.clear();
+        // Alice key should still resolve from the defensive copy
+        assertDoesNotThrow(() -> signer.sign("alice", msg));
+    }
 }

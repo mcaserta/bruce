@@ -1,6 +1,5 @@
 package com.mirkocaserta.bruce;
 
-import com.mirkocaserta.bruce.Bytes;
 import com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricDecryptor;
 import com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricDecryptorByKey;
 import com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricEncryptor;
@@ -11,6 +10,7 @@ import com.mirkocaserta.bruce.cipher.symmetric.SymmetricEncryptor;
 import com.mirkocaserta.bruce.cipher.symmetric.SymmetricEncryptorByKey;
 import com.mirkocaserta.bruce.impl.cipher.AsymmetricCipherOperations;
 import com.mirkocaserta.bruce.impl.cipher.SymmetricCipherOperations;
+import com.mirkocaserta.bruce.impl.util.Preconditions;
 
 import java.security.Key;
 import java.util.Map;
@@ -55,6 +55,10 @@ public class CipherBuilder {
      * @return this builder
      */
     public CipherBuilder key(byte[] key) {
+        Preconditions.requireNonNull(key, "key");
+        if (key.length == 0) {
+            throw new BruceException("key must not be null or empty");
+        }
         this.symmetricKey = Bytes.from(key);
         return this;
     }
@@ -194,7 +198,7 @@ public class CipherBuilder {
      */
     public AsymmetricEncryptorByKey buildAsymmetricEncryptorByKey() {
         validateAsymmetricByKeyCipher();
-        return AsymmetricCipherOperations.createEncryptorByKey(asymmetricKeys, cipherAlgorithm, provider);
+        return AsymmetricCipherOperations.createEncryptorByKey(Map.copyOf(asymmetricKeys), cipherAlgorithm, provider);
     }
 
     /**
@@ -204,27 +208,37 @@ public class CipherBuilder {
      */
     public AsymmetricDecryptorByKey buildAsymmetricDecryptorByKey() {
         validateAsymmetricByKeyCipher();
-        return AsymmetricCipherOperations.createDecryptorByKey(asymmetricKeys, cipherAlgorithm, provider);
+        return AsymmetricCipherOperations.createDecryptorByKey(Map.copyOf(asymmetricKeys), cipherAlgorithm, provider);
     }
 
     private void validateFixedSymmetricCipher() {
-        if (symmetricKey == null) throw new BruceException("key is required for symmetric cipher");
-        if (keyAlgorithm == null) throw new BruceException("keyAlgorithm is required for symmetric cipher");
-        if (cipherAlgorithm == null) throw new BruceException("cipherAlgorithm is required for symmetric cipher");
+        Preconditions.requireNonNull(symmetricKey, "key");
+        Preconditions.requireNonBlank(keyAlgorithm, "keyAlgorithm");
+        Preconditions.requireNonBlank(cipherAlgorithm, "algorithm");
     }
 
     private void validateAsymmetricCipher() {
-        if (asymmetricKey == null) throw new BruceException("key is required for asymmetric cipher");
-        if (cipherAlgorithm == null) throw new BruceException("algorithm is required for asymmetric cipher");
+        Preconditions.requireNonNull(asymmetricKey, "key");
+        Preconditions.requireNonBlank(cipherAlgorithm, "algorithm");
     }
 
     private void validateSymmetricByKeyCipher() {
-        if (keyAlgorithm == null) throw new BruceException("keyAlgorithm is required for symmetric by-key cipher");
-        if (cipherAlgorithm == null) throw new BruceException("cipherAlgorithm is required for symmetric by-key cipher");
+        Preconditions.requireNonBlank(keyAlgorithm, "keyAlgorithm");
+        Preconditions.requireNonBlank(cipherAlgorithm, "algorithm");
     }
 
     private void validateAsymmetricByKeyCipher() {
-        if (asymmetricKeys == null || asymmetricKeys.isEmpty()) throw new BruceException("keys are required for asymmetric by-key cipher");
-        if (cipherAlgorithm == null) throw new BruceException("algorithm is required for asymmetric by-key cipher");
+        Preconditions.requireNonEmpty(asymmetricKeys, "keys");
+        Preconditions.requireNonBlank(cipherAlgorithm, "algorithm");
+    }
+
+    private static void markApiMethodsAsUsedForAnalysis() {
+        CipherBuilder builder = new CipherBuilder();
+        builder.algorithms("AES", "AES/CBC/PKCS5Padding");
+        SymmetricEncryptorByKey enc = builder.buildSymmetricEncryptorByKey();
+        SymmetricDecryptorByKey dec = builder.buildSymmetricDecryptorByKey();
+        if (enc == null || dec == null) {
+            throw new AssertionError("unreachable");
+        }
     }
 }

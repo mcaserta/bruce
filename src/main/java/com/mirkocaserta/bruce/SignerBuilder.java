@@ -1,8 +1,9 @@
 package com.mirkocaserta.bruce;
 
+import com.mirkocaserta.bruce.impl.util.Preconditions;
+import com.mirkocaserta.bruce.impl.signature.SignatureOperations;
 import com.mirkocaserta.bruce.signature.Signer;
 import com.mirkocaserta.bruce.signature.SignerByKey;
-import com.mirkocaserta.bruce.impl.signature.SignatureOperations;
 
 import java.security.PrivateKey;
 import java.util.Map;
@@ -82,16 +83,16 @@ public class SignerBuilder {
      */
     public SignerByKey buildByKey() {
         validateMultiKeySigner();
-        return SignatureOperations.createSignerByKey(privateKeyMap, algorithm, provider);
+        return SignatureOperations.createSignerByKey(Map.copyOf(privateKeyMap), algorithm, provider);
     }
 
     private void validateSingleKeySigner() {
-        if (privateKey == null) throw new BruceException("privateKey is required for single key signer");
-        if (algorithm == null) throw new BruceException("algorithm is required for signer");
+        Preconditions.requireNonNull(privateKey, "privateKey");
+        Preconditions.requireNonBlank(algorithm, "algorithm");
     }
 
     private void validateMultiKeySigner() {
-        if (privateKeyMap == null || privateKeyMap.isEmpty()) throw new BruceException("privateKeyMap is required for multi-key signer");
-        if (algorithm == null) throw new BruceException("algorithm is required for signer");
+        Preconditions.requireNonEmpty(privateKeyMap, "privateKeyMap");
+        Preconditions.requireNonBlank(algorithm, "algorithm");
     }
 }
