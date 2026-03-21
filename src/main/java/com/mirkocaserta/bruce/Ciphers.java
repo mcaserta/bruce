@@ -9,6 +9,11 @@ public final class Ciphers {
         // utility class
     }
 
+    /**
+     * Creates a cipher builder.
+     *
+     * @return a new {@link CipherBuilder}
+     */
     public static CipherBuilder builder() {
         return new CipherBuilder();
     }

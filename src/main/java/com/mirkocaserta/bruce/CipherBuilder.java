@@ -39,90 +39,169 @@ public class CipherBuilder {
      * String b64key = Keystores.symmetricKey("AES", Bruce.Encoding.BASE64);
      * builder.key(Bytes.from(b64key, Bruce.Encoding.BASE64));
      * }</pre>
+     *
+     * @param key symmetric key bytes
+     * @return this builder
      */
     public CipherBuilder key(Bytes key) {
         this.symmetricKey = key;
         return this;
     }
 
-    /** Sets the symmetric cipher key as raw bytes. */
+    /**
+     * Sets the symmetric cipher key as raw bytes.
+     *
+     * @param key symmetric key bytes
+     * @return this builder
+     */
     public CipherBuilder key(byte[] key) {
         this.symmetricKey = Bytes.from(key);
         return this;
     }
 
-    /** Sets the asymmetric cipher key. */
+    /**
+     * Sets the asymmetric cipher key.
+     *
+     * @param key public/private asymmetric key
+     * @return this builder
+     */
     public CipherBuilder key(Key key) {
         this.asymmetricKey = key;
         return this;
     }
 
-    /** Sets a map of asymmetric keys for runtime key selection. */
+    /**
+     * Sets a map of asymmetric keys for runtime key selection.
+     *
+     * @param keys map of key-id to key
+     * @return this builder
+     */
     public CipherBuilder keys(Map<String, Key> keys) {
         this.asymmetricKeys = keys;
         return this;
     }
 
-    /** Sets the key algorithm for symmetric ciphers (e.g., {@code "AES"}). */
+    /**
+     * Sets the key algorithm for symmetric ciphers (e.g., {@code "AES"}).
+     *
+     * @param keyAlgorithm symmetric key algorithm name
+     * @return this builder
+     */
     public CipherBuilder keyAlgorithm(String keyAlgorithm) {
         this.keyAlgorithm = keyAlgorithm;
         return this;
     }
 
-    /** Sets the cipher algorithm (e.g., {@code "AES/CBC/PKCS5Padding"}, {@code "RSA"}). */
+    /**
+     * Sets the cipher algorithm (e.g., {@code "AES/CBC/PKCS5Padding"}, {@code "RSA"}).
+     *
+     * @param cipherAlgorithm cipher transformation
+     * @return this builder
+     */
     public CipherBuilder algorithm(String cipherAlgorithm) {
         this.cipherAlgorithm = cipherAlgorithm;
         return this;
     }
 
-    /** Sets both key and cipher algorithms (convenience method). */
+    /**
+     * Sets both key and cipher algorithms (convenience method).
+     *
+     * @param keyAlgorithm symmetric key algorithm name
+     * @param cipherAlgorithm cipher transformation
+     * @return this builder
+     */
     public CipherBuilder algorithms(String keyAlgorithm, String cipherAlgorithm) {
         this.keyAlgorithm = keyAlgorithm;
         this.cipherAlgorithm = cipherAlgorithm;
         return this;
     }
 
-    /** Sets the cryptographic provider (e.g., {@code "BC"} for Bouncy Castle). */
+    /**
+     * Sets the cryptographic provider (e.g., {@code "BC"} for Bouncy Castle).
+     *
+     * @param provider provider name, or {@code null} / empty for JVM default
+     * @return this builder
+     */
     public CipherBuilder provider(String provider) {
         this.provider = provider == null ? "" : provider;
         return this;
     }
 
+    /**
+     * Builds a symmetric encryptor using a fixed preconfigured key.
+     *
+     * @return a configured {@link SymmetricEncryptor}
+     */
     public SymmetricEncryptor buildSymmetricEncryptor() {
         validateFixedSymmetricCipher();
         return SymmetricCipherOperations.createEncryptor(symmetricKey.asBytes(), keyAlgorithm, cipherAlgorithm, provider);
     }
 
+    /**
+     * Builds a symmetric decryptor using a fixed preconfigured key.
+     *
+     * @return a configured {@link SymmetricDecryptor}
+     */
     public SymmetricDecryptor buildSymmetricDecryptor() {
         validateFixedSymmetricCipher();
         return SymmetricCipherOperations.createDecryptor(symmetricKey.asBytes(), keyAlgorithm, cipherAlgorithm, provider);
     }
 
+    /**
+     * Builds a symmetric encryptor that receives the key at call time.
+     *
+     * @return a configured {@link SymmetricEncryptorByKey}
+     */
     public SymmetricEncryptorByKey buildSymmetricEncryptorByKey() {
         validateSymmetricByKeyCipher();
         return SymmetricCipherOperations.createEncryptorByKey(keyAlgorithm, cipherAlgorithm, provider);
     }
 
+    /**
+     * Builds a symmetric decryptor that receives the key at call time.
+     *
+     * @return a configured {@link SymmetricDecryptorByKey}
+     */
     public SymmetricDecryptorByKey buildSymmetricDecryptorByKey() {
         validateSymmetricByKeyCipher();
         return SymmetricCipherOperations.createDecryptorByKey(keyAlgorithm, cipherAlgorithm, provider);
     }
 
+    /**
+     * Builds an asymmetric encryptor using a fixed preconfigured key.
+     *
+     * @return a configured {@link AsymmetricEncryptor}
+     */
     public AsymmetricEncryptor buildAsymmetricEncryptor() {
         validateAsymmetricCipher();
         return AsymmetricCipherOperations.createEncryptor(asymmetricKey, cipherAlgorithm, provider);
     }
 
+    /**
+     * Builds an asymmetric decryptor using a fixed preconfigured key.
+     *
+     * @return a configured {@link AsymmetricDecryptor}
+     */
     public AsymmetricDecryptor buildAsymmetricDecryptor() {
         validateAsymmetricCipher();
         return AsymmetricCipherOperations.createDecryptor(asymmetricKey, cipherAlgorithm, provider);
     }
 
+    /**
+     * Builds an asymmetric encryptor that resolves the key by id at call time.
+     *
+     * @return a configured {@link AsymmetricEncryptorByKey}
+     */
     public AsymmetricEncryptorByKey buildAsymmetricEncryptorByKey() {
         validateAsymmetricByKeyCipher();
         return AsymmetricCipherOperations.createEncryptorByKey(asymmetricKeys, cipherAlgorithm, provider);
     }
 
+    /**
+     * Builds an asymmetric decryptor that resolves the key by id at call time.
+     *
+     * @return a configured {@link AsymmetricDecryptorByKey}
+     */
     public AsymmetricDecryptorByKey buildAsymmetricDecryptorByKey() {
         validateAsymmetricByKeyCipher();
         return AsymmetricCipherOperations.createDecryptorByKey(asymmetricKeys, cipherAlgorithm, provider);

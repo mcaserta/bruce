@@ -19,6 +19,14 @@ public final class MacOperations {
 
     private MacOperations() {}
 
+    /**
+     * Creates a MAC calculator for the given key, algorithm, and provider.
+     *
+     * @param key MAC key
+     * @param algorithm MAC algorithm
+     * @param provider provider name, or empty for JVM default
+     * @return configured MAC implementation
+     */
     public static Mac createMac(Key key, String algorithm, String provider) {
         Provider resolvedProvider = Providers.resolve(provider);
         return message -> {

@@ -21,6 +21,13 @@ public final class DigestOperations {
 
     private DigestOperations() {}
 
+    /**
+     * Creates a digester for the given algorithm and provider.
+     *
+     * @param algorithm digest algorithm
+     * @param provider provider name, or empty for JVM default
+     * @return configured digester
+     */
     public static Digester createDigester(String algorithm, String provider) {
         Provider resolvedProvider = Providers.resolve(provider);
         verifyAlgorithm(algorithm, resolvedProvider);

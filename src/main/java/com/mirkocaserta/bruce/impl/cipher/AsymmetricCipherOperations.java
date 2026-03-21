@@ -21,20 +21,52 @@ public final class AsymmetricCipherOperations {
 
     private AsymmetricCipherOperations() {}
 
+    /**
+     * Creates an asymmetric encryptor bound to a single key.
+     *
+     * @param key asymmetric encryption key
+     * @param algorithm cipher algorithm/transformation
+     * @param provider provider name, or empty for JVM default
+     * @return configured encryptor
+     */
     public static AsymmetricEncryptor createEncryptor(Key key, String algorithm, String provider) {
         Provider resolvedProvider = Providers.resolve(provider);
         return plaintext -> Bytes.from(crypt(key, algorithm, resolvedProvider, javax.crypto.Cipher.ENCRYPT_MODE, plaintext.asBytes(), "encrypting"));
     }
 
+    /**
+     * Creates an asymmetric decryptor bound to a single key.
+     *
+     * @param key asymmetric decryption key
+     * @param algorithm cipher algorithm/transformation
+     * @param provider provider name, or empty for JVM default
+     * @return configured decryptor
+     */
     public static AsymmetricDecryptor createDecryptor(Key key, String algorithm, String provider) {
         Provider resolvedProvider = Providers.resolve(provider);
         return ciphertext -> Bytes.from(crypt(key, algorithm, resolvedProvider, javax.crypto.Cipher.DECRYPT_MODE, ciphertext.asBytes(), "decrypting"));
     }
 
+    /**
+     * Creates an asymmetric encryptor that resolves keys by id at call time.
+     *
+     * @param keys map of key-id to asymmetric encryption key
+     * @param algorithm cipher algorithm/transformation
+     * @param provider provider name, or empty for JVM default
+     * @return configured by-key encryptor
+     */
     public static AsymmetricEncryptorByKey createEncryptorByKey(Map<String, Key> keys, String algorithm, String provider) {
         return (keyId, plaintext) -> createEncryptor(resolveKey(keys, keyId), algorithm, provider).encrypt(plaintext);
     }
 
+    /**
+     * Creates an asymmetric decryptor that resolves keys by id at call time.
+     *
+     * @param keys map of key-id to asymmetric decryption key
+     * @param algorithm cipher algorithm/transformation
+     * @param provider provider name, or empty for JVM default
+     * @return configured by-key decryptor
+     */
     public static AsymmetricDecryptorByKey createDecryptorByKey(Map<String, Key> keys, String algorithm, String provider) {
         return (keyId, ciphertext) -> createDecryptor(resolveKey(keys, keyId), algorithm, provider).decrypt(ciphertext);
     }

@@ -21,35 +21,65 @@ public class VerifierBuilder {
 
     VerifierBuilder() {}
 
-    /** Sets the public key for verification. */
+    /**
+     * Sets the public key for verification.
+     *
+     * @param publicKey public key used to verify signatures
+     * @return this builder
+     */
     public VerifierBuilder key(PublicKey publicKey) {
         this.publicKey = publicKey;
         return this;
     }
 
-    /** Sets a map of public keys for runtime key selection. */
+    /**
+     * Sets a map of public keys for runtime key selection.
+     *
+     * @param publicKeyMap map of key-id to public key
+     * @return this builder
+     */
     public VerifierBuilder keys(Map<String, PublicKey> publicKeyMap) {
         this.publicKeyMap = publicKeyMap;
         return this;
     }
 
-    /** Sets the verification algorithm (e.g., {@code "SHA256withRSA"}). */
+    /**
+     * Sets the verification algorithm (e.g., {@code "SHA256withRSA"}).
+     *
+     * @param algorithm signature algorithm
+     * @return this builder
+     */
     public VerifierBuilder algorithm(String algorithm) {
         this.algorithm = algorithm;
         return this;
     }
 
-    /** Sets the cryptographic provider (e.g., {@code "BC"} for Bouncy Castle). */
+    /**
+     * Sets the cryptographic provider (e.g., {@code "BC"} for Bouncy Castle).
+     *
+     * @param provider provider name, or {@code null} / empty for JVM default
+     * @return this builder
+     */
     public VerifierBuilder provider(String provider) {
         this.provider = provider == null ? "" : provider;
         return this;
     }
 
+    /**
+     * Builds a verifier using a single preconfigured key.
+     *
+     * @return configured {@link Verifier}
+     */
     public Verifier build() {
         validateSingleKeyVerifier();
         return SignatureOperations.createVerifier(publicKey, algorithm, provider);
     }
 
+    /**
+     * Builds a verifier that selects a key by id at call time.
+     *
+     * @return configured {@link VerifierByKey}
+     */
     public VerifierByKey buildByKey() {
         validateMultiKeyVerifier();
         return SignatureOperations.createVerifierByKey(publicKeyMap, algorithm, provider);

@@ -26,6 +26,14 @@ public final class SignatureOperations {
 
     private SignatureOperations() {}
 
+    /**
+     * Creates a signer for a single private key.
+     *
+     * @param privateKey signing private key
+     * @param algorithm signature algorithm
+     * @param provider provider name, or empty for JVM default
+     * @return configured signer
+     */
     public static Signer createSigner(PrivateKey privateKey, String algorithm, String provider) {
         Provider resolvedProvider = Providers.resolve(provider);
         failFast(privateKey, algorithm, resolvedProvider);
@@ -42,6 +50,14 @@ public final class SignatureOperations {
         };
     }
 
+    /**
+     * Creates a signer that resolves private keys by id at call time.
+     *
+     * @param privateKeyMap map of key-id to private key
+     * @param algorithm signature algorithm
+     * @param provider provider name, or empty for JVM default
+     * @return configured by-key signer
+     */
     public static SignerByKey createSignerByKey(Map<String, PrivateKey> privateKeyMap, String algorithm, String provider) {
         return (privateKeyId, message) -> {
             var privateKey = privateKeyMap.get(privateKeyId);
@@ -52,6 +68,14 @@ public final class SignatureOperations {
         };
     }
 
+    /**
+     * Creates a verifier for a single public key.
+     *
+     * @param publicKey verification public key
+     * @param algorithm signature algorithm
+     * @param provider provider name, or empty for JVM default
+     * @return configured verifier
+     */
     public static Verifier createVerifier(PublicKey publicKey, String algorithm, String provider) {
         Provider resolvedProvider = Providers.resolve(provider);
         failFast(publicKey, algorithm, resolvedProvider);
@@ -70,6 +94,14 @@ public final class SignatureOperations {
         };
     }
 
+    /**
+     * Creates a verifier that resolves public keys by id at call time.
+     *
+     * @param publicKeyMap map of key-id to public key
+     * @param algorithm signature algorithm
+     * @param provider provider name, or empty for JVM default
+     * @return configured by-key verifier
+     */
     public static VerifierByKey createVerifierByKey(Map<String, PublicKey> publicKeyMap, String algorithm, String provider) {
         return (publicKeyId, message, signatureBytes) -> {
             var publicKey = publicKeyMap.get(publicKeyId);
