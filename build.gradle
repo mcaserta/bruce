@@ -18,8 +18,8 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:5.23.0'
 }
 
-group = 'com.github.mcaserta'
-version = '1.0.6-SNAPSHOT'
+group = 'com.mirkocaserta.bruce'
+version = '2.0.0-SNAPSHOT'
 description = 'An ergonomic wrapper around the JCA api'
 
 java {

@@ -1,12 +1,11 @@
 package com.mirkocaserta.bruce.impl.digest;
 
-import com.mirkocaserta.bruce.Bruce;
+import com.mirkocaserta.bruce.Bytes;
 import com.mirkocaserta.bruce.BruceException;
 import com.mirkocaserta.bruce.digest.Digester;
 import com.mirkocaserta.bruce.impl.util.Providers;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -15,52 +14,37 @@ import java.security.Provider;
 
 /**
  * Implementation class for digest operations.
- * This class is package-private and should only be accessed through the Bruce facade.
- * 
+ *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
 public final class DigestOperations {
 
-    private DigestOperations() {
-        // utility class
-    }
+    private DigestOperations() {}
 
-    public static Digester createDigester(String algorithm, String provider, Charset charset, Bruce.Encoding encoding) {
+    public static Digester createDigester(String algorithm, String provider) {
         Provider resolvedProvider = Providers.resolve(provider);
         verifyAlgorithm(algorithm, resolvedProvider);
 
         return new Digester() {
             @Override
-            public Charset charset() {
-                return charset;
-            }
-
-            @Override
-            public Bruce.Encoding encoding() {
-                return encoding;
-            }
-
-            @Override
-            public byte[] digest(byte[] message) {
+            public Bytes digest(Bytes input) {
                 try {
-                    return newMessageDigest(algorithm, resolvedProvider).digest(message);
+                    return Bytes.from(newMessageDigest(algorithm, resolvedProvider).digest(input.asBytes()));
                 } catch (NoSuchAlgorithmException e) {
                     throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
                 }
             }
 
             @Override
-            public byte[] digest(Path file) {
+            public Bytes digest(Path file) {
                 try (var inputStream = Files.newInputStream(file)) {
                     var digest = newMessageDigest(algorithm, resolvedProvider);
                     var buffer = new byte[8192];
                     int read;
-
                     while ((read = inputStream.read(buffer)) > 0) {
                         digest.update(buffer, 0, read);
                     }
-
-                    return digest.digest();
+                    return Bytes.from(digest.digest());
                 } catch (NoSuchAlgorithmException e) {
                     throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
                 } catch (IOException e) {

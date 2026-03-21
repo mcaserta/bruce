@@ -3,7 +3,6 @@ package com.mirkocaserta.bruce;
 import com.mirkocaserta.bruce.mac.Mac;
 import com.mirkocaserta.bruce.impl.mac.MacOperations;
 
-import java.nio.charset.Charset;
 import java.security.Key;
 
 /**
@@ -17,8 +16,6 @@ public class MacBuilder {
     private Key key;
     private String algorithm;
     private String provider = "";
-    private Charset charset = Bruce.DEFAULT_CHARSET;
-    private Bruce.Encoding encoding = Bruce.DEFAULT_ENCODING;
     
     MacBuilder() {
         // package-private constructor
@@ -57,31 +54,9 @@ public class MacBuilder {
         return this;
     }
     
-    /**
-     * Sets the charset for string encoding.
-     * 
-     * @param charset the charset
-     * @return this builder
-     */
-    public MacBuilder charset(Charset charset) {
-        this.charset = charset;
-        return this;
-    }
-    
-    /**
-     * Sets the encoding for MAC output.
-     * 
-     * @param encoding the encoding
-     * @return this builder
-     */
-    public MacBuilder encoding(Bruce.Encoding encoding) {
-        this.encoding = encoding;
-        return this;
-    }
-    
     public Mac build() {
         validateParameters();
-        return MacOperations.createMac(key, algorithm, provider, charset, encoding);
+        return MacOperations.createMac(key, algorithm, provider);
     }
     
     private void validateParameters() {

@@ -1,64 +1,26 @@
 package com.mirkocaserta.bruce.cipher.asymmetric;
 
-import com.mirkocaserta.bruce.Bruce;
 import com.mirkocaserta.bruce.Bytes;
-import com.mirkocaserta.bruce.impl.util.EncodingUtils;
-
-import java.nio.charset.Charset;
 
 /**
  * Performs asymmetric decryption with a key configured by the implementation.
  *
+ * <p>Usage example:</p>
+ * <pre>{@code
+ * Bytes plaintext = decryptor.decrypt(Bytes.from(base64Ciphertext, Bruce.Encoding.BASE64));
+ * String text     = plaintext.asString();
+ * }</pre>
+ *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
+@FunctionalInterface
 public interface AsymmetricDecryptor {
 
-    Charset charset();
-
-    Bruce.Encoding encoding();
-
-    byte[] decrypt(byte[] ciphertext);
-
-    default byte[] decrypt(String ciphertext, Bruce.Encoding encoding) {
-        return decrypt(EncodingUtils.decode(encoding, ciphertext));
-    }
-
-    default byte[] decrypt(String ciphertext) {
-        return decrypt(ciphertext, encoding());
-    }
-
-    default String decryptToString(byte[] ciphertext, Charset charset) {
-        return new String(decrypt(ciphertext), charset);
-    }
-
-    default String decryptToString(byte[] ciphertext) {
-        return decryptToString(ciphertext, charset());
-    }
-
-    default String decryptToString(String ciphertext, Bruce.Encoding encoding, Charset charset) {
-        return new String(decrypt(ciphertext, encoding), charset);
-    }
-
-    default String decryptToString(String ciphertext, Bruce.Encoding encoding) {
-        return decryptToString(ciphertext, encoding, charset());
-    }
-
-    default String decryptToString(String ciphertext, Charset charset) {
-        return decryptToString(ciphertext, encoding(), charset);
-    }
-
-    default String decryptToString(String ciphertext) {
-        return decryptToString(ciphertext, encoding(), charset());
-    }
-
     /**
-     * Decrypts the given {@link Bytes} ciphertext and returns the plaintext as {@link Bytes}.
+     * Decrypts the given ciphertext.
      *
      * @param ciphertext the ciphertext to decrypt
      * @return the plaintext wrapped in {@link Bytes}
      */
-    default Bytes decrypt(Bytes ciphertext) {
-        return Bytes.from(decrypt(ciphertext.asBytes()));
-    }
+    Bytes decrypt(Bytes ciphertext);
 }
-

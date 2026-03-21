@@ -1,6 +1,6 @@
 package com.mirkocaserta.bruce.impl.cipher;
 
-import com.mirkocaserta.bruce.Bruce;
+import com.mirkocaserta.bruce.Bytes;
 import com.mirkocaserta.bruce.BruceException;
 import com.mirkocaserta.bruce.cipher.symmetric.SymmetricDecryptor;
 import com.mirkocaserta.bruce.cipher.symmetric.SymmetricDecryptorByKey;
@@ -13,7 +13,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.Charset;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -21,90 +20,27 @@ import java.security.Provider;
 
 /**
  * Implementation class for symmetric cipher operations.
- * This class is package-private and should only be accessed through the Bruce facade.
  *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
 public final class SymmetricCipherOperations {
 
-    private SymmetricCipherOperations() {
-        // utility class
+    private SymmetricCipherOperations() {}
+
+    public static SymmetricEncryptor createEncryptor(byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider) {
+        return (iv, plaintext) -> Bytes.from(crypt(key, keyAlgorithm, cipherAlgorithm, provider, javax.crypto.Cipher.ENCRYPT_MODE, iv.asBytes(), plaintext.asBytes()));
     }
 
-    public static SymmetricEncryptor createEncryptor(byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider, Charset charset, Bruce.Encoding encoding) {
-        return new SymmetricEncryptor() {
-            @Override
-            public Charset charset() {
-                return charset;
-            }
-
-            @Override
-            public Bruce.Encoding encoding() {
-                return encoding;
-            }
-
-            @Override
-            public byte[] encrypt(byte[] iv, byte[] plaintext) {
-                return crypt(key, keyAlgorithm, cipherAlgorithm, provider, javax.crypto.Cipher.ENCRYPT_MODE, iv, plaintext);
-            }
-        };
+    public static SymmetricDecryptor createDecryptor(byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider) {
+        return (iv, ciphertext) -> Bytes.from(crypt(key, keyAlgorithm, cipherAlgorithm, provider, javax.crypto.Cipher.DECRYPT_MODE, iv.asBytes(), ciphertext.asBytes()));
     }
 
-    public static SymmetricDecryptor createDecryptor(byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider, Charset charset, Bruce.Encoding encoding) {
-        return new SymmetricDecryptor() {
-            @Override
-            public Charset charset() {
-                return charset;
-            }
-
-            @Override
-            public Bruce.Encoding encoding() {
-                return encoding;
-            }
-
-            @Override
-            public byte[] decrypt(byte[] iv, byte[] ciphertext) {
-                return crypt(key, keyAlgorithm, cipherAlgorithm, provider, javax.crypto.Cipher.DECRYPT_MODE, iv, ciphertext);
-            }
-        };
+    public static SymmetricEncryptorByKey createEncryptorByKey(String keyAlgorithm, String cipherAlgorithm, String provider) {
+        return (key, iv, plaintext) -> Bytes.from(crypt(key.asBytes(), keyAlgorithm, cipherAlgorithm, provider, javax.crypto.Cipher.ENCRYPT_MODE, iv.asBytes(), plaintext.asBytes()));
     }
 
-    public static SymmetricEncryptorByKey createEncryptorByKey(String keyAlgorithm, String cipherAlgorithm, String provider, Charset charset, Bruce.Encoding encoding) {
-        return new SymmetricEncryptorByKey() {
-            @Override
-            public Charset charset() {
-                return charset;
-            }
-
-            @Override
-            public Bruce.Encoding encoding() {
-                return encoding;
-            }
-
-            @Override
-            public byte[] encrypt(byte[] key, byte[] iv, byte[] plaintext) {
-                return crypt(key, keyAlgorithm, cipherAlgorithm, provider, javax.crypto.Cipher.ENCRYPT_MODE, iv, plaintext);
-            }
-        };
-    }
-
-    public static SymmetricDecryptorByKey createDecryptorByKey(String keyAlgorithm, String cipherAlgorithm, String provider, Charset charset, Bruce.Encoding encoding) {
-        return new SymmetricDecryptorByKey() {
-            @Override
-            public Charset charset() {
-                return charset;
-            }
-
-            @Override
-            public Bruce.Encoding encoding() {
-                return encoding;
-            }
-
-            @Override
-            public byte[] decrypt(byte[] key, byte[] iv, byte[] ciphertext) {
-                return crypt(key, keyAlgorithm, cipherAlgorithm, provider, javax.crypto.Cipher.DECRYPT_MODE, iv, ciphertext);
-            }
-        };
+    public static SymmetricDecryptorByKey createDecryptorByKey(String keyAlgorithm, String cipherAlgorithm, String provider) {
+        return (key, iv, ciphertext) -> Bytes.from(crypt(key.asBytes(), keyAlgorithm, cipherAlgorithm, provider, javax.crypto.Cipher.DECRYPT_MODE, iv.asBytes(), ciphertext.asBytes()));
     }
 
     private static byte[] crypt(byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider, int mode, byte[] iv, byte[] message) {
