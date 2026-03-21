@@ -20,7 +20,7 @@ dependencies {
 }
 
 group = 'com.mirkocaserta.bruce'
-version = '2.0.0'
+version = '2.0.1-SNAPSHOT'
 description = 'An ergonomic wrapper around the JCA api'
 
 java {
