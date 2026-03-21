@@ -244,8 +244,8 @@ class BytesTest {
         assertNotNull(signature);
         assertFalse(signature.isEmpty());
         assertTrue(verifier.verify(message, signature));
-        // cross-check: encoded signature also verifies via legacy API
-        assertTrue(verifier.verify("Hello, Bytes!", signature.encode(Bruce.Encoding.BASE64)));
+        // round-trip: re-wrap from BASE64
+        assertTrue(verifier.verify(message, Bytes.from(signature.encode(Bruce.Encoding.BASE64), Bruce.Encoding.BASE64)));
     }
 
     @Test
@@ -257,9 +257,8 @@ class BytesTest {
 
         assertNotNull(digest);
         assertEquals(32, digest.length(), "SHA-256 digest is always 32 bytes");
-        // cross-check against legacy API
-        assertArrayEquals(digester.digest("hello".getBytes(StandardCharsets.UTF_8)), digest.asBytes());
-        assertEquals(digest.encode(Bruce.Encoding.BASE64), digester.digestToString("hello"));
+        // deterministic: same input produces same digest
+        assertEquals(digest, digester.digest(Bytes.from("hello")));
     }
 
     @Test
@@ -273,7 +272,8 @@ class BytesTest {
 
         assertNotNull(result);
         assertFalse(result.isEmpty());
-        assertArrayEquals(mac.get("payload".getBytes(StandardCharsets.UTF_8)), result.asBytes());
+        // deterministic: same input produces same MAC
+        assertEquals(result, mac.get(Bytes.from("payload")));
     }
 
     @Test
@@ -293,8 +293,8 @@ class BytesTest {
     void bytesWithSymmetricCipher() {
         byte[] ivBytes = new byte[16];
         new SecureRandom().nextBytes(ivBytes);
-        Bytes iv = Bytes.from(ivBytes);
-        String key = symmetricKey("AES", Bruce.Encoding.BASE64);
+        Bytes iv  = Bytes.from(ivBytes);
+        Bytes key = Bytes.from(symmetricKey("AES", Bruce.Encoding.BASE64), Bruce.Encoding.BASE64);
 
         var encryptor = Bruce.cipherBuilder()
                 .key(key).keyAlgorithm("AES").algorithm("AES/CBC/PKCS5Padding")

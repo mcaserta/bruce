@@ -1,5 +1,6 @@
 package com.mirkocaserta.bruce.key;
 
+import com.mirkocaserta.bruce.Bytes;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +11,6 @@ import java.security.Security;
 import static com.mirkocaserta.bruce.Bruce.signerBuilder;
 import static com.mirkocaserta.bruce.Bruce.verifierBuilder;
 import static com.mirkocaserta.bruce.Keystores.keyPair;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RsaKeyPairWithCustomProviderAndSecureRandomTest {
@@ -19,7 +19,7 @@ class RsaKeyPairWithCustomProviderAndSecureRandomTest {
         Security.addProvider(new BouncyCastleProvider());
     }
 
-    private static final byte[] MESSAGE = "Hello".getBytes(UTF_8);
+    private static final Bytes MESSAGE = Bytes.from("Hello");
 
     @Test
     void generateAndUse() throws NoSuchAlgorithmException {

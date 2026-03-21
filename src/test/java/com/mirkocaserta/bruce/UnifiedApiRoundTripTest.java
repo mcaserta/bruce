@@ -2,85 +2,77 @@ package com.mirkocaserta.bruce;
 
 import org.junit.jupiter.api.Test;
 
-import java.nio.charset.StandardCharsets;
-import java.security.KeyPair;
-import java.security.KeyStore;
 import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
+import static com.mirkocaserta.bruce.Keystores.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 class UnifiedApiRoundTripTest {
 
     @Test
-    void digesterSupportsMixedRepresentations() {
+    void digesterProducesConsistentBytes() {
         var digester = Bruce.digestBuilder().algorithm("SHA-256").build();
-        byte[] raw = digester.digest("payload".getBytes(StandardCharsets.UTF_8));
-        String encoded = digester.digestToString("payload");
-
-        assertArrayEquals(raw, Base64.getDecoder().decode(encoded));
-        assertFalse(digester.digestToString("payload", Bruce.Encoding.HEX).isBlank());
+        Bytes hash1 = digester.digest(Bytes.from("payload"));
+        Bytes hash2 = digester.digest(Bytes.from("payload"));
+        assertEquals(hash1, hash2);
+        assertEquals(32, hash1.length());
+        assertFalse(hash1.encode(BASE64).isBlank());
+        assertFalse(hash1.encode(Bruce.Encoding.HEX).isBlank());
     }
 
     @Test
-    void macSupportsMixedRepresentations() {
-        KeyStore keyStore = Keystores.keystore("classpath:/keystore.p12", "password".toCharArray(), Keystores.DEFAULT_KEYSTORE_TYPE);
+    void macProducesConsistentBytes() {
+        var keyStore = Keystores.keystore("classpath:/keystore.p12", "password".toCharArray(), Keystores.DEFAULT_KEYSTORE_TYPE);
         var secretKey = Keystores.secretKey(keyStore, "hmac", "password".toCharArray());
         var mac = Bruce.macBuilder().key(secretKey).algorithm("HmacSHA1").build();
-
-        byte[] raw = mac.get("payload");
-        String encoded = mac.getToString("payload");
-
-        assertArrayEquals(raw, Base64.getDecoder().decode(encoded));
+        Bytes result1 = mac.get(Bytes.from("payload"));
+        Bytes result2 = mac.get(Bytes.from("payload"));
+        assertEquals(result1, result2);
     }
 
     @Test
-    void signatureSupportsBytesToEncodedStringVerification() {
-        KeyPair keyPair = Keystores.keyPair("RSA", 2048);
-        var signer = Bruce.signerBuilder().key(keyPair.getPrivate()).algorithm("SHA256withRSA").build();
+    void signatureSupportsBytesRoundTrip() {
+        var keyPair = Keystores.keyPair("RSA", 2048);
+        var signer   = Bruce.signerBuilder().key(keyPair.getPrivate()).algorithm("SHA256withRSA").build();
         var verifier = Bruce.verifierBuilder().key(keyPair.getPublic()).algorithm("SHA256withRSA").build();
 
-        byte[] message = "mixed-signature".getBytes(StandardCharsets.UTF_8);
-        String signature = signer.signToString(message);
-
+        Bytes message   = Bytes.from("mixed-signature");
+        Bytes signature = signer.sign(message);
         assertTrue(verifier.verify(message, signature));
+        assertTrue(verifier.verify(message, Bytes.from(signature.encode(BASE64), BASE64)));
     }
 
     @Test
-    void symmetricCipherSupportsStringAndBytesAcrossDirections() {
-        byte[] iv = new byte[16];
-        new SecureRandom().nextBytes(iv);
-        String encodedIv = Base64.getEncoder().encodeToString(iv);
-        String key = Keystores.symmetricKey("AES", Bruce.Encoding.BASE64);
+    void symmetricCipherSupportsCompleteRoundTrip() {
+        byte[] ivBytes = new byte[16];
+        new SecureRandom().nextBytes(ivBytes);
+        Bytes iv  = Bytes.from(ivBytes);
+        Bytes key = Bytes.from(symmetricKey("AES", BASE64), BASE64);
 
         var encryptor = Bruce.cipherBuilder().key(key).keyAlgorithm("AES").algorithm("AES/CBC/PKCS5Padding").buildSymmetricEncryptor();
         var decryptor = Bruce.cipherBuilder().key(key).keyAlgorithm("AES").algorithm("AES/CBC/PKCS5Padding").buildSymmetricDecryptor();
 
-        String cipherText = encryptor.encryptToString(encodedIv, "clear text");
-        byte[] plainBytes = decryptor.decrypt(encodedIv, cipherText);
-
-        assertEquals("clear text", new String(plainBytes, StandardCharsets.UTF_8));
+        Bytes plaintext  = Bytes.from("clear text");
+        Bytes ciphertext = encryptor.encrypt(iv, plaintext);
+        assertEquals("clear text", decryptor.decrypt(iv, ciphertext).asString());
     }
 
     @Test
-    void asymmetricCipherAndByKeySupportMixedRepresentations() {
-        KeyPair keyPair = Keystores.keyPair("RSA", 2048);
+    void asymmetricCipherAndByKeyRoundTrip() {
+        var keyPair = Keystores.keyPair("RSA", 2048);
 
         var encryptor = Bruce.cipherBuilder().key(keyPair.getPublic()).algorithm("RSA").buildAsymmetricEncryptor();
         var decryptor = Bruce.cipherBuilder().key(keyPair.getPrivate()).algorithm("RSA").buildAsymmetricDecryptor();
 
-        byte[] cipherBytes = encryptor.encrypt("hello asymmetric");
-        String clearText = decryptor.decryptToString(cipherBytes);
-        assertEquals("hello asymmetric", clearText);
+        Bytes ciphertext = encryptor.encrypt(Bytes.from("hello asymmetric"));
+        assertEquals("hello asymmetric", decryptor.decrypt(ciphertext).asString());
 
         var encryptorByKey = Bruce.cipherBuilder().keys(Map.of("pub", keyPair.getPublic())).algorithm("RSA").buildAsymmetricEncryptorByKey();
         var decryptorByKey = Bruce.cipherBuilder().keys(Map.of("priv", keyPair.getPrivate())).algorithm("RSA").buildAsymmetricDecryptorByKey();
-        String cipherText = encryptorByKey.encryptToString("pub", "hello by key");
-        assertEquals("hello by key", decryptorByKey.decryptToString("priv", cipherText));
+        Bytes cipher2 = encryptorByKey.encrypt("pub", Bytes.from("hello by key"));
+        assertEquals("hello by key", decryptorByKey.decrypt("priv", cipher2).asString());
     }
 }
 

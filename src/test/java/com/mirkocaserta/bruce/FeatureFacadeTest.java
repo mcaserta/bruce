@@ -2,16 +2,12 @@ package com.mirkocaserta.bruce;
 
 import org.junit.jupiter.api.Test;
 
-import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.SecureRandom;
-import java.util.Base64;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
+import static com.mirkocaserta.bruce.Keystores.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 class FeatureFacadeTest {
 
@@ -30,7 +26,6 @@ class FeatureFacadeTest {
     @Test
     void keystoresAndSignaturesFacadeRoundTrip() {
         KeyStore keystore = Keystores.keystore("classpath:/keystore.p12", "password".toCharArray(), Keystores.DEFAULT_KEYSTORE_TYPE);
-        assertNotNull(keystore);
 
         var signer = Bruce.signerBuilder()
                 .key(Keystores.privateKey(keystore, "test", "password".toCharArray()))
@@ -41,16 +36,17 @@ class FeatureFacadeTest {
                 .algorithm("SHA512withRSA")
                 .build();
 
-        byte[] message = "hello facades".getBytes(StandardCharsets.UTF_8);
-        String signature = signer.signToString(message);
+        Bytes message   = Bytes.from("hello facades");
+        Bytes signature = signer.sign(message);
         assertTrue(verifier.verify(message, signature));
     }
 
     @Test
     void ciphersFacadeRoundTrip() {
-        byte[] iv = new byte[16];
-        new SecureRandom().nextBytes(iv);
-        String key = Keystores.symmetricKey("AES", Bruce.Encoding.BASE64);
+        byte[] ivBytes = new byte[16];
+        new SecureRandom().nextBytes(ivBytes);
+        Bytes iv  = Bytes.from(ivBytes);
+        Bytes key = Bytes.from(Keystores.symmetricKey("AES", BASE64), BASE64);
 
         var encryptor = Bruce.cipherBuilder()
                 .key(key)
@@ -63,26 +59,24 @@ class FeatureFacadeTest {
                 .algorithm("AES/CBC/PKCS5Padding")
                 .buildSymmetricDecryptor();
 
-        String plainText = "Hi there";
-        String cipherText = encryptor.encryptToString(iv, plainText);
-        String decryptedText = decryptor.decryptToString(iv, cipherText);
-
-        assertEquals(plainText, decryptedText);
+        Bytes plaintext  = Bytes.from("Hi there");
+        Bytes ciphertext = encryptor.encrypt(iv, plaintext);
+        assertEquals("Hi there", decryptor.decrypt(iv, ciphertext).asString());
     }
 
     @Test
     void digestsAndMacsBuilderRoundTrip() {
         var digester = Bruce.digestBuilder().algorithm("SHA-1").build();
-        byte[] digest = digester.digest("message");
-        assertArrayEquals(digest, Base64.getDecoder().decode(digester.digestToString("message")));
+        Bytes digest1 = digester.digest(Bytes.from("message"));
+        Bytes digest2 = digester.digest(Bytes.from("message"));
+        assertEquals(digest1, digest2);
 
         KeyStore keystore = Keystores.keystore("classpath:/keystore.p12", "password".toCharArray(), Keystores.DEFAULT_KEYSTORE_TYPE);
         var key = Keystores.secretKey(keystore, "hmac", "password".toCharArray());
         var mac = Bruce.macBuilder().key(key).algorithm("HmacSHA1").build();
 
-        String first = mac.getToString("Hello there");
-        String second = mac.getToString("Hello there");
-
+        Bytes first  = mac.get(Bytes.from("Hello there"));
+        Bytes second = mac.get(Bytes.from("Hello there"));
         assertEquals(first, second);
     }
 }
