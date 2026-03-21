@@ -9,6 +9,11 @@ public final class Digests {
         // utility class
     }
 
+    /**
+     * Creates a digest builder.
+     *
+     * @return a new {@link DigestBuilder}
+     */
     public static DigestBuilder builder() {
         return new DigestBuilder();
     }

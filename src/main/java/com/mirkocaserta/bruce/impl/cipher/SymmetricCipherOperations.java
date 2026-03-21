@@ -27,18 +27,52 @@ public final class SymmetricCipherOperations {
 
     private SymmetricCipherOperations() {}
 
+    /**
+     * Creates a symmetric encryptor bound to a fixed key.
+     *
+     * @param key raw symmetric key bytes
+     * @param keyAlgorithm key algorithm (for example AES)
+     * @param cipherAlgorithm cipher transformation
+     * @param provider provider name, or empty for JVM default
+     * @return configured encryptor
+     */
     public static SymmetricEncryptor createEncryptor(byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider) {
         return (iv, plaintext) -> Bytes.from(crypt(key, keyAlgorithm, cipherAlgorithm, provider, javax.crypto.Cipher.ENCRYPT_MODE, iv.asBytes(), plaintext.asBytes()));
     }
 
+    /**
+     * Creates a symmetric decryptor bound to a fixed key.
+     *
+     * @param key raw symmetric key bytes
+     * @param keyAlgorithm key algorithm (for example AES)
+     * @param cipherAlgorithm cipher transformation
+     * @param provider provider name, or empty for JVM default
+     * @return configured decryptor
+     */
     public static SymmetricDecryptor createDecryptor(byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider) {
         return (iv, ciphertext) -> Bytes.from(crypt(key, keyAlgorithm, cipherAlgorithm, provider, javax.crypto.Cipher.DECRYPT_MODE, iv.asBytes(), ciphertext.asBytes()));
     }
 
+    /**
+     * Creates a symmetric encryptor that receives the key at call time.
+     *
+     * @param keyAlgorithm key algorithm (for example AES)
+     * @param cipherAlgorithm cipher transformation
+     * @param provider provider name, or empty for JVM default
+     * @return configured by-key encryptor
+     */
     public static SymmetricEncryptorByKey createEncryptorByKey(String keyAlgorithm, String cipherAlgorithm, String provider) {
         return (key, iv, plaintext) -> Bytes.from(crypt(key.asBytes(), keyAlgorithm, cipherAlgorithm, provider, javax.crypto.Cipher.ENCRYPT_MODE, iv.asBytes(), plaintext.asBytes()));
     }
 
+    /**
+     * Creates a symmetric decryptor that receives the key at call time.
+     *
+     * @param keyAlgorithm key algorithm (for example AES)
+     * @param cipherAlgorithm cipher transformation
+     * @param provider provider name, or empty for JVM default
+     * @return configured by-key decryptor
+     */
     public static SymmetricDecryptorByKey createDecryptorByKey(String keyAlgorithm, String cipherAlgorithm, String provider) {
         return (key, iv, ciphertext) -> Bytes.from(crypt(key.asBytes(), keyAlgorithm, cipherAlgorithm, provider, javax.crypto.Cipher.DECRYPT_MODE, iv.asBytes(), ciphertext.asBytes()));
     }

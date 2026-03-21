@@ -9,6 +9,11 @@ public final class Macs {
         // utility class
     }
 
+    /**
+     * Creates a MAC builder.
+     *
+     * @return a new {@link MacBuilder}
+     */
     public static MacBuilder builder() {
         return new MacBuilder();
     }

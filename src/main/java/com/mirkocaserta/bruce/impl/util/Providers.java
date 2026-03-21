@@ -14,6 +14,12 @@ public final class Providers {
         // utility class
     }
 
+    /**
+     * Resolves a provider by name.
+     *
+     * @param name provider name; if blank, the default provider chain is used
+     * @return resolved provider, or {@code null} when no explicit provider is requested
+     */
     public static Provider resolve(String name) {
         if (name == null || name.isBlank()) {
             return null;

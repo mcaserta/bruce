@@ -54,6 +54,11 @@ public class MacBuilder {
         return this;
     }
     
+    /**
+     * Builds a MAC generator.
+     *
+     * @return configured {@link Mac}
+     */
     public Mac build() {
         validateParameters();
         return MacOperations.createMac(key, algorithm, provider);
