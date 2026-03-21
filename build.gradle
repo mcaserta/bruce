@@ -4,6 +4,7 @@ plugins {
     id 'jacoco'
     id 'maven-publish'
     id 'signing'
+    id 'com.gradleup.nmcp' version '1.4.4'
 }
 
 repositories {
@@ -19,7 +20,7 @@ dependencies {
 }
 
 group = 'com.mirkocaserta.bruce'
-version = '2.0.0-SNAPSHOT'
+version = '2.0.0'
 description = 'An ergonomic wrapper around the JCA api'
 
 java {
@@ -70,29 +71,24 @@ publishing {
             }
         }
     }
-    repositories {
-        maven {
-            name = 'mavenCentral'
-            def isSnapshot = version.toString().endsWith('-SNAPSHOT')
-            url = isSnapshot
-                    ? 'https://central.sonatype.com/repository/maven-snapshots/'
-                    : 'https://central.sonatype.com/api/v1/publisher/deployment/upload'
-            credentials {
-                username = findProperty('mavenCentralUsername') ?: System.getenv('MAVEN_CENTRAL_USERNAME')
-                password = findProperty('mavenCentralPassword') ?: System.getenv('MAVEN_CENTRAL_PASSWORD')
-            }
-        }
+}
+
+nmcp {
+    publishAllPublicationsToCentralPortal {
+        username = findProperty('mavenCentralUsername') ?: System.getenv('MAVEN_CENTRAL_USERNAME') ?: ''
+        password = findProperty('mavenCentralPassword') ?: System.getenv('MAVEN_CENTRAL_PASSWORD') ?: ''
+        publishingType = 'AUTOMATIC'
     }
 }
 
 signing {
-    def signingKey     = findProperty('signingKey')     ?: System.getenv('GPG_SIGNING_KEY')
-    def signingKeyId   = findProperty('signingKeyId')   ?: System.getenv('GPG_SIGNING_KEY_ID')
+    def signingKey      = findProperty('signingKey')      ?: System.getenv('GPG_SIGNING_KEY')
+    def signingKeyId    = findProperty('signingKeyId')    ?: System.getenv('GPG_SIGNING_KEY_ID')
     def signingPassword = findProperty('signingPassword') ?: System.getenv('GPG_SIGNING_PASSWORD')
     if (signingKey) {
         useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+        sign publishing.publications.mavenJava
     }
-    sign publishing.publications.mavenJava
 }
 
 sonarqube {
