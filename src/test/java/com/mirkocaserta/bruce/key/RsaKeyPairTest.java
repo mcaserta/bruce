@@ -17,8 +17,8 @@ class RsaKeyPairTest {
     @Test
     void generateAndUse() {
         var keyPair = keyPair("RSA", 4096);
-        var signer = signerBuilder().key(keyPair.getPrivate()).algorithm("SHA512withRSA").buildRaw();
-        var verifier = verifierBuilder().key(keyPair.getPublic()).algorithm("SHA512withRSA").buildRaw();
+        var signer = signerBuilder().key(keyPair.getPrivate()).algorithm("SHA512withRSA").build();
+        var verifier = verifierBuilder().key(keyPair.getPublic()).algorithm("SHA512withRSA").build();
         var signature = signer.sign(MESSAGE);
         assertTrue(verifier.verify(MESSAGE, signature));
     }

@@ -1,23 +1,52 @@
 package com.mirkocaserta.bruce.signature;
 
-import com.mirkocaserta.bruce.BruceException;
+import com.mirkocaserta.bruce.Bruce;
+import com.mirkocaserta.bruce.impl.util.EncodingUtils;
+
+import java.nio.charset.Charset;
 
 /**
- * An interface for verifying the authenticity of messages using digital signatures.
+ * Unified contract for verifying digital signatures across raw and encoded representations.
  *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
-@FunctionalInterface
 public interface Verifier {
 
-    /**
-     * Verifies the authenticity of a message using a digital signature.
-     *
-     * @param message   the original message to verify
-     * @param signature the digital signature
-     * @return true if the original message is verified by the digital signature
-     * @throws BruceException on verification errors
-     */
+    Charset charset();
+
+    Bruce.Encoding encoding();
+
     boolean verify(byte[] message, byte[] signature);
 
+    default boolean verify(String message, Charset charset, byte[] signature) {
+        return verify(message.getBytes(charset), signature);
+    }
+
+    default boolean verify(String message, byte[] signature) {
+        return verify(message, charset(), signature);
+    }
+
+    default boolean verify(byte[] message, String signature, Bruce.Encoding encoding) {
+        return verify(message, EncodingUtils.decode(encoding, signature));
+    }
+
+    default boolean verify(byte[] message, String signature) {
+        return verify(message, signature, encoding());
+    }
+
+    default boolean verify(String message, Charset charset, String signature, Bruce.Encoding encoding) {
+        return verify(message.getBytes(charset), EncodingUtils.decode(encoding, signature));
+    }
+
+    default boolean verify(String message, Charset charset, String signature) {
+        return verify(message, charset, signature, encoding());
+    }
+
+    default boolean verify(String message, String signature, Bruce.Encoding encoding) {
+        return verify(message, charset(), signature, encoding);
+    }
+
+    default boolean verify(String message, String signature) {
+        return verify(message, charset(), signature, encoding());
+    }
 }

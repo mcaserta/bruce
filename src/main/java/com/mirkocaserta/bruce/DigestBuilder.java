@@ -1,13 +1,9 @@
 package com.mirkocaserta.bruce;
 
 import com.mirkocaserta.bruce.digest.Digester;
-import com.mirkocaserta.bruce.digest.EncodingDigester;
-import com.mirkocaserta.bruce.digest.FileDigester;
 import com.mirkocaserta.bruce.impl.digest.DigestOperations;
 
 import java.nio.charset.Charset;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Builder for creating digesters with fluent API to reduce parameter overload.
@@ -18,8 +14,8 @@ public class DigestBuilder {
     
     private String algorithm;
     private String provider = "";
-    private Charset charset = UTF_8;
-    private Bruce.Encoding encoding = Bruce.Encoding.BASE64;
+    private Charset charset = Bruce.DEFAULT_CHARSET;
+    private Bruce.Encoding encoding = Bruce.DEFAULT_ENCODING;
     
     DigestBuilder() {
         // package-private constructor
@@ -69,37 +65,9 @@ public class DigestBuilder {
         return this;
     }
     
-    /**
-     * Builds a raw byte array digester.
-     * 
-     * @return the digester
-     * @throws BruceException if required parameters are missing
-     */
-    public Digester buildRaw() {
+    public Digester build() {
         validateParameters();
-        return DigestOperations.createRawDigester(algorithm, provider);
-    }
-    
-    /**
-     * Builds an encoding digester for string messages.
-     * 
-     * @return the digester
-     * @throws BruceException if required parameters are missing
-     */
-    public EncodingDigester build() {
-        validateParameters();
-        return DigestOperations.createEncodingDigester(algorithm, provider, encoding, charset);
-    }
-    
-    /**
-     * Builds a file digester with encoding.
-     * 
-     * @return the file digester
-     * @throws BruceException if required parameters are missing
-     */
-    public FileDigester buildFileDigester() {
-        validateParameters();
-        return DigestOperations.createFileDigester(algorithm, provider, encoding);
+        return DigestOperations.createDigester(algorithm, provider, charset, encoding);
     }
     
     private void validateParameters() {

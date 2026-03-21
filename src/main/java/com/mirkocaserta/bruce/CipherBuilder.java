@@ -1,14 +1,19 @@
 package com.mirkocaserta.bruce;
 
-import com.mirkocaserta.bruce.cipher.Mode;
+import com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricDecryptor;
+import com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricDecryptorByKey;
+import com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricEncryptor;
+import com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricEncryptorByKey;
+import com.mirkocaserta.bruce.cipher.symmetric.SymmetricDecryptor;
+import com.mirkocaserta.bruce.cipher.symmetric.SymmetricDecryptorByKey;
+import com.mirkocaserta.bruce.cipher.symmetric.SymmetricEncryptor;
+import com.mirkocaserta.bruce.cipher.symmetric.SymmetricEncryptorByKey;
 import com.mirkocaserta.bruce.impl.cipher.AsymmetricCipherOperations;
 import com.mirkocaserta.bruce.impl.cipher.SymmetricCipherOperations;
 
 import java.nio.charset.Charset;
 import java.security.Key;
 import java.util.Map;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Builder for creating ciphers with fluent API to reduce parameter overload.
@@ -24,9 +29,8 @@ public class CipherBuilder {
     private String keyAlgorithm;
     private String cipherAlgorithm;
     private String provider = "";
-    private Mode mode;
-    private Charset charset = UTF_8;
-    private Bruce.Encoding encoding = Bruce.Encoding.BASE64;
+    private Charset charset = Bruce.DEFAULT_CHARSET;
+    private Bruce.Encoding encoding = Bruce.DEFAULT_ENCODING;
     
     CipherBuilder() {
         // package-private constructor
@@ -123,17 +127,6 @@ public class CipherBuilder {
     }
     
     /**
-     * Sets the cipher mode (encrypt/decrypt).
-     * 
-     * @param mode the cipher mode
-     * @return this builder
-     */
-    public CipherBuilder mode(Mode mode) {
-        this.mode = mode;
-        return this;
-    }
-    
-    /**
      * Sets the charset for string encoding/decoding.
      * 
      * @param charset the charset
@@ -155,90 +148,48 @@ public class CipherBuilder {
         return this;
     }
     
-    /**
-     * Builds a symmetric encoding cipher.
-     * 
-     * @return the cipher
-     * @throws BruceException if required parameters are missing
-     */
-    public com.mirkocaserta.bruce.cipher.symmetric.EncodingCipher buildSymmetric() {
-        validateSymmetricCipher();
-        return SymmetricCipherOperations.createEncodingCipher(key, keyAlgorithm, cipherAlgorithm, provider, mode, charset, encoding);
+    public SymmetricEncryptor buildSymmetricEncryptor() {
+        validateFixedSymmetricCipher();
+        return SymmetricCipherOperations.createEncryptor(resolveFixedSymmetricKey(), keyAlgorithm, cipherAlgorithm, provider, charset, encoding);
     }
 
-    /**
-     * Builds a symmetric raw cipher.
-     *
-     * @return the cipher
-     */
-    public com.mirkocaserta.bruce.cipher.symmetric.SymmetricCipher buildSymmetricRaw() {
-        validateSymmetricRawCipher();
-        return SymmetricCipherOperations.createCipher(rawKey, keyAlgorithm, cipherAlgorithm, provider, mode);
+    public SymmetricDecryptor buildSymmetricDecryptor() {
+        validateFixedSymmetricCipher();
+        return SymmetricCipherOperations.createDecryptor(resolveFixedSymmetricKey(), keyAlgorithm, cipherAlgorithm, provider, charset, encoding);
     }
 
-    /**
-     * Builds a symmetric raw cipher where the key is selected at runtime.
-     *
-     * @return the cipher by key
-     */
-    public com.mirkocaserta.bruce.cipher.symmetric.CipherByKey buildSymmetricRawByKey() {
+    public SymmetricEncryptorByKey buildSymmetricEncryptorByKey() {
         validateSymmetricByKeyCipher();
-        return SymmetricCipherOperations.createCipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode);
+        return SymmetricCipherOperations.createEncryptorByKey(keyAlgorithm, cipherAlgorithm, provider, charset, encoding);
     }
 
-    /**
-     * Builds a symmetric encoding cipher where the key is selected at runtime.
-     *
-     * @return the encoding cipher by key
-     */
-    public com.mirkocaserta.bruce.cipher.symmetric.EncodingCipherByKey buildSymmetricByKey() {
+    public SymmetricDecryptorByKey buildSymmetricDecryptorByKey() {
         validateSymmetricByKeyCipher();
-        return SymmetricCipherOperations.createEncodingCipherByKey(keyAlgorithm, cipherAlgorithm, provider, mode, charset);
+        return SymmetricCipherOperations.createDecryptorByKey(keyAlgorithm, cipherAlgorithm, provider, charset, encoding);
+    }
+
+    public AsymmetricEncryptor buildAsymmetricEncryptor() {
+        validateAsymmetricCipher();
+        return AsymmetricCipherOperations.createEncryptor(asymmetricKey, cipherAlgorithm, provider, charset, encoding);
+    }
+
+    public AsymmetricDecryptor buildAsymmetricDecryptor() {
+        validateAsymmetricCipher();
+        return AsymmetricCipherOperations.createDecryptor(asymmetricKey, cipherAlgorithm, provider, charset, encoding);
+    }
+
+    public AsymmetricEncryptorByKey buildAsymmetricEncryptorByKey() {
+        validateAsymmetricByKeyCipher();
+        return AsymmetricCipherOperations.createEncryptorByKey(asymmetricKeys, cipherAlgorithm, provider, charset, encoding);
+    }
+
+    public AsymmetricDecryptorByKey buildAsymmetricDecryptorByKey() {
+        validateAsymmetricByKeyCipher();
+        return AsymmetricCipherOperations.createDecryptorByKey(asymmetricKeys, cipherAlgorithm, provider, charset, encoding);
     }
     
-    /**
-     * Builds an asymmetric encoding cipher.
-     * 
-     * @return the cipher
-     * @throws BruceException if required parameters are missing
-     */
-    public com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipher buildAsymmetric() {
-        validateAsymmetricCipher();
-        return AsymmetricCipherOperations.createEncodingCipher(asymmetricKey, cipherAlgorithm, provider, mode, encoding, charset);
-    }
-
-    /**
-     * Builds an asymmetric raw cipher.
-     *
-     * @return the cipher
-     */
-    public com.mirkocaserta.bruce.cipher.asymmetric.AsymmetricCipher buildAsymmetricRaw() {
-        validateAsymmetricCipher();
-        return AsymmetricCipherOperations.createCipher(asymmetricKey, cipherAlgorithm, provider, mode);
-    }
-
-    /**
-     * Builds an asymmetric raw cipher with runtime key selection.
-     *
-     * @return the cipher by key
-     */
-    public com.mirkocaserta.bruce.cipher.asymmetric.CipherByKey buildAsymmetricRawByKey() {
-        validateAsymmetricByKeyCipher();
-        return AsymmetricCipherOperations.createCipherByKey(asymmetricKeys, cipherAlgorithm, provider);
-    }
-
-    /**
-     * Builds an asymmetric encoding cipher with runtime key selection.
-     *
-     * @return the encoding cipher by key
-     */
-    public com.mirkocaserta.bruce.cipher.asymmetric.EncodingCipherByKey buildAsymmetricByKey() {
-        validateAsymmetricByKeyCipher();
-        return AsymmetricCipherOperations.createEncodingCipherByKey(asymmetricKeys, cipherAlgorithm, provider, encoding, charset);
-    }
-    
-    private void validateSymmetricCipher() {
-        if (key == null) {
+    private void validateFixedSymmetricCipher() {
+        if (key == null && rawKey == null) {
             throw new BruceException("key is required for symmetric cipher");
         }
         if (keyAlgorithm == null) {
@@ -246,9 +197,6 @@ public class CipherBuilder {
         }
         if (cipherAlgorithm == null) {
             throw new BruceException("cipherAlgorithm is required for symmetric cipher");
-        }
-        if (mode == null) {
-            throw new BruceException("mode is required for cipher");
         }
     }
     
@@ -259,24 +207,6 @@ public class CipherBuilder {
         if (cipherAlgorithm == null) {
             throw new BruceException("algorithm is required for asymmetric cipher");
         }
-        if (mode == null) {
-            throw new BruceException("mode is required for cipher");
-        }
-    }
-
-    private void validateSymmetricRawCipher() {
-        if (rawKey == null) {
-            throw new BruceException("raw key is required for symmetric cipher");
-        }
-        if (keyAlgorithm == null) {
-            throw new BruceException("keyAlgorithm is required for symmetric cipher");
-        }
-        if (cipherAlgorithm == null) {
-            throw new BruceException("cipherAlgorithm is required for symmetric cipher");
-        }
-        if (mode == null) {
-            throw new BruceException("mode is required for cipher");
-        }
     }
 
     private void validateSymmetricByKeyCipher() {
@@ -285,9 +215,6 @@ public class CipherBuilder {
         }
         if (cipherAlgorithm == null) {
             throw new BruceException("cipherAlgorithm is required for symmetric by-key cipher");
-        }
-        if (mode == null) {
-            throw new BruceException("mode is required for cipher");
         }
     }
 
@@ -298,5 +225,9 @@ public class CipherBuilder {
         if (cipherAlgorithm == null) {
             throw new BruceException("algorithm is required for asymmetric by-key cipher");
         }
+    }
+
+    private byte[] resolveFixedSymmetricKey() {
+        return rawKey != null ? rawKey : com.mirkocaserta.bruce.impl.util.EncodingUtils.decode(encoding, key);
     }
 }

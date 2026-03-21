@@ -1,7 +1,5 @@
 package com.mirkocaserta.bruce;
 
-import com.mirkocaserta.bruce.signature.EncodingVerifier;
-import com.mirkocaserta.bruce.signature.EncodingVerifierByKey;
 import com.mirkocaserta.bruce.signature.Verifier;
 import com.mirkocaserta.bruce.signature.VerifierByKey;
 import com.mirkocaserta.bruce.impl.signature.SignatureOperations;
@@ -9,8 +7,6 @@ import com.mirkocaserta.bruce.impl.signature.SignatureOperations;
 import java.nio.charset.Charset;
 import java.security.PublicKey;
 import java.util.Map;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Builder for creating verifiers with fluent API to reduce parameter overload.
@@ -23,8 +19,8 @@ public class VerifierBuilder {
     private Map<String, PublicKey> publicKeyMap;
     private String algorithm;
     private String provider = "";
-    private Charset charset = UTF_8;
-    private Bruce.Encoding encoding = Bruce.Encoding.BASE64;
+    private Charset charset = Bruce.DEFAULT_CHARSET;
+    private Bruce.Encoding encoding = Bruce.DEFAULT_ENCODING;
     
     VerifierBuilder() {
         // package-private constructor
@@ -96,48 +92,14 @@ public class VerifierBuilder {
         return this;
     }
     
-    /**
-     * Builds a raw verifier with a single key.
-     * 
-     * @return the verifier
-     * @throws BruceException if required parameters are missing
-     */
-    public Verifier buildRaw() {
+    public Verifier build() {
         validateSingleKeyVerifier();
-        return SignatureOperations.createVerifier(publicKey, algorithm, provider);
+        return SignatureOperations.createVerifier(publicKey, algorithm, provider, charset, encoding);
     }
     
-    /**
-     * Builds an encoding verifier with a single key.
-     * 
-     * @return the verifier
-     * @throws BruceException if required parameters are missing
-     */
-    public EncodingVerifier build() {
-        validateSingleKeyVerifier();
-        return SignatureOperations.createEncodingVerifier(publicKey, algorithm, provider, charset, encoding);
-    }
-    
-    /**
-     * Builds a raw verifier with multiple keys for runtime selection.
-     * 
-     * @return the verifier
-     * @throws BruceException if required parameters are missing
-     */
-    public VerifierByKey buildRawByKey() {
+    public VerifierByKey buildByKey() {
         validateMultiKeyVerifier();
-        return SignatureOperations.createVerifierByKey(publicKeyMap, algorithm, provider);
-    }
-    
-    /**
-     * Builds an encoding verifier with multiple keys for runtime selection.
-     * 
-     * @return the verifier
-     * @throws BruceException if required parameters are missing
-     */
-    public EncodingVerifierByKey buildByKey() {
-        validateMultiKeyVerifier();
-        return SignatureOperations.createEncodingVerifierByKey(publicKeyMap, algorithm, provider, charset, encoding);
+        return SignatureOperations.createVerifierByKey(publicKeyMap, algorithm, provider, charset, encoding);
     }
     
     private void validateSingleKeyVerifier() {

@@ -1,24 +1,52 @@
 package com.mirkocaserta.bruce.signature;
 
+import com.mirkocaserta.bruce.Bruce;
+import com.mirkocaserta.bruce.impl.util.EncodingUtils;
+
+import java.nio.charset.Charset;
+
 /**
- * An interface for verifying the authenticity of
- * messages using digital signatures where the public
- * key is configured in an underlying map using a
- * logical name.
+ * Unified contract for verifying digital signatures where the verification key is selected at runtime.
  *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
 public interface VerifierByKey {
 
-    /**
-     * Verifies the authenticity of a message using a digital signature.
-     *
-     * @param publicKeyId the logical name of the public key as configured
-     *                    in the underlying map
-     * @param message     the original message to verify
-     * @param signature   the digital signature
-     * @return true if the original message is verified by the digital signature
-     */
+    Charset charset();
+
+    Bruce.Encoding encoding();
+
     boolean verify(String publicKeyId, byte[] message, byte[] signature);
 
+    default boolean verify(String publicKeyId, String message, Charset charset, byte[] signature) {
+        return verify(publicKeyId, message.getBytes(charset), signature);
+    }
+
+    default boolean verify(String publicKeyId, String message, byte[] signature) {
+        return verify(publicKeyId, message, charset(), signature);
+    }
+
+    default boolean verify(String publicKeyId, byte[] message, String signature, Bruce.Encoding encoding) {
+        return verify(publicKeyId, message, EncodingUtils.decode(encoding, signature));
+    }
+
+    default boolean verify(String publicKeyId, byte[] message, String signature) {
+        return verify(publicKeyId, message, signature, encoding());
+    }
+
+    default boolean verify(String publicKeyId, String message, Charset charset, String signature, Bruce.Encoding encoding) {
+        return verify(publicKeyId, message.getBytes(charset), EncodingUtils.decode(encoding, signature));
+    }
+
+    default boolean verify(String publicKeyId, String message, Charset charset, String signature) {
+        return verify(publicKeyId, message, charset, signature, encoding());
+    }
+
+    default boolean verify(String publicKeyId, String message, String signature, Bruce.Encoding encoding) {
+        return verify(publicKeyId, message, charset(), signature, encoding);
+    }
+
+    default boolean verify(String publicKeyId, String message, String signature) {
+        return verify(publicKeyId, message, charset(), signature, encoding());
+    }
 }

@@ -15,8 +15,8 @@ class DsaKeyPairTest {
     @Test
     void generateAndUse() {
         var keyPair = keyPair("DSA", 2048);
-        var signer = signerBuilder().key(keyPair.getPrivate()).algorithm("SHA256withDSA").buildRaw();
-        var verifier = verifierBuilder().key(keyPair.getPublic()).algorithm("SHA256withDSA").buildRaw();
+        var signer = signerBuilder().key(keyPair.getPrivate()).algorithm("SHA256withDSA").build();
+        var verifier = verifierBuilder().key(keyPair.getPublic()).algorithm("SHA256withDSA").build();
         var signature = signer.sign(MESSAGE);
         assertTrue(verifier.verify(MESSAGE, signature));
     }
