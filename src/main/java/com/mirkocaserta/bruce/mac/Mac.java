@@ -1,6 +1,7 @@
 package com.mirkocaserta.bruce.mac;
 
 import com.mirkocaserta.bruce.Bruce;
+import com.mirkocaserta.bruce.Bytes;
 import com.mirkocaserta.bruce.impl.util.EncodingUtils;
 
 import java.nio.charset.Charset;
@@ -48,5 +49,15 @@ public interface Mac {
 
     default String getToString(String message) {
         return getToString(message, charset(), encoding());
+    }
+
+    /**
+     * Computes the MAC for the given {@link Bytes} input and returns the result as {@link Bytes}.
+     *
+     * @param message the input message
+     * @return the MAC wrapped in {@link Bytes}
+     */
+    default Bytes get(Bytes message) {
+        return Bytes.from(get(message.asBytes()));
     }
 }

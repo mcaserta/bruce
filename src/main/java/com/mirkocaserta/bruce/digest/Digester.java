@@ -1,6 +1,7 @@
 package com.mirkocaserta.bruce.digest;
 
 import com.mirkocaserta.bruce.Bruce;
+import com.mirkocaserta.bruce.Bytes;
 import com.mirkocaserta.bruce.impl.util.EncodingUtils;
 
 import java.io.File;
@@ -72,5 +73,15 @@ public interface Digester {
 
     default String digestToString(File file) {
         return digestToString(file.toPath(), encoding());
+    }
+
+    /**
+     * Digests the given {@link Bytes} input and returns the result as {@link Bytes}.
+     *
+     * @param input the input to digest
+     * @return the digest wrapped in {@link Bytes}
+     */
+    default Bytes digest(Bytes input) {
+        return Bytes.from(digest(input.asBytes()));
     }
 }

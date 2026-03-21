@@ -1,6 +1,7 @@
 package com.mirkocaserta.bruce.signature;
 
 import com.mirkocaserta.bruce.Bruce;
+import com.mirkocaserta.bruce.Bytes;
 import com.mirkocaserta.bruce.impl.util.EncodingUtils;
 
 import java.nio.charset.Charset;
@@ -48,5 +49,16 @@ public interface Verifier {
 
     default boolean verify(String message, String signature) {
         return verify(message, charset(), signature, encoding());
+    }
+
+    /**
+     * Verifies a signature where both message and signature are represented as {@link Bytes}.
+     *
+     * @param message   the original message
+     * @param signature the signature to verify
+     * @return {@code true} if the signature is valid
+     */
+    default boolean verify(Bytes message, Bytes signature) {
+        return verify(message.asBytes(), signature.asBytes());
     }
 }
