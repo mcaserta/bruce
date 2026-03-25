@@ -39,6 +39,17 @@ public class DigestBuilder {
     }
 
     /**
+     * Sets the cryptographic provider from the built-in provider enum.
+     *
+     * @param provider provider selection, or {@code null} for JVM default
+     * @return this builder
+     */
+    public DigestBuilder provider(Bruce.Provider provider) {
+        this.provider = provider == null ? "" : provider.providerName();
+        return this;
+    }
+
+    /**
      * Builds a digester.
      *
      * @return configured {@link Digester}

@@ -76,4 +76,27 @@ public final class Bruce {
         /** MIME Base64 encoding (line-broken). */
         MIME
     }
+
+    /** Supported JCA provider selections for provider-aware operations. */
+    public enum Provider {
+        /** Use the JVM default provider chain. */
+        JCA(""),
+        /** Use the Bouncy Castle provider. */
+        BOUNCY_CASTLE("BC"),
+        /** Use the Conscrypt provider. */
+        CONSCRYPT("Conscrypt");
+
+        private final String providerName;
+
+        Provider(String providerName) {
+            this.providerName = providerName;
+        }
+
+        /**
+         * @return the JCA provider name understood by {@code Security.getProvider}
+         */
+        public String providerName() {
+            return providerName;
+        }
+    }
 }
