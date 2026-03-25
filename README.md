@@ -1,75 +1,295 @@
----
-description: Java cryptography made easy
----
+# Bruce
 
-# Welcome
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=alert_status)](https://sonarcloud.io/dashboard?id=mcaserta_bruce)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=security_rating)](https://sonarcloud.io/dashboard?id=mcaserta_bruce)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=mcaserta_bruce&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=mcaserta_bruce)
+[![Maven Central](https://img.shields.io/maven-central/v/com.mirkocaserta.bruce/bruce)](https://central.sonatype.com/artifact/com.mirkocaserta.bruce/bruce)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-![](.gitbook/assets/logo%20%281%29.png)
+**Bruce** is an ergonomic, lightweight, pure Java wrapper around the [Java Cryptography Architecture (JCA)](https://docs.oracle.com/en/java/docs/books/security/JCA-1.html). It makes common cryptographic operations straightforward without adding any runtime dependencies beyond the JDK.
 
-Bruce is an ergonomic, lightweight, pure Java wrapper around the Java
-Cryptography API (version 2.0).
+## Features
 
-## Show Me the Code
+- **Digital signatures** — sign and verify data with RSA, DSA, ECDSA, and more
+- **Symmetric encryption** — AES-CBC, AES-GCM, DES, and other secret-key ciphers
+- **Asymmetric encryption** — RSA public/private-key encryption and decryption
+- **Message digests** — SHA-256, SHA-512, MD5, and any JCA-supported algorithm
+- **Message Authentication Codes (MAC)** — HmacSHA256, HmacSHA512, and more
+- **Keystore management** — load PKCS12/JKS keystores from classpath, file, HTTP(S)
+- **Key generation** — generate RSA/DSA/EC key pairs and symmetric keys on the fly
+- **PEM support** — read and write private keys, public keys, and certificates in PEM format
+- **Multiple encodings** — HEX, BASE64, URL-safe BASE64, and MIME BASE64
+- **Pluggable providers** — works with any JCA provider (e.g., [Bouncy Castle](https://www.bouncycastle.org/))
+- **Multi-key APIs** — select a key by ID at call time for key-rotation scenarios
+- **Zero runtime dependencies** — pure JDK, no extra JARs required at runtime
 
-Sure. Here are a few quick examples. Keystore and key helpers are static imports
-from `com.mirkocaserta.bruce.Keystores`; builder factories are static imports
-from `com.mirkocaserta.bruce.Bruce`.
+## Requirements
+
+- Java 21 or later
+
+## Installation
+
+### Maven
+
+```xml
+<dependency>
+    <groupId>com.mirkocaserta.bruce</groupId>
+    <artifactId>bruce</artifactId>
+    <version>2.0.0</version>
+</dependency>
+```
+
+### Gradle
+
+```groovy
+implementation 'com.mirkocaserta.bruce:bruce:2.0.0'
+```
+
+> Check [Maven Central](https://central.sonatype.com/artifact/com.mirkocaserta.bruce/bruce) for the latest release version.
+
+## Quick Start
+
+All operations are accessed through two static facades. Add these imports once at the top of your file:
+
+```java
+import static com.mirkocaserta.bruce.Bruce.*;
+import static com.mirkocaserta.bruce.Bruce.Encoding.*;
+import static com.mirkocaserta.bruce.Keystores.*;
+```
+
+## Usage Examples
+
+### Loading Keys from a Keystore
+
+```java
+// Load a PKCS12 keystore from the classpath
+KeyStore ks = keystore("classpath:keystore.p12", "password".toCharArray(), "PKCS12");
+
+// Extract keys by alias
+PrivateKey privateKey = privateKey(ks, "alice", "password".toCharArray());
+PublicKey  publicKey  = publicKey(ks, "alice");
+```
+
+Keystores can be loaded from multiple sources:
+
+| Prefix | Example |
+|--------|---------|
+| `classpath:` | `classpath:keystore.p12` |
+| `file:` | `file:/etc/ssl/keystore.p12` |
+| `http://` | `http://config-server/keystore.p12` |
+| `https://` | `https://config-server/keystore.p12` |
 
 ### Digital Signatures
 
 ```java
-KeyStore keystore = keystore("classpath:keystore.p12", "password".toCharArray(), "PKCS12");
-PrivateKey privateKey = privateKey(keystore, "alice", "password".toCharArray());
+KeyStore ks         = keystore("classpath:keystore.p12", "password", "PKCS12");
+PrivateKey signKey  = privateKey(ks, "alice", "password");
+PublicKey  verifyKey = publicKey(ks, "alice");
 
-Signer signer = signerBuilder()
-    .key(privateKey)
-    .algorithm("SHA512withRSA")
-    .build();
+// Create a signer and a verifier
+Signer   signer   = signerBuilder().key(signKey).algorithm("SHA256withRSA").build();
+Verifier verifier = verifierBuilder().key(verifyKey).algorithm("SHA256withRSA").build();
 
-// bytes → bytes (raw signature)
-Bytes message   = Bytes.from("Hi Bob!");
-Bytes rawSig    = signer.sign(message);
+// Sign
+Bytes message   = Bytes.from("Hello, Bob!");
+Bytes signature = signer.sign(message);
 
-// raw bytes → BASE64 string
-String b64Sig   = rawSig.encode(BASE64);
+// Encode signature for transport
+String b64Signature = signature.encode(BASE64);
 
-// BASE64 string → raw bytes (for verification)
-Bytes sigFromB64 = Bytes.from(b64Sig, BASE64);
+// Verify (decode first, then verify)
+Bytes sigFromB64 = Bytes.from(b64Signature, BASE64);
+boolean valid    = verifier.verify(message, sigFromB64);
 ```
 
-### Message Digest
+### Message Digest (Hashing)
 
 ```java
-Digester digester = digestBuilder()
-    .algorithm("SHA-256")
-    .build();
+Digester sha256 = digestBuilder().algorithm("SHA-256").build();
+Digester sha512 = digestBuilder().algorithm("SHA-512").build();
 
-Bytes hash   = digester.digest(Bytes.from("Hello World"));
-String hex   = hash.encode(HEX);
-String b64   = hash.encode(BASE64);
+Bytes hash    = sha256.digest(Bytes.from("Hello, World!"));
+String hexHash = hash.encode(HEX);    // "dffd6021bb2bd5b0af676290809ec3a5..."
+String b64Hash = hash.encode(BASE64); // "/fVgIbsr1v..."
 ```
 
-### Symmetric Encryption
+### Symmetric Encryption (AES)
 
 ```java
+// Generate a random AES key
 byte[] keyBytes = symmetricKey("AES");
 byte[] ivBytes  = new byte[16];
 new SecureRandom().nextBytes(ivBytes);
 
-SymmetricEncryptor enc = cipherBuilder()
-    .key(keyBytes).keyAlgorithm("AES").algorithm("AES/CBC/PKCS5Padding")
+// Build encryptor and decryptor
+SymmetricEncryptor encryptor = cipherBuilder()
+    .key(keyBytes)
+    .algorithms("AES", "AES/CBC/PKCS5Padding")
     .buildSymmetricEncryptor();
-SymmetricDecryptor dec = cipherBuilder()
-    .key(keyBytes).keyAlgorithm("AES").algorithm("AES/CBC/PKCS5Padding")
+
+SymmetricDecryptor decryptor = cipherBuilder()
+    .key(keyBytes)
+    .algorithms("AES", "AES/CBC/PKCS5Padding")
     .buildSymmetricDecryptor();
 
 Bytes iv         = Bytes.from(ivBytes);
-Bytes cipherText = enc.encrypt(iv, Bytes.from("Hello World"));
-Bytes plainText  = dec.decrypt(iv, cipherText);
+Bytes cipherText = encryptor.encrypt(iv, Bytes.from("Secret message"));
+Bytes plainText  = decryptor.decrypt(iv, cipherText);
 
-// convert to/from BASE64 for transport
-String enc64  = cipherText.encode(BASE64);
-Bytes fromB64 = Bytes.from(enc64, BASE64);
+// Encode for storage/transport
+String encoded = cipherText.encode(BASE64);
 ```
 
-Bruce tries to reduce boilerplate to a minimum, so you can focus on your code.
+### Asymmetric Encryption (RSA)
+
+```java
+// Generate an RSA key pair
+KeyPair keyPair = keyPair("RSA", 2048);
+
+AsymmetricEncryptor encryptor = cipherBuilder()
+    .key(keyPair.getPublic())
+    .algorithm("RSA/ECB/PKCS1Padding")
+    .buildAsymmetricEncryptor();
+
+AsymmetricDecryptor decryptor = cipherBuilder()
+    .key(keyPair.getPrivate())
+    .algorithm("RSA/ECB/PKCS1Padding")
+    .buildAsymmetricDecryptor();
+
+Bytes cipherText = encryptor.encrypt(Bytes.from("Top secret"));
+Bytes plainText  = decryptor.decrypt(cipherText);
+```
+
+### Message Authentication Code (MAC)
+
+```java
+// Load a secret key from a keystore
+KeyStore ks  = keystore("classpath:keystore.p12", "password");
+Key secretKey = secretKey(ks, "hmac-key", "password");
+
+Mac mac = macBuilder()
+    .key(secretKey)
+    .algorithm("HmacSHA256")
+    .build();
+
+Bytes data = Bytes.from("Authenticate me");
+Bytes tag  = mac.sign(data);
+String hexTag = tag.encode(HEX);
+```
+
+### PEM Support
+
+```java
+// Read keys from PEM strings
+PrivateKey privKey = privateKeyFromPem("""
+    -----BEGIN PRIVATE KEY-----
+    MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7...
+    -----END PRIVATE KEY-----
+    """, "RSA");
+
+PublicKey pubKey = publicKeyFromPem("""
+    -----BEGIN PUBLIC KEY-----
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu7...
+    -----END PUBLIC KEY-----
+    """, "RSA");
+
+// Convert keys back to PEM
+String privatePem = keyToPem(privKey);
+String publicPem  = keyToPem(pubKey);
+```
+
+### Key Generation
+
+```java
+// Generate key pairs
+KeyPair rsaKeyPair = keyPair("RSA", 2048);
+KeyPair ecKeyPair  = keyPair("EC", 256);
+KeyPair dsaKeyPair = keyPair("DSA", 2048);
+
+// Generate symmetric keys
+byte[] aesKey    = symmetricKey("AES");
+String b64AesKey = symmetricKey("AES", BASE64); // encoded for storage
+```
+
+### Multi-Key APIs
+
+Bruce supports selecting a key by ID at runtime, which is useful for key-rotation scenarios:
+
+```java
+Map<String, PrivateKey> privateKeys = Map.of(
+    "key-2023", privateKey(ks, "alice-2023", "password"),
+    "key-2024", privateKey(ks, "alice-2024", "password")
+);
+
+SignerByKey signer = signerBuilder()
+    .keys(privateKeys)
+    .algorithm("SHA256withRSA")
+    .buildByKey();
+
+// Select the key to use at call time
+Bytes signature = signer.sign("key-2024", Bytes.from("Hello"));
+```
+
+### Using a Custom Provider
+
+```java
+// Use Bouncy Castle for extended algorithm support
+Security.addProvider(new BouncyCastleProvider());
+
+Digester digester = digestBuilder()
+    .algorithm("BLAKE2b-256")
+    .provider("BC")
+    .build();
+```
+
+## The `Bytes` Type
+
+`Bytes` is Bruce's universal currency type. It wraps a raw byte array and provides convenient conversions:
+
+```java
+// Construction
+Bytes b1 = Bytes.from(new byte[]{1, 2, 3});       // raw bytes
+Bytes b2 = Bytes.from("Hello");                    // UTF-8 text
+Bytes b3 = Bytes.from("cafebabe", HEX);            // decode HEX
+Bytes b4 = Bytes.from("c2lnbg==", BASE64);         // decode BASE64
+Bytes b5 = Bytes.from(Path.of("secret.bin"));      // file contents
+Bytes b6 = Bytes.fromPem("-----BEGIN ...");        // PEM-encoded DER
+
+// Consumption
+byte[] raw   = b2.asBytes();
+String hex   = b2.encode(HEX);
+String b64   = b2.encode(BASE64);
+String text  = b2.asString();       // UTF-8
+int    len   = b2.length();
+boolean empty = b2.isEmpty();
+```
+
+## Building from Source
+
+```bash
+git clone https://github.com/mcaserta/bruce.git
+cd bruce
+./gradlew build
+```
+
+Run tests:
+
+```bash
+./gradlew test
+```
+
+Generate Javadoc:
+
+```bash
+./gradlew javadoc
+```
+
+## License
+
+Bruce is released under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+## Links
+
+- [Maven Central](https://central.sonatype.com/artifact/com.mirkocaserta.bruce/bruce)
+- [Online documentation](https://bruce.mirkocaserta.com)
+- [Issue tracker](https://github.com/mcaserta/bruce/issues)
