@@ -144,7 +144,7 @@ class BuilderTest {
         assertThrows(BruceException.class, () -> Bruce.cipherBuilder().keyAlgorithm("AES").buildSymmetricEncryptorByKey());
         assertThrows(BruceException.class, () -> Bruce.cipherBuilder().keys(Collections.emptyMap()).algorithm("RSA").buildAsymmetricEncryptorByKey());
         assertThrows(BruceException.class, () -> Bruce.cipherBuilder().keys(Map.of("key", keyPair.getPublic())).buildAsymmetricEncryptorByKey());
-        assertNotNull(Bruce.macBuilder().key(hmacKey).algorithm("HmacSHA1").provider(null).build());
+        assertNotNull(Bruce.macBuilder().key(hmacKey).algorithm("HmacSHA1").provider((String) null).build());
     }
 
     @Test

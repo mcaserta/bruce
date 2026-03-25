@@ -132,6 +132,17 @@ public class CipherBuilder {
     }
 
     /**
+     * Sets the cryptographic provider from the built-in provider enum.
+     *
+     * @param provider provider selection, or {@code null} for JVM default
+     * @return this builder
+     */
+    public CipherBuilder provider(Bruce.Provider provider) {
+        this.provider = provider == null ? "" : provider.providerName();
+        return this;
+    }
+
+    /**
      * Builds a symmetric encryptor using a fixed preconfigured key.
      *
      * @return a configured {@link SymmetricEncryptor}
