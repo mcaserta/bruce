@@ -192,4 +192,70 @@ class BuilderTest {
         // Alice key should still resolve from the defensive copy
         assertDoesNotThrow(() -> signer.sign("alice", msg));
     }
+
+    @Test
+    void nullProviderEnumFallsBackToDefaultProviderAcrossBuildersAndKeystores() throws Exception {
+        var keyPair = keyPair("RSA", 2048);
+        var payload = Bytes.from("provider-null-fallback");
+
+        var digest = Bruce.digestBuilder().algorithm("SHA-256").provider((Bruce.Provider) null).build().digest(payload);
+        assertEquals(32, digest.length());
+
+        KeyStore keyStore = keystore("classpath:/keystore.p12", "password".toCharArray(), Keystores.DEFAULT_KEYSTORE_TYPE);
+        var hmacKey = secretKey(keyStore, "hmac", "password".toCharArray());
+        var mac = Bruce.macBuilder().key(hmacKey).algorithm("HmacSHA1").provider((Bruce.Provider) null).build();
+        assertFalse(mac.get(payload).isEmpty());
+
+        var signer = Bruce.signerBuilder().key(keyPair.getPrivate()).algorithm("SHA256withRSA").provider((Bruce.Provider) null).build();
+        var verifier = Bruce.verifierBuilder().key(keyPair.getPublic()).algorithm("SHA256withRSA").provider((Bruce.Provider) null).build();
+        var signature = signer.sign(payload);
+        assertTrue(verifier.verify(payload, signature));
+
+        byte[] ivBytes = new byte[16];
+        new SecureRandom().nextBytes(ivBytes);
+        Bytes iv = Bytes.from(ivBytes);
+        Bytes aesKey = Bytes.from(symmetricKey("AES", Bruce.Provider.JCA, BASE64), BASE64);
+        var symmetricEncryptor = Bruce.cipherBuilder()
+                .key(aesKey)
+                .algorithms("AES", "AES/CBC/PKCS5Padding")
+                .provider((Bruce.Provider) null)
+                .buildSymmetricEncryptor();
+        var symmetricDecryptor = Bruce.cipherBuilder()
+                .key(aesKey)
+                .algorithms("AES", "AES/CBC/PKCS5Padding")
+                .provider((Bruce.Provider) null)
+                .buildSymmetricDecryptor();
+        Bytes cipher = symmetricEncryptor.encrypt(iv, payload);
+        assertEquals(payload, symmetricDecryptor.decrypt(iv, cipher));
+
+        var asymmetricEncryptor = Bruce.cipherBuilder()
+                .key(keyPair.getPublic())
+                .algorithm("RSA/ECB/PKCS1Padding")
+                .provider((Bruce.Provider) null)
+                .buildAsymmetricEncryptor();
+        var asymmetricDecryptor = Bruce.cipherBuilder()
+                .key(keyPair.getPrivate())
+                .algorithm("RSA/ECB/PKCS1Padding")
+                .provider((Bruce.Provider) null)
+                .buildAsymmetricDecryptor();
+        Bytes asymmetricCipher = asymmetricEncryptor.encrypt(payload);
+        assertEquals(payload, asymmetricDecryptor.decrypt(asymmetricCipher));
+
+        assertNotNull(keystore("classpath:/keystore.p12", "password".toCharArray(), DEFAULT_KEYSTORE_TYPE, (Bruce.Provider) null));
+        assertNotNull(keyPair("RSA", (Bruce.Provider) null, 1024));
+        assertFalse(symmetricKey("AES", (Bruce.Provider) null).length == 0);
+        assertFalse(symmetricKey("AES", (Bruce.Provider) null, BASE64).isBlank());
+    }
+
+    @Test
+    void asymmetricByKeyThrowsWhenKeyIdIsMissing() {
+        var keyPair = keyPair("RSA", 2048);
+        var encryptorByKey = Bruce.cipherBuilder()
+                .keys(Map.of("pub", keyPair.getPublic()))
+                .algorithm("RSA/ECB/PKCS1Padding")
+                .buildAsymmetricEncryptorByKey();
+
+        var ex = assertThrows(BruceException.class, () -> encryptorByKey.encrypt("missing", Bytes.from("hello")));
+        assertTrue(ex.getMessage().contains("no such key"));
+    }
 }
