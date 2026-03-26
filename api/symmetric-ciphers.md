@@ -33,11 +33,14 @@ String encB64 = ciphertext.encode(BASE64);
 ### Builder options
 
 ```java
+import static com.mirkocaserta.bruce.Bruce.Provider.*;
+
 SymmetricEncryptor encryptor = cipherBuilder()
     .key(keyBytes)               // raw byte[] or Bytes
     .keyAlgorithm("AES")
     .algorithm("AES/CBC/PKCS5Padding")
-    .provider("BC")              // optional
+    .provider(BOUNCY_CASTLE)      // optional, defaults to JCA
+    // .provider("BC")            // string-based alternative
     .buildSymmetricEncryptor();
 ```
 

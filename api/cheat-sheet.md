@@ -13,6 +13,9 @@ Complete list of available builder methods and functional interfaces.
 // ─── Encoding enum (Bruce.Encoding) ─────────────────────────────────────────
 public enum Encoding { HEX, BASE64, URL, MIME }
 
+// ─── Provider enum (Bruce.Provider) ─────────────────────────────────────────
+public enum Provider { JCA, BOUNCY_CASTLE, CONSCRYPT }
+
 // ─── Bytes ───────────────────────────────────────────────────────────────────
 // Construction
 Bytes.from(byte[]);
@@ -41,7 +44,9 @@ KeyStore keystore(String location, String password);
 KeyStore keystore(String location, char[] password, String type);
 KeyStore keystore(String location, String password, String type);
 KeyStore keystore(String location, char[] password, String type, String provider);
+KeyStore keystore(String location, char[] password, String type, Provider provider);
 KeyStore keystore(String location, String password, String type, String provider);
+KeyStore keystore(String location, String password, String type, Provider provider);
 
 // ─── Certificates (com.mirkocaserta.bruce.Keystores) ─────────────────────────
 Certificate certificate(KeyStore keystore, String alias);
@@ -54,17 +59,22 @@ Key        secretKey(KeyStore keystore, String alias, char[] password);
 Key        secretKey(KeyStore keystore, String alias, String password);
 KeyPair    keyPair(String algorithm, int keySize);
 KeyPair    keyPair(String algorithm, String provider, int keySize);
+KeyPair    keyPair(String algorithm, Provider provider, int keySize);
 KeyPair    keyPair(String algorithm, int keySize, SecureRandom random);
 KeyPair    keyPair(String algorithm, String provider, int keySize, SecureRandom random);
+KeyPair    keyPair(String algorithm, Provider provider, int keySize, SecureRandom random);
 byte[]     symmetricKey(String algorithm);
 byte[]     symmetricKey(String algorithm, String provider);
+byte[]     symmetricKey(String algorithm, Provider provider);
 String     symmetricKey(String algorithm, Encoding encoding);
 String     symmetricKey(String algorithm, String provider, Encoding encoding);
+String     symmetricKey(String algorithm, Provider provider, Encoding encoding);
 
 // ─── Digests (Bruce.digestBuilder) ──────────────────────────────────────────
 DigestBuilder digestBuilder()
   .algorithm(String)
   .provider(String)    // optional
+  .provider(Provider)  // optional
   .build()             // → Digester
 
 // Digester interface
@@ -78,6 +88,7 @@ SignerBuilder signerBuilder()
   .keys(Map<String, PrivateKey>)      // multi-key
   .algorithm(String)
   .provider(String)                   // optional
+  .provider(Provider)                 // optional
   .build()                            // → Signer
   .buildByKey()                       // → SignerByKey
 
@@ -86,6 +97,7 @@ VerifierBuilder verifierBuilder()
   .keys(Map<String, PublicKey>)       // multi-key
   .algorithm(String)
   .provider(String)                   // optional
+  .provider(Provider)                 // optional
   .build()                            // → Verifier
   .buildByKey()                       // → VerifierByKey
 
@@ -106,6 +118,7 @@ CipherBuilder cipherBuilder()
   .algorithm(String)                 // e.g. "AES/CBC/PKCS5Padding"
   .algorithms(String keyAlgo, String cipherAlgo)  // convenience
   .provider(String)                  // optional
+  .provider(Provider)                // optional
   .buildSymmetricEncryptor()         // → SymmetricEncryptor
   .buildSymmetricDecryptor()         // → SymmetricDecryptor
   .buildSymmetricEncryptorByKey()    // → SymmetricEncryptorByKey (no fixed key)
@@ -113,8 +126,9 @@ CipherBuilder cipherBuilder()
 
   // asymmetric fixed-key
   .key(Key)                          // PublicKey or PrivateKey
-  .algorithm(String)                 // e.g. "RSA"
+  .algorithm(String)                 // e.g. "RSA/ECB/PKCS1Padding"
   .provider(String)                  // optional
+  .provider(Provider)                // optional
   .buildAsymmetricEncryptor()        // → AsymmetricEncryptor
   .buildAsymmetricDecryptor()        // → AsymmetricDecryptor
 
@@ -140,6 +154,7 @@ MacBuilder macBuilder()
   .key(Key)
   .algorithm(String)                 // e.g. "HmacSHA256"
   .provider(String)                  // optional
+  .provider(Provider)                // optional
   .build()                           // → Mac
 
 // Mac interface

@@ -40,10 +40,13 @@ assertEquals(aliceMac.encode(BASE64), bobMac.encode(BASE64));
 ### Builder options
 
 ```java
+import static com.mirkocaserta.bruce.Bruce.Provider.*;
+
 Mac mac = macBuilder()
     .key(secretKey)
     .algorithm("HmacSHA256")
-    .provider("BC")          // optional, defaults to system provider
+    .provider(BOUNCY_CASTLE)  // optional, defaults to JCA
+    // .provider("BC")        // string-based alternative
     .build();
 ```
 

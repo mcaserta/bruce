@@ -109,18 +109,25 @@ See the [`Bytes`](../api/bytes.md) page for the complete API.
 
 ## Providers
 
-All builders allow specifying an optional JCA provider via `.provider(String)`:
+All builders support both `.provider(String)` and `.provider(Bruce.Provider)`.
 
 ```java
-// use the Bouncy Castle provider
+import static com.mirkocaserta.bruce.Bruce.Provider.*;
+
 Digester digester = digestBuilder()
-    .algorithm("SHA1")
-    .provider("BC")
+    .algorithm("SHA-1")
+    .provider(BOUNCY_CASTLE)
     .build();
 ```
 
-Do not forget to add the appropriate provider jar to the classpath for this to
-work.
+Built-in provider enum values are:
+
+- `JCA` (default provider chain)
+- `BOUNCY_CASTLE` (`BC`)
+- `CONSCRYPT` (`Conscrypt`)
+
+You can still use `.provider("...")` for custom provider names. Ensure the
+provider jar is on the classpath before selecting it.
 
 ## Error Handling
 
