@@ -87,7 +87,7 @@ public final class AsymmetricCipherOperations {
             cipher.init(mode, key);
             return cipher.doFinal(message);
         } catch (Exception e) {
-            throw new BruceException(String.format("error %s message", operation), e);
+            throw new BruceException(String.format("error %s message; algorithm=%s", operation, algorithm), e);
         }
     }
 }
