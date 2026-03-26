@@ -4,6 +4,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.security.MessageDigest;
+import java.security.Security;
+import java.security.Signature;
 import java.security.SecureRandom;
 
 import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
@@ -11,10 +14,34 @@ import static com.mirkocaserta.bruce.Keystores.keyPair;
 import static com.mirkocaserta.bruce.Keystores.symmetricKey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ProviderIntegrationTest {
+
+    private static final String RSA_TRANSFORMATION = "RSA/ECB/PKCS1Padding";
+
+    @ParameterizedTest
+    @MethodSource("com.mirkocaserta.bruce.ProviderTestSupport#providers")
+    void providersExposeRequiredAlgorithms(Bruce.Provider provider) {
+        if (provider == Bruce.Provider.JCA) {
+            assertDoesNotThrow(() -> javax.crypto.Cipher.getInstance(RSA_TRANSFORMATION));
+            assertDoesNotThrow(() -> javax.crypto.Cipher.getInstance("AES/CBC/PKCS5Padding"));
+            assertDoesNotThrow(() -> Signature.getInstance("SHA256withRSA"));
+            assertDoesNotThrow(() -> MessageDigest.getInstance("SHA-256"));
+            assertDoesNotThrow(() -> javax.crypto.Mac.getInstance("HmacSHA256"));
+            return;
+        }
+
+        var jcaProvider = Security.getProvider(provider.providerName());
+        assertNotNull(jcaProvider);
+        assertDoesNotThrow(() -> javax.crypto.Cipher.getInstance(RSA_TRANSFORMATION, jcaProvider));
+        assertDoesNotThrow(() -> javax.crypto.Cipher.getInstance("AES/CBC/PKCS5Padding", jcaProvider));
+        assertDoesNotThrow(() -> Signature.getInstance("SHA256withRSA", jcaProvider));
+        assertDoesNotThrow(() -> MessageDigest.getInstance("SHA-256", jcaProvider));
+        assertDoesNotThrow(() -> javax.crypto.Mac.getInstance("HmacSHA256", jcaProvider));
+    }
 
     @ParameterizedTest
     @MethodSource("com.mirkocaserta.bruce.ProviderTestSupport#providers")
@@ -101,12 +128,12 @@ class ProviderIntegrationTest {
 
         var encryptor = Bruce.cipherBuilder()
                 .key(rsa.getPublic())
-                .algorithm("RSA")
+                .algorithm(RSA_TRANSFORMATION)
                 .provider(provider)
                 .buildAsymmetricEncryptor();
         var decryptor = Bruce.cipherBuilder()
                 .key(rsa.getPrivate())
-                .algorithm("RSA")
+                .algorithm(RSA_TRANSFORMATION)
                 .provider(provider)
                 .buildAsymmetricDecryptor();
 
