@@ -81,6 +81,8 @@ public final class KeyGenerators {
             throw new BruceException(String.format("no such algorithm: %s", algorithm), e);
         } catch (InvalidParameterException e) {
             throw new BruceException(String.format("invalid key size: %d", keySize), e);
+        } catch (RuntimeException e) {
+            throw new BruceException(String.format("generic error: algorithm=%s, keySize=%d", algorithm, keySize), e);
         }
     }
     
