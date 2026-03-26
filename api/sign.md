@@ -34,10 +34,13 @@ Bytes sig2   = signer.sign(Bytes.from("Hello Bob", ISO_8859_1));
 ### Builder options
 
 ```java
+import static com.mirkocaserta.bruce.Bruce.Provider.*;
+
 Signer signer = signerBuilder()
     .key(privateKey)
     .algorithm("SHA512withRSA")
-    .provider("BC")          // optional, defaults to system provider
+    .provider(BOUNCY_CASTLE)  // optional, defaults to JCA
+    // .provider("BC")        // string-based alternative
     .build();
 ```
 

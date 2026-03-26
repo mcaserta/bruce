@@ -41,10 +41,13 @@ boolean ok4 = verifier.verify(
 ### Builder options
 
 ```java
+import static com.mirkocaserta.bruce.Bruce.Provider.*;
+
 Verifier verifier = verifierBuilder()
     .key(publicKey)
     .algorithm("SHA512withRSA")
-    .provider("BC")          // optional, defaults to system provider
+    .provider(BOUNCY_CASTLE)  // optional, defaults to JCA
+    // .provider("BC")        // string-based alternative
     .build();
 ```
 

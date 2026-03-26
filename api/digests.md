@@ -35,9 +35,12 @@ String fileHex = digester.digest(new File("src/test/resources/test-file-1"))
 ### Builder options
 
 ```java
+import static com.mirkocaserta.bruce.Bruce.Provider.*;
+
 Digester digester = digestBuilder()
     .algorithm("SHA-256")
-    .provider("BC")          // optional, defaults to system provider
+    .provider(BOUNCY_CASTLE)  // optional, defaults to JCA
+    // .provider("BC")        // string-based alternative
     .build();
 ```
 

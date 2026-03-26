@@ -16,7 +16,7 @@ PublicKey bobPublicKey = publicKey(bobKeystore, "bob");
 
 AsymmetricEncryptor encryptor = cipherBuilder()
     .key(bobPublicKey)
-    .algorithm("RSA")
+    .algorithm("RSA/ECB/PKCS1Padding")
     .buildAsymmetricEncryptor();
 
 // raw bytes → Bytes
@@ -32,10 +32,13 @@ String encHex = encryptor.encrypt(Bytes.from("Hello Bob")).encode(HEX);
 ### Builder options
 
 ```java
+import static com.mirkocaserta.bruce.Bruce.Provider.*;
+
 AsymmetricEncryptor encryptor = cipherBuilder()
     .key(publicKey)
-    .algorithm("RSA")
-    .provider("BC")          // optional
+    .algorithm("RSA/ECB/PKCS1Padding")
+    .provider(BOUNCY_CASTLE)  // optional, defaults to JCA
+    // .provider("BC")        // string-based alternative
     .buildAsymmetricEncryptor();
 ```
 
@@ -54,7 +57,7 @@ PrivateKey bobPrivateKey = privateKey(bobKeystore, "bob", "password".toCharArray
 
 AsymmetricDecryptor decryptor = cipherBuilder()
     .key(bobPrivateKey)
-    .algorithm("RSA")
+    .algorithm("RSA/ECB/PKCS1Padding")
     .buildAsymmetricDecryptor();
 
 // Bytes → Bytes
@@ -76,10 +79,10 @@ String plain3 = decryptor.decrypt(Bytes.from(encHex, HEX)).asString();
 KeyStore aliceKs = keystore("classpath:/keystore-alice.p12", "password".toCharArray(), "PKCS12");
 KeyStore bobKs   = keystore("classpath:/keystore-bob.p12",   "password".toCharArray(), "PKCS12");
 
-AsymmetricEncryptor encryptForBob   = cipherBuilder().key(publicKey(bobKs, "bob")).algorithm("RSA").buildAsymmetricEncryptor();
-AsymmetricDecryptor decryptAsBob    = cipherBuilder().key(privateKey(bobKs, "bob", "password".toCharArray())).algorithm("RSA").buildAsymmetricDecryptor();
-AsymmetricEncryptor encryptForAlice = cipherBuilder().key(publicKey(aliceKs, "alice")).algorithm("RSA").buildAsymmetricEncryptor();
-AsymmetricDecryptor decryptAsAlice  = cipherBuilder().key(privateKey(aliceKs, "alice", "password".toCharArray())).algorithm("RSA").buildAsymmetricDecryptor();
+AsymmetricEncryptor encryptForBob   = cipherBuilder().key(publicKey(bobKs, "bob")).algorithm("RSA/ECB/PKCS1Padding").buildAsymmetricEncryptor();
+AsymmetricDecryptor decryptAsBob    = cipherBuilder().key(privateKey(bobKs, "bob", "password".toCharArray())).algorithm("RSA/ECB/PKCS1Padding").buildAsymmetricDecryptor();
+AsymmetricEncryptor encryptForAlice = cipherBuilder().key(publicKey(aliceKs, "alice")).algorithm("RSA/ECB/PKCS1Padding").buildAsymmetricEncryptor();
+AsymmetricDecryptor decryptAsAlice  = cipherBuilder().key(privateKey(aliceKs, "alice", "password".toCharArray())).algorithm("RSA/ECB/PKCS1Padding").buildAsymmetricDecryptor();
 
 // Alice → Bob (raw bytes)
 Bytes aliceMsg  = Bytes.from("Hello Bob");
@@ -104,8 +107,8 @@ For runtime key selection:
 Map<String, Key> pubKeys  = Map.of("alice", alicePub, "bob", bobPub);
 Map<String, Key> privKeys = Map.of("alice", alicePriv, "bob", bobPriv);
 
-AsymmetricEncryptorByKey encryptors = cipherBuilder().keys(pubKeys).algorithm("RSA").buildAsymmetricEncryptorByKey();
-AsymmetricDecryptorByKey decryptors = cipherBuilder().keys(privKeys).algorithm("RSA").buildAsymmetricDecryptorByKey();
+AsymmetricEncryptorByKey encryptors = cipherBuilder().keys(pubKeys).algorithm("RSA/ECB/PKCS1Padding").buildAsymmetricEncryptorByKey();
+AsymmetricDecryptorByKey decryptors = cipherBuilder().keys(privKeys).algorithm("RSA/ECB/PKCS1Padding").buildAsymmetricDecryptorByKey();
 
 Bytes enc = encryptors.encrypt("bob", Bytes.from("Hello Bob"));
 Bytes dec = decryptors.decrypt("bob", enc);
