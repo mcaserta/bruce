@@ -17,13 +17,21 @@ final class ProviderTestSupport {
             Security.addProvider(new BouncyCastleProvider());
         }
         if (Security.getProvider(Bruce.Provider.CONSCRYPT.providerName()) == null) {
-            Security.addProvider(Conscrypt.newProvider());
+            try {
+                Security.addProvider(Conscrypt.newProvider());
+            } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
+                // Conscrypt native library not available for this platform
+            }
         }
     }
 
     static Stream<Bruce.Provider> providers() {
         installProviders();
-        return Stream.of(Bruce.Provider.JCA, Bruce.Provider.BOUNCY_CASTLE, Bruce.Provider.CONSCRYPT);
+        var providers = Stream.of(Bruce.Provider.JCA, Bruce.Provider.BOUNCY_CASTLE);
+        if (Security.getProvider(Bruce.Provider.CONSCRYPT.providerName()) != null) {
+            providers = Stream.concat(providers, Stream.of(Bruce.Provider.CONSCRYPT));
+        }
+        return providers;
     }
 }
 
