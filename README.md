@@ -21,6 +21,7 @@
 - **Multiple encodings** — HEX, BASE64, URL-safe BASE64, and MIME BASE64
 - **Pluggable providers** — works with any JCA provider (e.g., [Bouncy Castle](https://www.bouncycastle.org/))
 - **Multi-key APIs** — select a key by ID at call time for key-rotation scenarios
+- **Type-safe algorithm enums** — compile-time safety and IDE auto-completion for all algorithm names
 - **Zero runtime dependencies** — pure JDK, no extra JARs required at runtime
 
 ## Requirements
@@ -55,6 +56,14 @@ All operations are accessed through two static facades. Add these imports once a
 import static com.mirkocaserta.bruce.Bruce.*;
 import static com.mirkocaserta.bruce.Bruce.Encoding.*;
 import static com.mirkocaserta.bruce.Keystores.*;
+
+// Optional: import algorithm enums for type-safe algorithm selection
+import com.mirkocaserta.bruce.DigestAlgorithm;
+import com.mirkocaserta.bruce.MacAlgorithm;
+import com.mirkocaserta.bruce.SignatureAlgorithm;
+import com.mirkocaserta.bruce.SymmetricAlgorithm;
+import com.mirkocaserta.bruce.SymmetricCipherAlgorithm;
+import com.mirkocaserta.bruce.AsymmetricAlgorithm;
 ```
 
 ## Usage Examples
@@ -86,9 +95,13 @@ KeyStore ks         = keystore("classpath:keystore.p12", "password", "PKCS12");
 PrivateKey signKey  = privateKey(ks, "alice", "password");
 PublicKey  verifyKey = publicKey(ks, "alice");
 
-// Create a signer and a verifier
+// Create a signer and a verifier (string-based)
 Signer   signer   = signerBuilder().key(signKey).algorithm("SHA256withRSA").build();
 Verifier verifier = verifierBuilder().key(verifyKey).algorithm("SHA256withRSA").build();
+
+// Or use the type-safe enum alternative:
+Signer   signer2   = signerBuilder().key(signKey).algorithm(SignatureAlgorithm.SHA256_WITH_RSA).build();
+Verifier verifier2 = verifierBuilder().key(verifyKey).algorithm(SignatureAlgorithm.SHA256_WITH_RSA).build();
 
 // Sign
 Bytes message   = Bytes.from("Hello, Bob!");
@@ -105,7 +118,9 @@ boolean valid    = verifier.verify(message, sigFromB64);
 ### Message Digest (Hashing)
 
 ```java
+// String-based or enum-based algorithm selection
 Digester sha256 = digestBuilder().algorithm("SHA-256").build();
+Digester sha256e = digestBuilder().algorithm(DigestAlgorithm.SHA_256).build(); // equivalent
 Digester sha512 = digestBuilder().algorithm("SHA-512").build();
 
 Bytes hash    = sha256.digest(Bytes.from("Hello, World!"));
@@ -121,7 +136,7 @@ byte[] keyBytes = symmetricKey("AES");
 byte[] ivBytes  = new byte[16];
 new SecureRandom().nextBytes(ivBytes);
 
-// Build encryptor and decryptor
+// Build encryptor and decryptor (string-based)
 SymmetricEncryptor encryptor = cipherBuilder()
     .key(keyBytes)
     .algorithms("AES", "AES/CBC/PKCS5Padding")
@@ -131,6 +146,12 @@ SymmetricDecryptor decryptor = cipherBuilder()
     .key(keyBytes)
     .algorithms("AES", "AES/CBC/PKCS5Padding")
     .buildSymmetricDecryptor();
+
+// Or use type-safe enums:
+SymmetricEncryptor encryptor2 = cipherBuilder()
+    .key(keyBytes)
+    .algorithms(SymmetricAlgorithm.AES, SymmetricCipherAlgorithm.AES_CBC_PKCS5)
+    .buildSymmetricEncryptor();
 
 Bytes iv         = Bytes.from(ivBytes);
 Bytes cipherText = encryptor.encrypt(iv, Bytes.from("Secret message"));
@@ -229,6 +250,36 @@ SignerByKey signer = signerBuilder()
 // Select the key to use at call time
 Bytes signature = signer.sign("key-2024", Bytes.from("Hello"));
 ```
+
+### Type-Safe Algorithm Enums
+
+All builder methods that accept a raw algorithm string also accept a type-safe enum constant. This provides compile-time validation and IDE auto-completion as an alternative to remembering JCA algorithm name strings.
+
+```java
+// DigestAlgorithm
+digestBuilder().algorithm(DigestAlgorithm.SHA_256).build();
+
+// MacAlgorithm
+macBuilder().key(key).algorithm(MacAlgorithm.HMAC_SHA_256).build();
+
+// SignatureAlgorithm
+signerBuilder().key(privateKey).algorithm(SignatureAlgorithm.SHA256_WITH_RSA).build();
+verifierBuilder().key(publicKey).algorithm(SignatureAlgorithm.SHA256_WITH_RSA).build();
+
+// SymmetricAlgorithm + SymmetricCipherAlgorithm
+cipherBuilder()
+    .key(keyBytes)
+    .algorithms(SymmetricAlgorithm.AES, SymmetricCipherAlgorithm.AES_CBC_PKCS5)
+    .buildSymmetricEncryptor();
+
+// AsymmetricAlgorithm
+cipherBuilder()
+    .key(publicKey)
+    .algorithm(AsymmetricAlgorithm.RSA_ECB_PKCS1)
+    .buildAsymmetricEncryptor();
+```
+
+All enum types implement the `AlgorithmId` interface, which exposes the underlying JCA name via `algorithmName()`. The string-based overloads remain fully supported for custom or provider-specific algorithms not covered by the built-in enums.
 
 ### Using a Custom Provider
 

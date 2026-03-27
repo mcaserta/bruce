@@ -36,13 +36,24 @@ Bytes sig2   = signer.sign(Bytes.from("Hello Bob", ISO_8859_1));
 ```java
 import static com.mirkocaserta.bruce.Bruce.Provider.*;
 
+// String-based algorithm (open-ended, supports any JCA algorithm)
 Signer signer = signerBuilder()
     .key(privateKey)
     .algorithm("SHA512withRSA")
     .provider(BOUNCY_CASTLE)  // optional, defaults to JCA
     // .provider("BC")        // string-based alternative
     .build();
+
+// Enum-based algorithm (type-safe, IDE auto-completion)
+Signer signer2 = signerBuilder()
+    .key(privateKey)
+    .algorithm(SignatureAlgorithm.SHA512_WITH_RSA)
+    .provider(BOUNCY_CASTLE)  // optional
+    .build();
 ```
+
+Common `SignatureAlgorithm` constants: `SHA256_WITH_RSA`, `SHA512_WITH_RSA`,
+`SHA256_WITH_ECDSA`, `SHA512_WITH_ECDSA`, `SHA256_WITH_DSA`, `RSASSA_PSS`.
 
 ### Interface
 

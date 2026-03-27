@@ -35,6 +35,7 @@ String encB64 = ciphertext.encode(BASE64);
 ```java
 import static com.mirkocaserta.bruce.Bruce.Provider.*;
 
+// String-based algorithms (open-ended, supports any JCA algorithm)
 SymmetricEncryptor encryptor = cipherBuilder()
     .key(keyBytes)               // raw byte[] or Bytes
     .keyAlgorithm("AES")
@@ -42,7 +43,20 @@ SymmetricEncryptor encryptor = cipherBuilder()
     .provider(BOUNCY_CASTLE)      // optional, defaults to JCA
     // .provider("BC")            // string-based alternative
     .buildSymmetricEncryptor();
+
+// Enum-based algorithms (type-safe, IDE auto-completion)
+SymmetricEncryptor encryptor2 = cipherBuilder()
+    .key(keyBytes)
+    .algorithms(SymmetricAlgorithm.AES, SymmetricCipherAlgorithm.AES_CBC_PKCS5)
+    .provider(BOUNCY_CASTLE)      // optional
+    .buildSymmetricEncryptor();
 ```
+
+Common `SymmetricAlgorithm` key constants: `AES`, `DES`, `DESEDE`, `BLOWFISH`.
+
+Common `SymmetricCipherAlgorithm` transformation constants: `AES_CBC_PKCS5`,
+`AES_CBC_NO_PADDING`, `AES_GCM_NO_PADDING`, `AES_CTR_NO_PADDING`,
+`AES_ECB_PKCS5`, `DES_CBC_PKCS5`, `DESEDE_CBC_PKCS5`.
 
 ---
 

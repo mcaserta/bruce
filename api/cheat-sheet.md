@@ -16,6 +16,34 @@ public enum Encoding { HEX, BASE64, URL, MIME }
 // ─── Provider enum (Bruce.Provider) ─────────────────────────────────────────
 public enum Provider { JCA, BOUNCY_CASTLE, CONSCRYPT }
 
+// ─── Algorithm enums (AlgorithmId) ──────────────────────────────────────────
+// All implement AlgorithmId: String algorithmName()
+
+DigestAlgorithm          // MD5, SHA_1, SHA_224, SHA_256, SHA_384, SHA_512,
+                         // SHA_512_224, SHA_512_256,
+                         // SHA3_224, SHA3_256, SHA3_384, SHA3_512
+
+MacAlgorithm             // HMAC_MD5, HMAC_SHA_1, HMAC_SHA_224, HMAC_SHA_256,
+                         // HMAC_SHA_384, HMAC_SHA_512, HMAC_SHA_512_224,
+                         // HMAC_SHA_512_256,
+                         // HMAC_SHA3_224, HMAC_SHA3_256, HMAC_SHA3_384, HMAC_SHA3_512
+
+SignatureAlgorithm       // *_WITH_RSA, *_WITH_DSA, *_WITH_ECDSA, RSASSA_PSS
+                         // (MD5, SHA1, SHA224, SHA256, SHA384, SHA512,
+                         //  SHA512_224, SHA512_256, SHA3_256, SHA3_384, SHA3_512)
+
+SymmetricAlgorithm       // AES, DES, DESEDE, BLOWFISH, RC2, RC4, CHACHA20
+
+SymmetricCipherAlgorithm // AES_CBC_PKCS5, AES_CBC_NO_PADDING, AES_CTR_NO_PADDING,
+                         // AES_ECB_PKCS5, AES_ECB_NO_PADDING, AES_GCM_NO_PADDING,
+                         // DES_CBC_PKCS5, DES_ECB_PKCS5,
+                         // DESEDE_CBC_PKCS5, DESEDE_ECB_PKCS5,
+                         // BLOWFISH_CBC_PKCS5, BLOWFISH_ECB_PKCS5
+
+AsymmetricAlgorithm      // RSA, RSA_ECB_PKCS1, RSA_ECB_OAEP_SHA1_MGF1,
+                         // RSA_ECB_OAEP_SHA256_MGF1, RSA_ECB_OAEP_SHA384_MGF1,
+                         // RSA_ECB_OAEP_SHA512_MGF1, RSA_ECB_NO_PADDING
+
 // ─── Bytes ───────────────────────────────────────────────────────────────────
 // Construction
 Bytes.from(byte[]);
@@ -72,10 +100,11 @@ String     symmetricKey(String algorithm, Provider provider, Encoding encoding);
 
 // ─── Digests (Bruce.digestBuilder) ──────────────────────────────────────────
 DigestBuilder digestBuilder()
-  .algorithm(String)
-  .provider(String)    // optional
-  .provider(Provider)  // optional
-  .build()             // → Digester
+  .algorithm(String)           // e.g. "SHA-256"
+  .algorithm(DigestAlgorithm)  // type-safe alternative
+  .provider(String)            // optional
+  .provider(Provider)          // optional
+  .build()                     // → Digester
 
 // Digester interface
 Bytes  Digester.digest(Bytes input)
@@ -86,7 +115,8 @@ Bytes  Digester.digest(File file)     // delegates to Path variant
 SignerBuilder signerBuilder()
   .key(PrivateKey)                    // single key
   .keys(Map<String, PrivateKey>)      // multi-key
-  .algorithm(String)
+  .algorithm(String)                  // e.g. "SHA256withRSA"
+  .algorithm(SignatureAlgorithm)      // type-safe alternative
   .provider(String)                   // optional
   .provider(Provider)                 // optional
   .build()                            // → Signer
@@ -95,7 +125,8 @@ SignerBuilder signerBuilder()
 VerifierBuilder verifierBuilder()
   .key(PublicKey)                     // single key
   .keys(Map<String, PublicKey>)       // multi-key
-  .algorithm(String)
+  .algorithm(String)                  // e.g. "SHA256withRSA"
+  .algorithm(SignatureAlgorithm)      // type-safe alternative
   .provider(String)                   // optional
   .provider(Provider)                 // optional
   .build()                            // → Verifier
@@ -114,28 +145,32 @@ CipherBuilder cipherBuilder()
   // symmetric fixed-key
   .key(byte[])                        // raw bytes
   .key(Bytes)                         // or Bytes
-  .keyAlgorithm(String)              // e.g. "AES"
-  .algorithm(String)                 // e.g. "AES/CBC/PKCS5Padding"
-  .algorithms(String keyAlgo, String cipherAlgo)  // convenience
-  .provider(String)                  // optional
-  .provider(Provider)                // optional
-  .buildSymmetricEncryptor()         // → SymmetricEncryptor
-  .buildSymmetricDecryptor()         // → SymmetricDecryptor
-  .buildSymmetricEncryptorByKey()    // → SymmetricEncryptorByKey (no fixed key)
-  .buildSymmetricDecryptorByKey()    // → SymmetricDecryptorByKey
+  .keyAlgorithm(String)               // e.g. "AES"
+  .keyAlgorithm(SymmetricAlgorithm)   // type-safe alternative
+  .algorithm(String)                  // e.g. "AES/CBC/PKCS5Padding"
+  .algorithm(SymmetricCipherAlgorithm) // type-safe alternative
+  .algorithms(String, String)         // convenience: keyAlgo + cipherAlgo
+  .algorithms(SymmetricAlgorithm, SymmetricCipherAlgorithm) // type-safe convenience
+  .provider(String)                   // optional
+  .provider(Provider)                 // optional
+  .buildSymmetricEncryptor()          // → SymmetricEncryptor
+  .buildSymmetricDecryptor()          // → SymmetricDecryptor
+  .buildSymmetricEncryptorByKey()     // → SymmetricEncryptorByKey (no fixed key)
+  .buildSymmetricDecryptorByKey()     // → SymmetricDecryptorByKey
 
   // asymmetric fixed-key
-  .key(Key)                          // PublicKey or PrivateKey
-  .algorithm(String)                 // e.g. "RSA/ECB/PKCS1Padding"
-  .provider(String)                  // optional
-  .provider(Provider)                // optional
-  .buildAsymmetricEncryptor()        // → AsymmetricEncryptor
-  .buildAsymmetricDecryptor()        // → AsymmetricDecryptor
+  .key(Key)                           // PublicKey or PrivateKey
+  .algorithm(String)                  // e.g. "RSA/ECB/PKCS1Padding"
+  .algorithm(AsymmetricAlgorithm)     // type-safe alternative
+  .provider(String)                   // optional
+  .provider(Provider)                 // optional
+  .buildAsymmetricEncryptor()         // → AsymmetricEncryptor
+  .buildAsymmetricDecryptor()         // → AsymmetricDecryptor
 
   // asymmetric by-key
   .keys(Map<String, Key>)
-  .buildAsymmetricEncryptorByKey()   // → AsymmetricEncryptorByKey
-  .buildAsymmetricDecryptorByKey()   // → AsymmetricDecryptorByKey
+  .buildAsymmetricEncryptorByKey()    // → AsymmetricEncryptorByKey
+  .buildAsymmetricDecryptorByKey()    // → AsymmetricDecryptorByKey
 
 // Symmetric interfaces
 Bytes  SymmetricEncryptor.encrypt(Bytes iv, Bytes plaintext)
@@ -153,6 +188,7 @@ Bytes  AsymmetricDecryptorByKey.decrypt(String keyId, Bytes ciphertext)
 MacBuilder macBuilder()
   .key(Key)
   .algorithm(String)                 // e.g. "HmacSHA256"
+  .algorithm(MacAlgorithm)           // type-safe alternative
   .provider(String)                  // optional
   .provider(Provider)                // optional
   .build()                           // → Mac
