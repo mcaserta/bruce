@@ -71,11 +71,24 @@ class.
 **Functional Interfaces:** Most operations return functional interfaces (e.g.,
 `Signer`, `Verifier`, `Cipher`) that can be used fluently.
 
-**Builder Pattern (NEW):** Complex operations with many parameters now support
-fluent builder APIs to reduce parameter overload:
+**Builder Pattern:** Complex operations with many parameters support fluent
+builder APIs to reduce parameter overload:
 
 - `Bruce.cipherBuilder()` - for cipher operations with 6+ parameters
 - `Bruce.signerBuilder()` - for signer operations with 5+ parameters
+
+**Algorithm Enums:** All builders accept type-safe algorithm enum constants as
+an alternative to raw strings, providing compile-time safety and IDE
+auto-completion:
+
+- `DigestAlgorithm` - SHA-256, SHA-512, MD5, SHA3-*, etc.
+- `MacAlgorithm` - HmacSHA256, HmacSHA512, HmacSHA3-*, etc.
+- `SignatureAlgorithm` - SHA256withRSA, SHA256withECDSA, etc.
+- `SymmetricAlgorithm` - AES, DES, DESede, Blowfish, etc. (key algorithm)
+- `SymmetricCipherAlgorithm` - AES/CBC/PKCS5Padding, AES/GCM/NoPadding, etc.
+- `AsymmetricAlgorithm` - RSA, RSA/ECB/PKCS1Padding, RSA/ECB/OAEP*, etc.
+
+All enum types implement the `AlgorithmId` interface (`algorithmName()` method).
 
 **Multiple Key Support:** Many operations support "ByKey" variants that accept a
 Map of keys, allowing runtime key selection by ID.

@@ -37,12 +37,23 @@ String fileHex = digester.digest(new File("src/test/resources/test-file-1"))
 ```java
 import static com.mirkocaserta.bruce.Bruce.Provider.*;
 
+// String-based algorithm (open-ended, supports any JCA algorithm)
 Digester digester = digestBuilder()
     .algorithm("SHA-256")
     .provider(BOUNCY_CASTLE)  // optional, defaults to JCA
     // .provider("BC")        // string-based alternative
     .build();
+
+// Enum-based algorithm (type-safe, IDE auto-completion)
+Digester digester2 = digestBuilder()
+    .algorithm(DigestAlgorithm.SHA_256)
+    .provider(BOUNCY_CASTLE)  // optional
+    .build();
 ```
+
+Available `DigestAlgorithm` constants: `MD5`, `SHA_1`, `SHA_224`, `SHA_256`,
+`SHA_384`, `SHA_512`, `SHA_512_224`, `SHA_512_256`, `SHA3_224`, `SHA3_256`,
+`SHA3_384`, `SHA3_512`.
 
 ### Interface
 
