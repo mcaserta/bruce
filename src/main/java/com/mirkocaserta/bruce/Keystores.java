@@ -3,7 +3,9 @@ package com.mirkocaserta.bruce;
 import com.mirkocaserta.bruce.impl.keystore.KeyGenerators;
 import com.mirkocaserta.bruce.impl.keystore.KeyStoreOperations;
 import com.mirkocaserta.bruce.impl.util.PemUtils;
+import com.mirkocaserta.bruce.impl.util.Pkcs1Utils;
 
+import java.io.ByteArrayInputStream;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -13,12 +15,12 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.io.ByteArrayInputStream;
 
 /**
  * Feature-focused facade for keystore and key-management operations.
@@ -455,5 +457,242 @@ public final class Keystores {
         } catch (CertificateException e) {
             throw new BruceException("error encoding certificate to PEM", e);
         }
+    }
+
+    // ── DER format ────────────────────────────────────────────────────────────
+
+    /**
+     * Loads a {@link PrivateKey} from raw DER bytes (PKCS#8 format).
+     *
+     * @param der       DER-encoded PKCS#8 private key bytes
+     * @param algorithm key algorithm (e.g., {@code "RSA"}, {@code "EC"})
+     * @return the private key
+     * @throws BruceException if the bytes are invalid or the algorithm is unknown
+     */
+    public static PrivateKey privateKeyFromDer(byte[] der, String algorithm) {
+        try {
+            return KeyFactory.getInstance(algorithm).generatePrivate(new PKCS8EncodedKeySpec(der));
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new BruceException("error loading private key from DER: algorithm=" + algorithm, e);
+        }
+    }
+
+    /**
+     * Loads a {@link PublicKey} from raw DER bytes (X.509 SubjectPublicKeyInfo format).
+     *
+     * @param der       DER-encoded SubjectPublicKeyInfo public key bytes
+     * @param algorithm key algorithm (e.g., {@code "RSA"}, {@code "EC"})
+     * @return the public key
+     * @throws BruceException if the bytes are invalid or the algorithm is unknown
+     */
+    public static PublicKey publicKeyFromDer(byte[] der, String algorithm) {
+        try {
+            return KeyFactory.getInstance(algorithm).generatePublic(new X509EncodedKeySpec(der));
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new BruceException("error loading public key from DER: algorithm=" + algorithm, e);
+        }
+    }
+
+    /**
+     * Loads an X.509 {@link Certificate} from raw DER bytes.
+     *
+     * @param der DER-encoded X.509 certificate bytes
+     * @return the certificate
+     * @throws BruceException if the bytes cannot be parsed
+     */
+    public static Certificate certificateFromDer(byte[] der) {
+        try {
+            return CertificateFactory.getInstance("X.509")
+                    .generateCertificate(new ByteArrayInputStream(der));
+        } catch (CertificateException e) {
+            throw new BruceException("error loading certificate from DER", e);
+        }
+    }
+
+    /**
+     * Exports a {@link Key} to raw DER bytes.
+     *
+     * <p>For private keys the output is PKCS#8 DER; for public keys it is
+     * SubjectPublicKeyInfo (X.509) DER.</p>
+     *
+     * @param key the key to export
+     * @return DER-encoded key bytes
+     * @throws BruceException if the key has no encoded form
+     */
+    public static byte[] keyToDer(Key key) {
+        byte[] encoded = key.getEncoded();
+        if (encoded == null) {
+            throw new BruceException("key has no encoded form and cannot be DER-encoded");
+        }
+        return encoded;
+    }
+
+    /**
+     * Exports an X.509 {@link Certificate} to raw DER bytes.
+     *
+     * @param certificate the certificate to export
+     * @return DER-encoded certificate bytes
+     * @throws BruceException if the certificate cannot be encoded
+     */
+    public static byte[] certificateToDer(Certificate certificate) {
+        try {
+            return certificate.getEncoded();
+        } catch (CertificateEncodingException e) {
+            throw new BruceException("error encoding certificate to DER", e);
+        }
+    }
+
+    // ── PEM ↔ DER conversions ─────────────────────────────────────────────────
+
+    /**
+     * Converts a PEM-encoded string to raw DER bytes by stripping the headers
+     * and Base64-decoding the body.
+     *
+     * <p>This is a format conversion only — no cryptographic parsing is done.</p>
+     *
+     * @param pem the PEM string; must not be {@code null} or blank
+     * @return the raw DER bytes
+     * @throws BruceException if the input is not valid PEM
+     */
+    public static byte[] pemToDer(String pem) {
+        return PemUtils.decode(pem);
+    }
+
+    /**
+     * Converts raw DER bytes to a PEM string with the given type label.
+     *
+     * <p>This is a format conversion only — no cryptographic parsing is done.</p>
+     *
+     * @param der  the raw DER bytes; must not be {@code null} or empty
+     * @param type the PEM type (determines the BEGIN/END label)
+     * @return the PEM-encoded string
+     * @throws BruceException if either argument is invalid
+     */
+    public static String derToPem(byte[] der, PemType type) {
+        return PemUtils.encode(type, der);
+    }
+
+    // ── PKCS#1 RSA format ─────────────────────────────────────────────────────
+
+    /**
+     * Loads an RSA {@link PrivateKey} from PKCS#1 DER bytes.
+     *
+     * <p>PKCS#1 is the traditional RSA-specific private key format, indicated by
+     * {@code -----BEGIN RSA PRIVATE KEY-----} PEM headers.  Because the JDK only
+     * understands PKCS#8, this method wraps the bytes in a PKCS#8 envelope
+     * before parsing.</p>
+     *
+     * @param pkcs1Der PKCS#1 RSAPrivateKey DER bytes
+     * @return the RSA private key
+     * @throws BruceException if the bytes cannot be parsed
+     */
+    public static PrivateKey rsaPrivateKeyFromPkcs1(byte[] pkcs1Der) {
+        return Pkcs1Utils.rsaPrivateKeyFromPkcs1(pkcs1Der);
+    }
+
+    /**
+     * Loads an RSA {@link PrivateKey} from a PKCS#1 PEM string.
+     *
+     * <p>Accepts PEM with {@code -----BEGIN RSA PRIVATE KEY-----} headers.</p>
+     *
+     * @param pem PKCS#1 RSAPrivateKey PEM string
+     * @return the RSA private key
+     * @throws BruceException if the PEM is invalid
+     */
+    public static PrivateKey rsaPrivateKeyFromPkcs1Pem(String pem) {
+        return Pkcs1Utils.rsaPrivateKeyFromPkcs1(PemUtils.decode(pem));
+    }
+
+    /**
+     * Loads an RSA {@link PublicKey} from PKCS#1 DER bytes.
+     *
+     * <p>PKCS#1 is the traditional RSA-specific public key format, indicated by
+     * {@code -----BEGIN RSA PUBLIC KEY-----} PEM headers.  Because the JDK only
+     * understands SubjectPublicKeyInfo (X.509), this method wraps the bytes
+     * in an SPKI envelope before parsing.</p>
+     *
+     * @param pkcs1Der PKCS#1 RSAPublicKey DER bytes
+     * @return the RSA public key
+     * @throws BruceException if the bytes cannot be parsed
+     */
+    public static PublicKey rsaPublicKeyFromPkcs1(byte[] pkcs1Der) {
+        return Pkcs1Utils.rsaPublicKeyFromPkcs1(pkcs1Der);
+    }
+
+    /**
+     * Loads an RSA {@link PublicKey} from a PKCS#1 PEM string.
+     *
+     * <p>Accepts PEM with {@code -----BEGIN RSA PUBLIC KEY-----} headers.</p>
+     *
+     * @param pem PKCS#1 RSAPublicKey PEM string
+     * @return the RSA public key
+     * @throws BruceException if the PEM is invalid
+     */
+    public static PublicKey rsaPublicKeyFromPkcs1Pem(String pem) {
+        return Pkcs1Utils.rsaPublicKeyFromPkcs1(PemUtils.decode(pem));
+    }
+
+    /**
+     * Exports an RSA private key to PKCS#1 DER bytes.
+     *
+     * <p>The JDK normally encodes RSA private keys in PKCS#8 format.  This
+     * method extracts the inner RSAPrivateKey structure from the PKCS#8
+     * envelope, yielding the traditional PKCS#1 DER bytes.</p>
+     *
+     * @param privateKey an RSA private key
+     * @return PKCS#1 RSAPrivateKey DER bytes
+     * @throws BruceException if the key cannot be encoded or is not RSA
+     */
+    public static byte[] rsaPrivateKeyToPkcs1(PrivateKey privateKey) {
+        byte[] pkcs8 = privateKey.getEncoded();
+        if (pkcs8 == null) {
+            throw new BruceException("private key has no encoded form");
+        }
+        return Pkcs1Utils.pkcs8ToPkcs1PrivateKey(pkcs8);
+    }
+
+    /**
+     * Exports an RSA private key as a PKCS#1 PEM string.
+     *
+     * <p>The returned string uses {@code -----BEGIN RSA PRIVATE KEY-----} headers.</p>
+     *
+     * @param privateKey an RSA private key
+     * @return PKCS#1 RSAPrivateKey PEM string
+     * @throws BruceException if the key cannot be encoded or is not RSA
+     */
+    public static String rsaPrivateKeyToPkcs1Pem(PrivateKey privateKey) {
+        return PemUtils.encode(PemType.RSA_PRIVATE_KEY, rsaPrivateKeyToPkcs1(privateKey));
+    }
+
+    /**
+     * Exports an RSA public key to PKCS#1 DER bytes.
+     *
+     * <p>The JDK normally encodes RSA public keys in SubjectPublicKeyInfo (X.509)
+     * format.  This method extracts the inner RSAPublicKey structure, yielding the
+     * traditional PKCS#1 DER bytes.</p>
+     *
+     * @param publicKey an RSA public key
+     * @return PKCS#1 RSAPublicKey DER bytes
+     * @throws BruceException if the key cannot be encoded or is not RSA
+     */
+    public static byte[] rsaPublicKeyToPkcs1(PublicKey publicKey) {
+        byte[] spki = publicKey.getEncoded();
+        if (spki == null) {
+            throw new BruceException("public key has no encoded form");
+        }
+        return Pkcs1Utils.spkiToPkcs1PublicKey(spki);
+    }
+
+    /**
+     * Exports an RSA public key as a PKCS#1 PEM string.
+     *
+     * <p>The returned string uses {@code -----BEGIN RSA PUBLIC KEY-----} headers.</p>
+     *
+     * @param publicKey an RSA public key
+     * @return PKCS#1 RSAPublicKey PEM string
+     * @throws BruceException if the key cannot be encoded or is not RSA
+     */
+    public static String rsaPublicKeyToPkcs1Pem(PublicKey publicKey) {
+        return PemUtils.encode(PemType.RSA_PUBLIC_KEY, rsaPublicKeyToPkcs1(publicKey));
     }
 }
