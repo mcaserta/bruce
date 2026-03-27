@@ -35,12 +35,31 @@ public class MacBuilder {
     
     /**
      * Sets the MAC algorithm.
-     * 
+     *
      * @param algorithm the algorithm (e.g., "HmacSHA256", "HmacMD5")
      * @return this builder
      */
     public MacBuilder algorithm(String algorithm) {
         this.algorithm = algorithm;
+        return this;
+    }
+
+    /**
+     * Sets the MAC algorithm using the type-safe {@link MacAlgorithm} enum.
+     *
+     * <pre>{@code
+     * Mac mac = Bruce.macBuilder()
+     *     .key(secretKey)
+     *     .algorithm(MacAlgorithm.HMAC_SHA_256)
+     *     .build();
+     * }</pre>
+     *
+     * @param algorithm MAC algorithm constant; must not be {@code null}
+     * @return this builder
+     */
+    public MacBuilder algorithm(MacAlgorithm algorithm) {
+        Preconditions.requireNonNull(algorithm, "algorithm");
+        this.algorithm = algorithm.algorithmName();
         return this;
     }
     
