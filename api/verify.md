@@ -43,13 +43,24 @@ boolean ok4 = verifier.verify(
 ```java
 import static com.mirkocaserta.bruce.Bruce.Provider.*;
 
+// String-based algorithm (open-ended, supports any JCA algorithm)
 Verifier verifier = verifierBuilder()
     .key(publicKey)
     .algorithm("SHA512withRSA")
     .provider(BOUNCY_CASTLE)  // optional, defaults to JCA
     // .provider("BC")        // string-based alternative
     .build();
+
+// Enum-based algorithm (type-safe, IDE auto-completion)
+Verifier verifier2 = verifierBuilder()
+    .key(publicKey)
+    .algorithm(SignatureAlgorithm.SHA512_WITH_RSA)
+    .provider(BOUNCY_CASTLE)  // optional
+    .build();
 ```
+
+Common `SignatureAlgorithm` constants: `SHA256_WITH_RSA`, `SHA512_WITH_RSA`,
+`SHA256_WITH_ECDSA`, `SHA512_WITH_ECDSA`, `SHA256_WITH_DSA`, `RSASSA_PSS`.
 
 ### Interface
 

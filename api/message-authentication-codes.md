@@ -42,13 +42,26 @@ assertEquals(aliceMac.encode(BASE64), bobMac.encode(BASE64));
 ```java
 import static com.mirkocaserta.bruce.Bruce.Provider.*;
 
+// String-based algorithm (open-ended, supports any JCA algorithm)
 Mac mac = macBuilder()
     .key(secretKey)
     .algorithm("HmacSHA256")
     .provider(BOUNCY_CASTLE)  // optional, defaults to JCA
     // .provider("BC")        // string-based alternative
     .build();
+
+// Enum-based algorithm (type-safe, IDE auto-completion)
+Mac mac2 = macBuilder()
+    .key(secretKey)
+    .algorithm(MacAlgorithm.HMAC_SHA_256)
+    .provider(BOUNCY_CASTLE)  // optional
+    .build();
 ```
+
+Available `MacAlgorithm` constants: `HMAC_MD5`, `HMAC_SHA_1`, `HMAC_SHA_224`,
+`HMAC_SHA_256`, `HMAC_SHA_384`, `HMAC_SHA_512`, `HMAC_SHA_512_224`,
+`HMAC_SHA_512_256`, `HMAC_SHA3_224`, `HMAC_SHA3_256`, `HMAC_SHA3_384`,
+`HMAC_SHA3_512`.
 
 ### Interface
 
