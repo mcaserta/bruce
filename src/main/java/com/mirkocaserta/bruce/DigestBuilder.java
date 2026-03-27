@@ -28,6 +28,24 @@ public class DigestBuilder {
     }
 
     /**
+     * Sets the digest algorithm using the type-safe {@link DigestAlgorithm} enum.
+     *
+     * <pre>{@code
+     * Digester digester = Bruce.digestBuilder()
+     *     .algorithm(DigestAlgorithm.SHA_256)
+     *     .build();
+     * }</pre>
+     *
+     * @param algorithm digest algorithm constant; must not be {@code null}
+     * @return this builder
+     */
+    public DigestBuilder algorithm(DigestAlgorithm algorithm) {
+        Preconditions.requireNonNull(algorithm, "algorithm");
+        this.algorithm = algorithm.algorithmName();
+        return this;
+    }
+
+    /**
      * Sets the cryptographic provider (e.g., {@code "BC"} for Bouncy Castle).
      *
      * @param provider provider name, or {@code null} / empty for JVM default

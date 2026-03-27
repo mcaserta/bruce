@@ -56,6 +56,25 @@ public class VerifierBuilder {
     }
 
     /**
+     * Sets the verification algorithm using the type-safe {@link SignatureAlgorithm} enum.
+     *
+     * <pre>{@code
+     * Verifier verifier = Bruce.verifierBuilder()
+     *     .key(publicKey)
+     *     .algorithm(SignatureAlgorithm.SHA256_WITH_RSA)
+     *     .build();
+     * }</pre>
+     *
+     * @param algorithm signature algorithm constant; must not be {@code null}
+     * @return this builder
+     */
+    public VerifierBuilder algorithm(SignatureAlgorithm algorithm) {
+        Preconditions.requireNonNull(algorithm, "algorithm");
+        this.algorithm = algorithm.algorithmName();
+        return this;
+    }
+
+    /**
      * Sets the cryptographic provider (e.g., {@code "BC"} for Bouncy Castle).
      *
      * @param provider provider name, or {@code null} / empty for JVM default

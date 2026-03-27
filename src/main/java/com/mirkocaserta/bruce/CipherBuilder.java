@@ -97,6 +97,18 @@ public class CipherBuilder {
     }
 
     /**
+     * Sets the symmetric key algorithm using the type-safe {@link SymmetricAlgorithm} enum.
+     *
+     * @param keyAlgorithm symmetric key algorithm constant; must not be {@code null}
+     * @return this builder
+     */
+    public CipherBuilder keyAlgorithm(SymmetricAlgorithm keyAlgorithm) {
+        Preconditions.requireNonNull(keyAlgorithm, "keyAlgorithm");
+        this.keyAlgorithm = keyAlgorithm.algorithmName();
+        return this;
+    }
+
+    /**
      * Sets the cipher algorithm (e.g., {@code "AES/CBC/PKCS5Padding"}, {@code "RSA"}).
      *
      * @param cipherAlgorithm cipher transformation
@@ -104,6 +116,46 @@ public class CipherBuilder {
      */
     public CipherBuilder algorithm(String cipherAlgorithm) {
         this.cipherAlgorithm = cipherAlgorithm;
+        return this;
+    }
+
+    /**
+     * Sets the symmetric cipher transformation using the type-safe
+     * {@link SymmetricCipherAlgorithm} enum.
+     *
+     * <pre>{@code
+     * Bruce.cipherBuilder()
+     *     .key(keyBytes)
+     *     .algorithms(SymmetricAlgorithm.AES, SymmetricCipherAlgorithm.AES_CBC_PKCS5)
+     *     .buildSymmetricEncryptor();
+     * }</pre>
+     *
+     * @param cipherAlgorithm symmetric cipher transformation constant; must not be {@code null}
+     * @return this builder
+     */
+    public CipherBuilder algorithm(SymmetricCipherAlgorithm cipherAlgorithm) {
+        Preconditions.requireNonNull(cipherAlgorithm, "cipherAlgorithm");
+        this.cipherAlgorithm = cipherAlgorithm.algorithmName();
+        return this;
+    }
+
+    /**
+     * Sets the asymmetric cipher transformation using the type-safe
+     * {@link AsymmetricAlgorithm} enum.
+     *
+     * <pre>{@code
+     * Bruce.cipherBuilder()
+     *     .key(publicKey)
+     *     .algorithm(AsymmetricAlgorithm.RSA_ECB_PKCS1)
+     *     .buildAsymmetricEncryptor();
+     * }</pre>
+     *
+     * @param cipherAlgorithm asymmetric cipher transformation constant; must not be {@code null}
+     * @return this builder
+     */
+    public CipherBuilder algorithm(AsymmetricAlgorithm cipherAlgorithm) {
+        Preconditions.requireNonNull(cipherAlgorithm, "cipherAlgorithm");
+        this.cipherAlgorithm = cipherAlgorithm.algorithmName();
         return this;
     }
 
@@ -117,6 +169,28 @@ public class CipherBuilder {
     public CipherBuilder algorithms(String keyAlgorithm, String cipherAlgorithm) {
         this.keyAlgorithm = keyAlgorithm;
         this.cipherAlgorithm = cipherAlgorithm;
+        return this;
+    }
+
+    /**
+     * Sets both key and cipher algorithms using the type-safe enums (convenience method).
+     *
+     * <pre>{@code
+     * Bruce.cipherBuilder()
+     *     .key(keyBytes)
+     *     .algorithms(SymmetricAlgorithm.AES, SymmetricCipherAlgorithm.AES_CBC_PKCS5)
+     *     .buildSymmetricEncryptor();
+     * }</pre>
+     *
+     * @param keyAlgorithm symmetric key algorithm constant; must not be {@code null}
+     * @param cipherAlgorithm symmetric cipher transformation constant; must not be {@code null}
+     * @return this builder
+     */
+    public CipherBuilder algorithms(SymmetricAlgorithm keyAlgorithm, SymmetricCipherAlgorithm cipherAlgorithm) {
+        Preconditions.requireNonNull(keyAlgorithm, "keyAlgorithm");
+        Preconditions.requireNonNull(cipherAlgorithm, "cipherAlgorithm");
+        this.keyAlgorithm = keyAlgorithm.algorithmName();
+        this.cipherAlgorithm = cipherAlgorithm.algorithmName();
         return this;
     }
 
