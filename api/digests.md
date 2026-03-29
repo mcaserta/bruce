@@ -27,7 +27,7 @@ String b64_2 = digester.digest(Bytes.from("hello 👋🏻", UTF_16)).encode(BASE
 String fileHash = digester.digest(Path.of("src/test/resources/test-file-1"))
                           .encode(BASE64);
 
-// java.io.File → HEX string
+// java.io.File → HEX string (delegates to digest(Path), same streaming behavior)
 String fileHex = digester.digest(new File("src/test/resources/test-file-1"))
                          .encode(HEX);
 ```
