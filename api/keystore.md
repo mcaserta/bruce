@@ -114,3 +114,37 @@ Same as above but allows specifying an explicit JCA provider.
 ```java
 KeyStore keystore = keystore("classpath:keystore.p12", "password".toCharArray(), "PKCS12", "BC");
 ```
+
+## Serialization
+
+```java
+byte[] keystoreToBytes(KeyStore keystore, char[] password);
+byte[] keystoreToBytes(KeyStore keystore, String password);
+
+String keystoreToString(KeyStore keystore, char[] password, Bruce.Encoding encoding);
+String keystoreToString(KeyStore keystore, String password, Bruce.Encoding encoding);
+
+void keystoreToFile(KeyStore keystore, char[] password, Path path);
+void keystoreToFile(KeyStore keystore, String password, Path path);
+void keystoreToFile(KeyStore keystore, char[] password, File file);
+void keystoreToFile(KeyStore keystore, String password, File file);
+```
+
+Serializes an in-memory key store so you can persist it in different forms:
+
+- raw bytes for transport or custom storage
+- encoded text using `HEX`, `BASE64`, `URL`, or `MIME`
+- direct file output to `Path` or `File`
+
+### Usage Examples
+
+```java
+KeyStore ks = keystore("classpath:keystore.p12", "password");
+
+byte[] raw = keystoreToBytes(ks, "password");
+String base64 = keystoreToString(ks, "password", Bruce.Encoding.BASE64);
+
+keystoreToFile(ks, "password", Path.of("/tmp/keystore-copy.p12"));
+keystoreToFile(ks, "password", new File("/tmp/keystore-copy-2.p12"));
+```
+

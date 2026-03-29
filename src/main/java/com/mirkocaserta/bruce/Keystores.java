@@ -2,10 +2,13 @@ package com.mirkocaserta.bruce;
 
 import com.mirkocaserta.bruce.impl.keystore.KeyGenerators;
 import com.mirkocaserta.bruce.impl.keystore.KeyStoreOperations;
+import com.mirkocaserta.bruce.impl.util.EncodingUtils;
 import com.mirkocaserta.bruce.impl.util.PemUtils;
 import com.mirkocaserta.bruce.impl.util.Pkcs1Utils;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.nio.file.Path;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -23,7 +26,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 /**
- * Feature-focused facade for keystore and key-management operations.
+ * Feature-focused facade for keystore and key-management operations,
+ * including keystore serialization to bytes, encoded strings, and files.
  *
  * @author Mirko Caserta (mirko.caserta@gmail.com)
  */
@@ -151,6 +155,96 @@ public final class Keystores {
      */
     public static KeyStore keystore(String location, String password, String type, Bruce.Provider provider) {
         return KeyStoreOperations.loadKeyStore(location, password.toCharArray(), type, providerName(provider));
+    }
+
+    /**
+     * Serializes a {@link KeyStore} to raw bytes.
+     *
+     * @param keystore source keystore
+     * @param password keystore password
+     * @return serialized keystore bytes
+     */
+    public static byte[] keystoreToBytes(KeyStore keystore, char[] password) {
+        return KeyStoreOperations.storeKeyStore(keystore, password);
+    }
+
+    /**
+     * Serializes a {@link KeyStore} to raw bytes.
+     *
+     * @param keystore source keystore
+     * @param password keystore password
+     * @return serialized keystore bytes
+     */
+    public static byte[] keystoreToBytes(KeyStore keystore, String password) {
+        return KeyStoreOperations.storeKeyStore(keystore, password.toCharArray());
+    }
+
+    /**
+     * Serializes a {@link KeyStore} and encodes the bytes as text.
+     *
+     * @param keystore source keystore
+     * @param password keystore password
+     * @param encoding target text encoding
+     * @return encoded serialized keystore
+     */
+    public static String keystoreToString(KeyStore keystore, char[] password, Bruce.Encoding encoding) {
+        return EncodingUtils.encode(encoding, keystoreToBytes(keystore, password));
+    }
+
+    /**
+     * Serializes a {@link KeyStore} and encodes the bytes as text.
+     *
+     * @param keystore source keystore
+     * @param password keystore password
+     * @param encoding target text encoding
+     * @return encoded serialized keystore
+     */
+    public static String keystoreToString(KeyStore keystore, String password, Bruce.Encoding encoding) {
+        return EncodingUtils.encode(encoding, keystoreToBytes(keystore, password));
+    }
+
+    /**
+     * Serializes a {@link KeyStore} to a file path.
+     *
+     * @param keystore source keystore
+     * @param password keystore password
+     * @param path destination file path
+     */
+    public static void keystoreToFile(KeyStore keystore, char[] password, Path path) {
+        KeyStoreOperations.storeKeyStore(keystore, password, path);
+    }
+
+    /**
+     * Serializes a {@link KeyStore} to a file path.
+     *
+     * @param keystore source keystore
+     * @param password keystore password
+     * @param path destination file path
+     */
+    public static void keystoreToFile(KeyStore keystore, String password, Path path) {
+        KeyStoreOperations.storeKeyStore(keystore, password.toCharArray(), path);
+    }
+
+    /**
+     * Serializes a {@link KeyStore} to a file.
+     *
+     * @param keystore source keystore
+     * @param password keystore password
+     * @param file destination file
+     */
+    public static void keystoreToFile(KeyStore keystore, char[] password, File file) {
+        KeyStoreOperations.storeKeyStore(keystore, password, file.toPath());
+    }
+
+    /**
+     * Serializes a {@link KeyStore} to a file.
+     *
+     * @param keystore source keystore
+     * @param password keystore password
+     * @param file destination file
+     */
+    public static void keystoreToFile(KeyStore keystore, String password, File file) {
+        KeyStoreOperations.storeKeyStore(keystore, password.toCharArray(), file.toPath());
     }
 
     /**

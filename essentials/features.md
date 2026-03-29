@@ -3,8 +3,8 @@
 - All cryptographic operations are exposed through a small set of entry points:
   - `Bruce` — builder factories (`cipherBuilder()`, `signerBuilder()`,
     `verifierBuilder()`, `digestBuilder()`, `macBuilder()`)
-  - `Keystores` — keystore loading, key and certificate retrieval, key
-    generation
+  - `Keystores` — keystore loading, serialization, key and certificate
+    retrieval, key generation
   - `Bytes` — universal I/O type for passing data in and getting results out
 - No checked exceptions cluttering your code.
 - No transitive dependencies. Zero. Zilch.
