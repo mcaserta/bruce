@@ -45,7 +45,6 @@ public class MacBuilder {
     }
 
     /**
-<<<<<<< HEAD
      * Sets the MAC algorithm using the type-safe {@link MacAlgorithm} enum.
      *
      * <pre>{@code
@@ -61,16 +60,6 @@ public class MacBuilder {
     public MacBuilder algorithm(MacAlgorithm algorithm) {
         Preconditions.requireNonNull(algorithm, "algorithm");
         this.algorithm = algorithm.algorithmName();
-||||||| parent of 6848bc6 (Add #205 phase 1 algorithm enums for builder APIs)
-=======
-     * Sets the MAC algorithm via enum.
-     *
-     * @param algorithm MAC algorithm enum value
-     * @return this builder
-     */
-    public MacBuilder algorithm(Bruce.MacAlgorithm algorithm) {
-        this.algorithm = algorithm == null ? null : algorithm.algorithmName();
->>>>>>> 6848bc6 (Add #205 phase 1 algorithm enums for builder APIs)
         return this;
     }
     

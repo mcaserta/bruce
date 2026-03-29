@@ -16,7 +16,6 @@ public enum Encoding { HEX, BASE64, URL, MIME }
 // ─── Provider enum (Bruce.Provider) ─────────────────────────────────────────
 public enum Provider { JCA, BOUNCY_CASTLE, CONSCRYPT }
 
-<<<<<<< HEAD
 // ─── Algorithm enums (AlgorithmId) ──────────────────────────────────────────
 // All implement AlgorithmId: String algorithmName()
 
@@ -44,13 +43,6 @@ SymmetricCipherAlgorithm // AES_CBC_PKCS5, AES_CBC_NO_PADDING, AES_CTR_NO_PADDIN
 AsymmetricAlgorithm      // RSA, RSA_ECB_PKCS1, RSA_ECB_OAEP_SHA1_MGF1,
                          // RSA_ECB_OAEP_SHA256_MGF1, RSA_ECB_OAEP_SHA384_MGF1,
                          // RSA_ECB_OAEP_SHA512_MGF1, RSA_ECB_NO_PADDING
-||||||| parent of f503119 (Extend #205 with cipher and key-generation algorithm enums)
-=======
-// ─── Algorithm enums (Bruce.*) ──────────────────────────────────────────────
-public enum AsymmetricKeyAlgorithm { RSA, DSA, EC }
-public enum SymmetricKeyAlgorithm { AES, DES, DESEDE, HMAC_SHA1, HMAC_SHA256, HMAC_SHA384, HMAC_SHA512 }
-public enum CipherAlgorithm { RSA, RSA_ECB_PKCS1PADDING, AES_CBC_PKCS5PADDING, DESEDE_CBC_PKCS5PADDING }
->>>>>>> f503119 (Extend #205 with cipher and key-generation algorithm enums)
 
 // ─── Bytes ───────────────────────────────────────────────────────────────────
 // Construction
@@ -94,28 +86,17 @@ PrivateKey privateKey(KeyStore keystore, String alias, String password);
 Key        secretKey(KeyStore keystore, String alias, char[] password);
 Key        secretKey(KeyStore keystore, String alias, String password);
 KeyPair    keyPair(String algorithm, int keySize);
-KeyPair    keyPair(AsymmetricKeyAlgorithm algorithm, int keySize);
 KeyPair    keyPair(String algorithm, String provider, int keySize);
-KeyPair    keyPair(AsymmetricKeyAlgorithm algorithm, String provider, int keySize);
 KeyPair    keyPair(String algorithm, Provider provider, int keySize);
 KeyPair    keyPair(String algorithm, int keySize, SecureRandom random);
-KeyPair    keyPair(AsymmetricKeyAlgorithm algorithm, int keySize, SecureRandom random);
 KeyPair    keyPair(String algorithm, String provider, int keySize, SecureRandom random);
-KeyPair    keyPair(AsymmetricKeyAlgorithm algorithm, String provider, int keySize, SecureRandom random);
 KeyPair    keyPair(String algorithm, Provider provider, int keySize, SecureRandom random);
-KeyPair    keyPair(AsymmetricKeyAlgorithm algorithm, Provider provider, int keySize, SecureRandom random);
 byte[]     symmetricKey(String algorithm);
-byte[]     symmetricKey(SymmetricKeyAlgorithm algorithm);
 byte[]     symmetricKey(String algorithm, String provider);
-byte[]     symmetricKey(SymmetricKeyAlgorithm algorithm, String provider);
 byte[]     symmetricKey(String algorithm, Provider provider);
-byte[]     symmetricKey(SymmetricKeyAlgorithm algorithm, Provider provider);
 String     symmetricKey(String algorithm, Encoding encoding);
-String     symmetricKey(SymmetricKeyAlgorithm algorithm, Encoding encoding);
 String     symmetricKey(String algorithm, String provider, Encoding encoding);
-String     symmetricKey(SymmetricKeyAlgorithm algorithm, String provider, Encoding encoding);
 String     symmetricKey(String algorithm, Provider provider, Encoding encoding);
-String     symmetricKey(SymmetricKeyAlgorithm algorithm, Provider provider, Encoding encoding);
 
 // ─── Digests (Bruce.digestBuilder) ──────────────────────────────────────────
 DigestBuilder digestBuilder()
@@ -164,7 +145,6 @@ CipherBuilder cipherBuilder()
   // symmetric fixed-key
   .key(byte[])                        // raw bytes
   .key(Bytes)                         // or Bytes
-<<<<<<< HEAD
   .keyAlgorithm(String)               // e.g. "AES"
   .keyAlgorithm(SymmetricAlgorithm)   // type-safe alternative
   .algorithm(String)                  // e.g. "AES/CBC/PKCS5Padding"
@@ -177,30 +157,6 @@ CipherBuilder cipherBuilder()
   .buildSymmetricDecryptor()          // → SymmetricDecryptor
   .buildSymmetricEncryptorByKey()     // → SymmetricEncryptorByKey (no fixed key)
   .buildSymmetricDecryptorByKey()     // → SymmetricDecryptorByKey
-||||||| parent of f503119 (Extend #205 with cipher and key-generation algorithm enums)
-  .keyAlgorithm(String)              // e.g. "AES"
-  .algorithm(String)                 // e.g. "AES/CBC/PKCS5Padding"
-  .algorithms(String keyAlgo, String cipherAlgo)  // convenience
-  .provider(String)                  // optional
-  .provider(Provider)                // optional
-  .buildSymmetricEncryptor()         // → SymmetricEncryptor
-  .buildSymmetricDecryptor()         // → SymmetricDecryptor
-  .buildSymmetricEncryptorByKey()    // → SymmetricEncryptorByKey (no fixed key)
-  .buildSymmetricDecryptorByKey()    // → SymmetricDecryptorByKey
-=======
-  .keyAlgorithm(String)              // e.g. "AES"
-  .keyAlgorithm(SymmetricKeyAlgorithm)
-  .algorithm(String)                 // e.g. "AES/CBC/PKCS5Padding"
-  .algorithm(CipherAlgorithm)
-  .algorithms(String keyAlgo, String cipherAlgo)  // convenience
-  .algorithms(SymmetricKeyAlgorithm keyAlgo, CipherAlgorithm cipherAlgo)
-  .provider(String)                  // optional
-  .provider(Provider)                // optional
-  .buildSymmetricEncryptor()         // → SymmetricEncryptor
-  .buildSymmetricDecryptor()         // → SymmetricDecryptor
-  .buildSymmetricEncryptorByKey()    // → SymmetricEncryptorByKey (no fixed key)
-  .buildSymmetricDecryptorByKey()    // → SymmetricDecryptorByKey
->>>>>>> f503119 (Extend #205 with cipher and key-generation algorithm enums)
 
   // asymmetric fixed-key
   .key(Key)                           // PublicKey or PrivateKey

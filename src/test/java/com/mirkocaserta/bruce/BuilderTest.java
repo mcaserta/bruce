@@ -202,25 +202,25 @@ class BuilderTest {
         Bytes message = Bytes.from("enum-algorithms");
 
         var digest = Bruce.digestBuilder()
-                .algorithm(Bruce.DigestAlgorithm.SHA_256)
+                .algorithm(DigestAlgorithm.SHA_256)
                 .build()
                 .digest(message);
         assertEquals(32, digest.length());
 
         var mac = Bruce.macBuilder()
                 .key(hmacKey)
-                .algorithm(Bruce.MacAlgorithm.HMAC_SHA1)
+                .algorithm(MacAlgorithm.HMAC_SHA_1)
                 .build()
                 .get(message);
         assertFalse(mac.isEmpty());
 
         var signer = Bruce.signerBuilder()
                 .key(keyPair.getPrivate())
-                .algorithm(Bruce.SignatureAlgorithm.SHA256_WITH_RSA)
+                .algorithm(SignatureAlgorithm.SHA256_WITH_RSA)
                 .build();
         var verifier = Bruce.verifierBuilder()
                 .key(keyPair.getPublic())
-                .algorithm(Bruce.SignatureAlgorithm.SHA256_WITH_RSA)
+                .algorithm(SignatureAlgorithm.SHA256_WITH_RSA)
                 .build();
 
         var signature = signer.sign(message);
@@ -242,22 +242,22 @@ class BuilderTest {
 
         var symmetricEncryptor = Bruce.cipherBuilder()
                 .key(symmetricKeyBytes)
-                .algorithms(Bruce.SymmetricKeyAlgorithm.AES, Bruce.CipherAlgorithm.AES_CBC_PKCS5PADDING)
+                .algorithms(SymmetricAlgorithm.AES, SymmetricCipherAlgorithm.AES_CBC_PKCS5)
                 .buildSymmetricEncryptor();
         var symmetricDecryptor = Bruce.cipherBuilder()
                 .key(symmetricKeyBytes)
-                .algorithms(Bruce.SymmetricKeyAlgorithm.AES, Bruce.CipherAlgorithm.AES_CBC_PKCS5PADDING)
+                .algorithms(SymmetricAlgorithm.AES, SymmetricCipherAlgorithm.AES_CBC_PKCS5)
                 .buildSymmetricDecryptor();
         Bytes cipher = symmetricEncryptor.encrypt(iv, payload);
         assertEquals(payload, symmetricDecryptor.decrypt(iv, cipher));
 
         var asymmetricEncryptor = Bruce.cipherBuilder()
                 .key(rsa.getPublic())
-                .algorithm(Bruce.CipherAlgorithm.RSA_ECB_PKCS1PADDING)
+                .algorithm(AsymmetricAlgorithm.RSA_ECB_PKCS1)
                 .buildAsymmetricEncryptor();
         var asymmetricDecryptor = Bruce.cipherBuilder()
                 .key(rsa.getPrivate())
-                .algorithm(Bruce.CipherAlgorithm.RSA_ECB_PKCS1PADDING)
+                .algorithm(AsymmetricAlgorithm.RSA_ECB_PKCS1)
                 .buildAsymmetricDecryptor();
         Bytes asymmetricCipher = asymmetricEncryptor.encrypt(payload);
         assertEquals(payload, asymmetricDecryptor.decrypt(asymmetricCipher));
