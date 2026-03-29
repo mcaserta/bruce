@@ -58,7 +58,7 @@ Bytes.fromPem(String);
 // Consumption
 byte[]  b.asBytes();
 String  b.encode(Encoding);
-String  b.toPem(String type);               // e.g. "CERTIFICATE", "PRIVATE KEY"
+String  b.toPem(PemType type);              // e.g. PemType.CERTIFICATE
 String  b.asString();                       // UTF-8
 String  b.asString(Charset);
 int     b.length();
@@ -78,6 +78,10 @@ KeyStore keystore(String location, String password, String type, Provider provid
 
 // ─── Certificates (com.mirkocaserta.bruce.Keystores) ─────────────────────────
 Certificate certificate(KeyStore keystore, String alias);
+Certificate certificateFromPem(String pem);
+Certificate certificateFromDer(byte[] der);
+String      certificateToPem(Certificate certificate);
+byte[]      certificateToDer(Certificate certificate);
 
 // ─── Keys (com.mirkocaserta.bruce.Keystores) ─────────────────────────────────
 PublicKey  publicKey(KeyStore keystore, String alias);
@@ -85,6 +89,22 @@ PrivateKey privateKey(KeyStore keystore, String alias, char[] password);
 PrivateKey privateKey(KeyStore keystore, String alias, String password);
 Key        secretKey(KeyStore keystore, String alias, char[] password);
 Key        secretKey(KeyStore keystore, String alias, String password);
+PrivateKey privateKeyFromPem(String pem, String algorithm);
+PublicKey  publicKeyFromPem(String pem, String algorithm);
+PrivateKey privateKeyFromDer(byte[] der, String algorithm);
+PublicKey  publicKeyFromDer(byte[] der, String algorithm);
+String     keyToPem(Key key);
+byte[]     keyToDer(Key key);
+byte[]     pemToDer(String pem);
+String     derToPem(byte[] der, PemType type);
+PrivateKey rsaPrivateKeyFromPkcs1(byte[] pkcs1Der);
+PrivateKey rsaPrivateKeyFromPkcs1Pem(String pem);
+byte[]     rsaPrivateKeyToPkcs1(PrivateKey privateKey);
+String     rsaPrivateKeyToPkcs1Pem(PrivateKey privateKey);
+PublicKey  rsaPublicKeyFromPkcs1(byte[] pkcs1Der);
+PublicKey  rsaPublicKeyFromPkcs1Pem(String pem);
+byte[]     rsaPublicKeyToPkcs1(PublicKey publicKey);
+String     rsaPublicKeyToPkcs1Pem(PublicKey publicKey);
 KeyPair    keyPair(String algorithm, int keySize);
 KeyPair    keyPair(String algorithm, String provider, int keySize);
 KeyPair    keyPair(String algorithm, Provider provider, int keySize);

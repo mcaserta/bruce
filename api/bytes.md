@@ -49,7 +49,7 @@ String url    = b.encode(URL);
 String mime   = b.encode(MIME);
 
 // encode as PEM string
-String pem    = b.toPem("CERTIFICATE");  // or "PRIVATE KEY", "PUBLIC KEY", etc.
+String pem    = b.toPem(PemType.CERTIFICATE);
 
 // decode as UTF-8 string
 String text   = b.asString();

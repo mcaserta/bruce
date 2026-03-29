@@ -174,6 +174,25 @@ class CertificateConversionTest {
         void pemToDerRejectsBlank() {
             assertThrows(BruceException.class, () -> pemToDer("   "));
         }
+
+        @Test
+        @DisplayName("derToPem rejects null DER bytes")
+        void derToPemRejectsNullDer() {
+            assertThrows(BruceException.class, () -> derToPem(null, PemType.PUBLIC_KEY));
+        }
+
+        @Test
+        @DisplayName("derToPem rejects empty DER bytes")
+        void derToPemRejectsEmptyDer() {
+            assertThrows(BruceException.class, () -> derToPem(new byte[0], PemType.PUBLIC_KEY));
+        }
+
+        @Test
+        @DisplayName("derToPem rejects null PEM type")
+        void derToPemRejectsNullType() {
+            KeyPair kp = keyPair("RSA", 2048);
+            assertThrows(BruceException.class, () -> derToPem(kp.getPublic().getEncoded(), null));
+        }
     }
 
     // ── PKCS#1 RSA private key ─────────────────────────────────────────────────
@@ -237,6 +256,12 @@ class CertificateConversionTest {
             // 128 garbage bytes: triggers encodeLength 128-255 branch and then
             // InvalidKeySpecException when the JDK rejects the wrapped garbage as RSA
             assertThrows(BruceException.class, () -> rsaPrivateKeyFromPkcs1(new byte[128]));
+        }
+
+        @Test
+        @DisplayName("rsaPrivateKeyFromPkcs1Pem throws on invalid PEM")
+        void rsaPrivateKeyFromPkcs1PemThrowsOnInvalidPem() {
+            assertThrows(BruceException.class, () -> rsaPrivateKeyFromPkcs1Pem("not-a-pem"));
         }
 
         @Test
@@ -334,6 +359,12 @@ class CertificateConversionTest {
             // 127 garbage bytes: buildBitString adds 1 → encodeLength(128) hits
             // the 128-255 branch, then generatePublic rejects the wrapped garbage
             assertThrows(BruceException.class, () -> rsaPublicKeyFromPkcs1(new byte[127]));
+        }
+
+        @Test
+        @DisplayName("rsaPublicKeyFromPkcs1Pem throws on invalid PEM")
+        void rsaPublicKeyFromPkcs1PemThrowsOnInvalidPem() {
+            assertThrows(BruceException.class, () -> rsaPublicKeyFromPkcs1Pem("not-a-pem"));
         }
 
         @Test
