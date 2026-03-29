@@ -36,14 +36,14 @@
 <dependency>
     <groupId>com.mirkocaserta.bruce</groupId>
     <artifactId>bruce</artifactId>
-    <version>2.0.0</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-implementation 'com.mirkocaserta.bruce:bruce:2.0.0'
+implementation 'com.mirkocaserta.bruce:bruce:2.1.0'
 ```
 
 > Check [Maven Central](https://central.sonatype.com/artifact/com.mirkocaserta.bruce/bruce) for the latest release version.
