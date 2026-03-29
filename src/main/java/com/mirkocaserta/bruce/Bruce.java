@@ -99,4 +99,64 @@ public final class Bruce {
             return providerName;
         }
     }
+
+    /** Curated digest algorithms exposed as enum alternatives to raw strings. */
+    public enum DigestAlgorithm {
+        SHA_1("SHA-1"),
+        SHA_224("SHA-224"),
+        SHA_256("SHA-256"),
+        SHA_384("SHA-384"),
+        SHA_512("SHA-512"),
+        MD5("MD5");
+
+        private final String algorithmName;
+
+        DigestAlgorithm(String algorithmName) {
+            this.algorithmName = algorithmName;
+        }
+
+        public String algorithmName() {
+            return algorithmName;
+        }
+    }
+
+    /** Curated MAC algorithms exposed as enum alternatives to raw strings. */
+    public enum MacAlgorithm {
+        HMAC_MD5("HmacMD5"),
+        HMAC_SHA1("HmacSHA1"),
+        HMAC_SHA256("HmacSHA256"),
+        HMAC_SHA384("HmacSHA384"),
+        HMAC_SHA512("HmacSHA512");
+
+        private final String algorithmName;
+
+        MacAlgorithm(String algorithmName) {
+            this.algorithmName = algorithmName;
+        }
+
+        public String algorithmName() {
+            return algorithmName;
+        }
+    }
+
+    /** Curated signature algorithms exposed as enum alternatives to raw strings. */
+    public enum SignatureAlgorithm {
+        SHA1_WITH_RSA("SHA1withRSA"),
+        SHA256_WITH_RSA("SHA256withRSA"),
+        SHA384_WITH_RSA("SHA384withRSA"),
+        SHA512_WITH_RSA("SHA512withRSA"),
+        SHA256_WITH_ECDSA("SHA256withECDSA"),
+        SHA384_WITH_ECDSA("SHA384withECDSA"),
+        SHA512_WITH_ECDSA("SHA512withECDSA");
+
+        private final String algorithmName;
+
+        SignatureAlgorithm(String algorithmName) {
+            this.algorithmName = algorithmName;
+        }
+
+        public String algorithmName() {
+            return algorithmName;
+        }
+    }
 }

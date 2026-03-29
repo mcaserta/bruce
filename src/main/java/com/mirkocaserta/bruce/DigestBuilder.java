@@ -28,6 +28,7 @@ public class DigestBuilder {
     }
 
     /**
+<<<<<<< HEAD
      * Sets the digest algorithm using the type-safe {@link DigestAlgorithm} enum.
      *
      * <pre>{@code
@@ -42,6 +43,16 @@ public class DigestBuilder {
     public DigestBuilder algorithm(DigestAlgorithm algorithm) {
         Preconditions.requireNonNull(algorithm, "algorithm");
         this.algorithm = algorithm.algorithmName();
+||||||| parent of 6848bc6 (Add #205 phase 1 algorithm enums for builder APIs)
+=======
+     * Sets the digest algorithm via enum.
+     *
+     * @param algorithm digest algorithm enum value
+     * @return this builder
+     */
+    public DigestBuilder algorithm(Bruce.DigestAlgorithm algorithm) {
+        this.algorithm = algorithm == null ? null : algorithm.algorithmName();
+>>>>>>> 6848bc6 (Add #205 phase 1 algorithm enums for builder APIs)
         return this;
     }
 
