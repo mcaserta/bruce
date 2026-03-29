@@ -159,4 +159,60 @@ public final class Bruce {
             return algorithmName;
         }
     }
+
+    /** Curated asymmetric key algorithms exposed as enum alternatives to raw strings. */
+    public enum AsymmetricKeyAlgorithm {
+        RSA("RSA"),
+        DSA("DSA"),
+        EC("EC");
+
+        private final String algorithmName;
+
+        AsymmetricKeyAlgorithm(String algorithmName) {
+            this.algorithmName = algorithmName;
+        }
+
+        public String algorithmName() {
+            return algorithmName;
+        }
+    }
+
+    /** Curated symmetric key algorithms exposed as enum alternatives to raw strings. */
+    public enum SymmetricKeyAlgorithm {
+        AES("AES"),
+        DES("DES"),
+        DESEDE("DESede"),
+        HMAC_SHA1("HmacSHA1"),
+        HMAC_SHA256("HmacSHA256"),
+        HMAC_SHA384("HmacSHA384"),
+        HMAC_SHA512("HmacSHA512");
+
+        private final String algorithmName;
+
+        SymmetricKeyAlgorithm(String algorithmName) {
+            this.algorithmName = algorithmName;
+        }
+
+        public String algorithmName() {
+            return algorithmName;
+        }
+    }
+
+    /** Curated cipher transformations exposed as enum alternatives to raw strings. */
+    public enum CipherAlgorithm {
+        RSA("RSA"),
+        RSA_ECB_PKCS1PADDING("RSA/ECB/PKCS1Padding"),
+        AES_CBC_PKCS5PADDING("AES/CBC/PKCS5Padding"),
+        DESEDE_CBC_PKCS5PADDING("DESede/CBC/PKCS5Padding");
+
+        private final String algorithmName;
+
+        CipherAlgorithm(String algorithmName) {
+            this.algorithmName = algorithmName;
+        }
+
+        public String algorithmName() {
+            return algorithmName;
+        }
+    }
 }

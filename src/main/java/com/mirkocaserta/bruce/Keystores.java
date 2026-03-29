@@ -235,6 +235,17 @@ public final class Keystores {
     }
 
     /**
+     * Generates a key pair using an enum algorithm.
+     *
+     * @param algorithm key pair algorithm enum value
+     * @param keySize key size in bits
+     * @return generated key pair
+     */
+    public static KeyPair keyPair(Bruce.AsymmetricKeyAlgorithm algorithm, int keySize) {
+        return KeyGenerators.generateKeyPair(algorithmName(algorithm), keySize);
+    }
+
+    /**
      * Generates a key pair with explicit provider.
      *
      * @param algorithm key pair algorithm
@@ -244,6 +255,18 @@ public final class Keystores {
      */
     public static KeyPair keyPair(String algorithm, String provider, int keySize) {
         return KeyGenerators.generateKeyPair(algorithm, provider, keySize);
+    }
+
+    /**
+     * Generates a key pair with explicit provider using enum algorithm.
+     *
+     * @param algorithm key pair algorithm enum value
+     * @param provider provider name
+     * @param keySize key size in bits
+     * @return generated key pair
+     */
+    public static KeyPair keyPair(Bruce.AsymmetricKeyAlgorithm algorithm, String provider, int keySize) {
+        return KeyGenerators.generateKeyPair(algorithmName(algorithm), provider, keySize);
     }
 
     /**
@@ -259,6 +282,18 @@ public final class Keystores {
     }
 
     /**
+     * Generates a key pair with explicit provider using enum algorithm.
+     *
+     * @param algorithm key pair algorithm enum value
+     * @param provider provider selection
+     * @param keySize key size in bits
+     * @return generated key pair
+     */
+    public static KeyPair keyPair(Bruce.AsymmetricKeyAlgorithm algorithm, Bruce.Provider provider, int keySize) {
+        return KeyGenerators.generateKeyPair(algorithmName(algorithm), providerName(provider), keySize);
+    }
+
+    /**
      * Generates a key pair using the given secure random source.
      *
      * @param algorithm key pair algorithm
@@ -268,6 +303,18 @@ public final class Keystores {
      */
     public static KeyPair keyPair(String algorithm, int keySize, SecureRandom random) {
         return KeyGenerators.generateKeyPair(algorithm, keySize, random);
+    }
+
+    /**
+     * Generates a key pair using enum algorithm and secure random source.
+     *
+     * @param algorithm key pair algorithm enum value
+     * @param keySize key size in bits
+     * @param random secure random source
+     * @return generated key pair
+     */
+    public static KeyPair keyPair(Bruce.AsymmetricKeyAlgorithm algorithm, int keySize, SecureRandom random) {
+        return KeyGenerators.generateKeyPair(algorithmName(algorithm), keySize, random);
     }
 
     /**
@@ -284,6 +331,19 @@ public final class Keystores {
     }
 
     /**
+     * Generates a key pair with explicit provider, enum algorithm, and secure random source.
+     *
+     * @param algorithm key pair algorithm enum value
+     * @param provider provider name
+     * @param keySize key size in bits
+     * @param random secure random source
+     * @return generated key pair
+     */
+    public static KeyPair keyPair(Bruce.AsymmetricKeyAlgorithm algorithm, String provider, int keySize, SecureRandom random) {
+        return KeyGenerators.generateKeyPair(algorithmName(algorithm), provider, keySize, random);
+    }
+
+    /**
      * Generates a key pair with explicit provider and secure random source.
      *
      * @param algorithm key pair algorithm
@@ -297,6 +357,19 @@ public final class Keystores {
     }
 
     /**
+     * Generates a key pair with enum algorithm, provider, and secure random source.
+     *
+     * @param algorithm key pair algorithm enum value
+     * @param provider provider selection
+     * @param keySize key size in bits
+     * @param random secure random source
+     * @return generated key pair
+     */
+    public static KeyPair keyPair(Bruce.AsymmetricKeyAlgorithm algorithm, Bruce.Provider provider, int keySize, SecureRandom random) {
+        return KeyGenerators.generateKeyPair(algorithmName(algorithm), providerName(provider), keySize, random);
+    }
+
+    /**
      * Generates a random symmetric key.
      *
      * @param algorithm key algorithm (for example {@code AES})
@@ -304,6 +377,16 @@ public final class Keystores {
      */
     public static byte[] symmetricKey(String algorithm) {
         return KeyGenerators.generateSymmetricKey(algorithm);
+    }
+
+    /**
+     * Generates a random symmetric key using enum algorithm.
+     *
+     * @param algorithm symmetric key algorithm enum value
+     * @return raw symmetric key bytes
+     */
+    public static byte[] symmetricKey(Bruce.SymmetricKeyAlgorithm algorithm) {
+        return KeyGenerators.generateSymmetricKey(algorithmName(algorithm));
     }
 
     /**
@@ -318,6 +401,17 @@ public final class Keystores {
     }
 
     /**
+     * Generates a random symmetric key with explicit provider using enum algorithm.
+     *
+     * @param algorithm symmetric key algorithm enum value
+     * @param provider provider name
+     * @return raw symmetric key bytes
+     */
+    public static byte[] symmetricKey(Bruce.SymmetricKeyAlgorithm algorithm, String provider) {
+        return KeyGenerators.generateSymmetricKey(algorithmName(algorithm), provider);
+    }
+
+    /**
      * Generates a random symmetric key with explicit provider.
      *
      * @param algorithm key algorithm
@@ -329,6 +423,17 @@ public final class Keystores {
     }
 
     /**
+     * Generates a random symmetric key with explicit provider using enum algorithm.
+     *
+     * @param algorithm symmetric key algorithm enum value
+     * @param provider provider selection
+     * @return raw symmetric key bytes
+     */
+    public static byte[] symmetricKey(Bruce.SymmetricKeyAlgorithm algorithm, Bruce.Provider provider) {
+        return KeyGenerators.generateSymmetricKey(algorithmName(algorithm), providerName(provider));
+    }
+
+    /**
      * Generates a random symmetric key and encodes it.
      *
      * @param algorithm key algorithm
@@ -337,6 +442,17 @@ public final class Keystores {
      */
     public static String symmetricKey(String algorithm, Bruce.Encoding encoding) {
         return KeyGenerators.generateEncodedSymmetricKey(algorithm, encoding);
+    }
+
+    /**
+     * Generates a random symmetric key and encodes it using enum algorithm.
+     *
+     * @param algorithm symmetric key algorithm enum value
+     * @param encoding output encoding
+     * @return encoded key text
+     */
+    public static String symmetricKey(Bruce.SymmetricKeyAlgorithm algorithm, Bruce.Encoding encoding) {
+        return KeyGenerators.generateEncodedSymmetricKey(algorithmName(algorithm), encoding);
     }
 
     /**
@@ -352,6 +468,18 @@ public final class Keystores {
     }
 
     /**
+     * Generates a random symmetric key with explicit provider and encodes it using enum algorithm.
+     *
+     * @param algorithm symmetric key algorithm enum value
+     * @param provider provider name
+     * @param encoding output encoding
+     * @return encoded key text
+     */
+    public static String symmetricKey(Bruce.SymmetricKeyAlgorithm algorithm, String provider, Bruce.Encoding encoding) {
+        return KeyGenerators.generateEncodedSymmetricKey(algorithmName(algorithm), provider, encoding);
+    }
+
+    /**
      * Generates a random symmetric key with explicit provider and encodes it.
      *
      * @param algorithm key algorithm
@@ -363,8 +491,28 @@ public final class Keystores {
         return KeyGenerators.generateEncodedSymmetricKey(algorithm, providerName(provider), encoding);
     }
 
+    /**
+     * Generates a random symmetric key with explicit provider and encodes it using enum algorithm.
+     *
+     * @param algorithm symmetric key algorithm enum value
+     * @param provider provider selection
+     * @param encoding output encoding
+     * @return encoded key text
+     */
+    public static String symmetricKey(Bruce.SymmetricKeyAlgorithm algorithm, Bruce.Provider provider, Bruce.Encoding encoding) {
+        return KeyGenerators.generateEncodedSymmetricKey(algorithmName(algorithm), providerName(provider), encoding);
+    }
+
     private static String providerName(Bruce.Provider provider) {
         return provider == null ? "" : provider.providerName();
+    }
+
+    private static String algorithmName(Bruce.AsymmetricKeyAlgorithm algorithm) {
+        return algorithm == null ? null : algorithm.algorithmName();
+    }
+
+    private static String algorithmName(Bruce.SymmetricKeyAlgorithm algorithm) {
+        return algorithm == null ? null : algorithm.algorithmName();
     }
 
     // ── PEM helpers ──────────────────────────────────────────────────────────

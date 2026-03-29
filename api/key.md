@@ -63,9 +63,17 @@ Key key = secretKey(keystore, "hmac", "password");
 
 ```java
 byte[]  symmetricKey(String algorithm);
+byte[]  symmetricKey(SymmetricKeyAlgorithm algorithm);
 byte[]  symmetricKey(String algorithm, String provider);
+byte[]  symmetricKey(SymmetricKeyAlgorithm algorithm, String provider);
+byte[]  symmetricKey(String algorithm, Provider provider);
+byte[]  symmetricKey(SymmetricKeyAlgorithm algorithm, Provider provider);
 String  symmetricKey(String algorithm, Encoding encoding);
+String  symmetricKey(SymmetricKeyAlgorithm algorithm, Encoding encoding);
 String  symmetricKey(String algorithm, String provider, Encoding encoding);
+String  symmetricKey(SymmetricKeyAlgorithm algorithm, String provider, Encoding encoding);
+String  symmetricKey(String algorithm, Provider provider, Encoding encoding);
+String  symmetricKey(SymmetricKeyAlgorithm algorithm, Provider provider, Encoding encoding);
 ```
 
 Generates a random symmetric key using the given algorithm.
@@ -74,10 +82,10 @@ Generates a random symmetric key using the given algorithm.
 
 ```java
 // generate raw bytes
-byte[] rawKey = symmetricKey("AES");
+byte[] rawKey = symmetricKey(SymmetricKeyAlgorithm.AES);
 
 // generate BASE64-encoded key string
-String b64Key = symmetricKey("AES", BASE64);
+String b64Key = symmetricKey(SymmetricKeyAlgorithm.AES, BASE64);
 
 // use key as Bytes for the CipherBuilder
 Bytes key = Bytes.from(b64Key, BASE64);
@@ -87,7 +95,11 @@ Bytes key = Bytes.from(b64Key, BASE64);
 
 ```java
 KeyPair keyPair(String algorithm, int keySize);
+KeyPair keyPair(AsymmetricKeyAlgorithm algorithm, int keySize);
 KeyPair keyPair(String algorithm, String provider, int keySize);
+KeyPair keyPair(AsymmetricKeyAlgorithm algorithm, String provider, int keySize);
+KeyPair keyPair(String algorithm, Provider provider, int keySize);
+KeyPair keyPair(AsymmetricKeyAlgorithm algorithm, Provider provider, int keySize);
 ```
 
 Generates a pair of keys for asymmetric cryptography.
@@ -95,7 +107,7 @@ Generates a pair of keys for asymmetric cryptography.
 ### Usage Example
 
 ```java
-KeyPair keyPair = keyPair("RSA", 4096);
+KeyPair keyPair = keyPair(AsymmetricKeyAlgorithm.RSA, 4096);
 
 Signer signer   = signerBuilder().key(keyPair.getPrivate()).algorithm("SHA512withRSA").build();
 Verifier verifier = verifierBuilder().key(keyPair.getPublic()).algorithm("SHA512withRSA").build();
@@ -109,7 +121,11 @@ assertTrue(verifier.verify(message, signature));
 
 ```java
 KeyPair keyPair(String algorithm, int keySize, SecureRandom random);
+KeyPair keyPair(AsymmetricKeyAlgorithm algorithm, int keySize, SecureRandom random);
 KeyPair keyPair(String algorithm, String provider, int keySize, SecureRandom random);
+KeyPair keyPair(AsymmetricKeyAlgorithm algorithm, String provider, int keySize, SecureRandom random);
+KeyPair keyPair(String algorithm, Provider provider, int keySize, SecureRandom random);
+KeyPair keyPair(AsymmetricKeyAlgorithm algorithm, Provider provider, int keySize, SecureRandom random);
 ```
 
 Same as [key pair](#key-pair) but allows passing a `SecureRandom` instance for
@@ -120,5 +136,5 @@ custom initialization of the pseudo random number generator.
 ```java
 SecureRandom random = SecureRandom.getInstanceStrong();
 random.setSeed(new byte[]{0, 1, 2, 3, 4, 5});
-KeyPair keyPair = keyPair("RSA", 4096, random);
+KeyPair keyPair = keyPair(AsymmetricKeyAlgorithm.RSA, 4096, random);
 ```
