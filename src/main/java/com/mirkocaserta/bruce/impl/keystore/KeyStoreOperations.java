@@ -3,8 +3,11 @@ package com.mirkocaserta.bruce.impl.keystore;
 import com.mirkocaserta.bruce.BruceException;
 import com.mirkocaserta.bruce.impl.util.Providers;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -174,6 +177,48 @@ public final class KeyStoreOperations {
             return key;
         } catch (KeyStoreException | UnrecoverableKeyException | NoSuchAlgorithmException e) {
             throw new BruceException(String.format("error loading secret key with alias: %s", alias), e);
+        }
+    }
+
+    /**
+     * Serializes a keystore to raw bytes.
+     *
+     * @param keystore the keystore to serialize
+     * @param password the keystore password
+     * @return the serialized keystore bytes
+     */
+    public static byte[] storeKeyStore(KeyStore keystore, char[] password) {
+        if (keystore == null) {
+            throw new BruceException("keystore must not be null");
+        }
+        if (password == null) {
+            throw new BruceException("password must not be null");
+        }
+
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            keystore.store(outputStream, password);
+            return outputStream.toByteArray();
+        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
+            throw new BruceException("error serializing keystore", e);
+        }
+    }
+
+    /**
+     * Serializes a keystore and writes it to disk.
+     *
+     * @param keystore the keystore to serialize
+     * @param password the keystore password
+     * @param path destination path
+     */
+    public static void storeKeyStore(KeyStore keystore, char[] password, Path path) {
+        if (path == null) {
+            throw new BruceException("path must not be null");
+        }
+
+        try {
+            Files.write(path, storeKeyStore(keystore, password));
+        } catch (IOException e) {
+            throw new BruceException("error writing keystore to path: " + path, e);
         }
     }
 }

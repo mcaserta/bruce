@@ -15,7 +15,7 @@
 - **Asymmetric encryption** — RSA public/private-key encryption and decryption
 - **Message digests** — SHA-256, SHA-512, MD5, and any JCA-supported algorithm
 - **Message Authentication Codes (MAC)** — HmacSHA256, HmacSHA512, and more
-- **Keystore management** — load PKCS12/JKS keystores from classpath, file, HTTP(S)
+- **Keystore management** — load PKCS12/JKS keystores and serialize them to bytes, text, or files
 - **Key generation** — generate RSA/DSA/EC key pairs and symmetric keys on the fly
 - **PEM support** — read and write private keys, public keys, and certificates in PEM format
 - **Multiple encodings** — HEX, BASE64, URL-safe BASE64, and MIME BASE64
@@ -87,6 +87,21 @@ Keystores can be loaded from multiple sources:
 | `file:` | `file:/etc/ssl/keystore.p12` |
 | `http://` | `http://config-server/keystore.p12` |
 | `https://` | `https://config-server/keystore.p12` |
+
+### Keystore Serialization
+
+```java
+KeyStore ks = keystore("classpath:keystore.p12", "password", "PKCS12");
+
+// Serialize to raw bytes
+byte[] raw = keystoreToBytes(ks, "password");
+
+// Serialize and encode for text transport
+String base64 = keystoreToString(ks, "password", BASE64);
+
+// Persist directly to disk
+keystoreToFile(ks, "password", Path.of("/tmp/keystore-copy.p12"));
+```
 
 ### Digital Signatures
 

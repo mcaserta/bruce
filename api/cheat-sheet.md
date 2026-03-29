@@ -75,6 +75,14 @@ KeyStore keystore(String location, char[] password, String type, String provider
 KeyStore keystore(String location, char[] password, String type, Provider provider);
 KeyStore keystore(String location, String password, String type, String provider);
 KeyStore keystore(String location, String password, String type, Provider provider);
+byte[]   keystoreToBytes(KeyStore keystore, char[] password);
+byte[]   keystoreToBytes(KeyStore keystore, String password);
+String   keystoreToString(KeyStore keystore, char[] password, Encoding encoding);
+String   keystoreToString(KeyStore keystore, String password, Encoding encoding);
+void     keystoreToFile(KeyStore keystore, char[] password, Path path);
+void     keystoreToFile(KeyStore keystore, String password, Path path);
+void     keystoreToFile(KeyStore keystore, char[] password, File file);
+void     keystoreToFile(KeyStore keystore, String password, File file);
 
 // ─── Certificates (com.mirkocaserta.bruce.Keystores) ─────────────────────────
 Certificate certificate(KeyStore keystore, String alias);

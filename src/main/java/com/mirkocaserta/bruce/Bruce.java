@@ -93,6 +93,8 @@ public final class Bruce {
         }
 
         /**
+         * Returns the configured provider name.
+         *
          * @return the JCA provider name understood by {@code Security.getProvider}
          */
         public String providerName() {
@@ -102,11 +104,17 @@ public final class Bruce {
 
     /** Curated digest algorithms exposed as enum alternatives to raw strings. */
     public enum DigestAlgorithm {
+        /** SHA-1 digest algorithm. */
         SHA_1("SHA-1"),
+        /** SHA-224 digest algorithm. */
         SHA_224("SHA-224"),
+        /** SHA-256 digest algorithm. */
         SHA_256("SHA-256"),
+        /** SHA-384 digest algorithm. */
         SHA_384("SHA-384"),
+        /** SHA-512 digest algorithm. */
         SHA_512("SHA-512"),
+        /** MD5 digest algorithm. */
         MD5("MD5");
 
         private final String algorithmName;
@@ -115,6 +123,11 @@ public final class Bruce {
             this.algorithmName = algorithmName;
         }
 
+        /**
+         * Returns the JCA algorithm name.
+         *
+         * @return the digest algorithm name
+         */
         public String algorithmName() {
             return algorithmName;
         }
@@ -122,10 +135,15 @@ public final class Bruce {
 
     /** Curated MAC algorithms exposed as enum alternatives to raw strings. */
     public enum MacAlgorithm {
+        /** HmacMD5 MAC algorithm. */
         HMAC_MD5("HmacMD5"),
+        /** HmacSHA1 MAC algorithm. */
         HMAC_SHA1("HmacSHA1"),
+        /** HmacSHA256 MAC algorithm. */
         HMAC_SHA256("HmacSHA256"),
+        /** HmacSHA384 MAC algorithm. */
         HMAC_SHA384("HmacSHA384"),
+        /** HmacSHA512 MAC algorithm. */
         HMAC_SHA512("HmacSHA512");
 
         private final String algorithmName;
@@ -134,6 +152,11 @@ public final class Bruce {
             this.algorithmName = algorithmName;
         }
 
+        /**
+         * Returns the JCA algorithm name.
+         *
+         * @return the MAC algorithm name
+         */
         public String algorithmName() {
             return algorithmName;
         }
@@ -141,12 +164,19 @@ public final class Bruce {
 
     /** Curated signature algorithms exposed as enum alternatives to raw strings. */
     public enum SignatureAlgorithm {
+        /** SHA1withRSA signature algorithm. */
         SHA1_WITH_RSA("SHA1withRSA"),
+        /** SHA256withRSA signature algorithm. */
         SHA256_WITH_RSA("SHA256withRSA"),
+        /** SHA384withRSA signature algorithm. */
         SHA384_WITH_RSA("SHA384withRSA"),
+        /** SHA512withRSA signature algorithm. */
         SHA512_WITH_RSA("SHA512withRSA"),
+        /** SHA256withECDSA signature algorithm. */
         SHA256_WITH_ECDSA("SHA256withECDSA"),
+        /** SHA384withECDSA signature algorithm. */
         SHA384_WITH_ECDSA("SHA384withECDSA"),
+        /** SHA512withECDSA signature algorithm. */
         SHA512_WITH_ECDSA("SHA512withECDSA");
 
         private final String algorithmName;
@@ -155,6 +185,11 @@ public final class Bruce {
             this.algorithmName = algorithmName;
         }
 
+        /**
+         * Returns the JCA algorithm name.
+         *
+         * @return the signature algorithm name
+         */
         public String algorithmName() {
             return algorithmName;
         }
@@ -162,8 +197,11 @@ public final class Bruce {
 
     /** Curated asymmetric key algorithms exposed as enum alternatives to raw strings. */
     public enum AsymmetricKeyAlgorithm {
+        /** RSA key-pair algorithm. */
         RSA("RSA"),
+        /** DSA key-pair algorithm. */
         DSA("DSA"),
+        /** Elliptic Curve key-pair algorithm. */
         EC("EC");
 
         private final String algorithmName;
@@ -172,6 +210,11 @@ public final class Bruce {
             this.algorithmName = algorithmName;
         }
 
+        /**
+         * Returns the JCA algorithm name.
+         *
+         * @return the asymmetric key algorithm name
+         */
         public String algorithmName() {
             return algorithmName;
         }
@@ -179,12 +222,19 @@ public final class Bruce {
 
     /** Curated symmetric key algorithms exposed as enum alternatives to raw strings. */
     public enum SymmetricKeyAlgorithm {
+        /** AES symmetric key algorithm. */
         AES("AES"),
+        /** DES symmetric key algorithm. */
         DES("DES"),
+        /** Triple DES symmetric key algorithm. */
         DESEDE("DESede"),
+        /** HmacSHA1 key algorithm. */
         HMAC_SHA1("HmacSHA1"),
+        /** HmacSHA256 key algorithm. */
         HMAC_SHA256("HmacSHA256"),
+        /** HmacSHA384 key algorithm. */
         HMAC_SHA384("HmacSHA384"),
+        /** HmacSHA512 key algorithm. */
         HMAC_SHA512("HmacSHA512");
 
         private final String algorithmName;
@@ -193,6 +243,11 @@ public final class Bruce {
             this.algorithmName = algorithmName;
         }
 
+        /**
+         * Returns the JCA algorithm name.
+         *
+         * @return the symmetric key algorithm name
+         */
         public String algorithmName() {
             return algorithmName;
         }
@@ -200,9 +255,13 @@ public final class Bruce {
 
     /** Curated cipher transformations exposed as enum alternatives to raw strings. */
     public enum CipherAlgorithm {
+        /** RSA transformation using provider defaults. */
         RSA("RSA"),
+        /** RSA/ECB/PKCS1Padding transformation. */
         RSA_ECB_PKCS1PADDING("RSA/ECB/PKCS1Padding"),
+        /** AES/CBC/PKCS5Padding transformation. */
         AES_CBC_PKCS5PADDING("AES/CBC/PKCS5Padding"),
+        /** DESede/CBC/PKCS5Padding transformation. */
         DESEDE_CBC_PKCS5PADDING("DESede/CBC/PKCS5Padding");
 
         private final String algorithmName;
@@ -211,6 +270,11 @@ public final class Bruce {
             this.algorithmName = algorithmName;
         }
 
+        /**
+         * Returns the JCA transformation name.
+         *
+         * @return the cipher algorithm name
+         */
         public String algorithmName() {
             return algorithmName;
         }
