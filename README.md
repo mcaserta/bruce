@@ -335,6 +335,10 @@ Generate Javadoc:
 ./gradlew javadoc
 ```
 
+## Contributing
+
+Contributions are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the issue and pull request workflow.
+
 ## License
 
 Bruce is released under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).

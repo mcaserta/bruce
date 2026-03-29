@@ -43,6 +43,16 @@ This is a Java library project using Gradle with Java 21 as the target version.
 - JaCoCo for test coverage reporting
 - Uses Java modules (module-info.java)
 
+## GitHub Workflow
+
+When working on GitHub issues and pull requests:
+
+- Fetch the latest `main` and branch from there before starting issue work.
+- Before pushing, ensure tests cover no less than 80% of new code.
+- After pushing your branch, open a pull request.
+- Check the pull request for issues, including pipeline failures and merge conflicts.
+- If merge conflicts occur, resolve them so the changes remain rebase-friendly from the originating branch.
+
 ## Architecture
 
 The library follows a facade pattern with `Bruce.java` as the main entry point.
