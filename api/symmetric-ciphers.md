@@ -34,12 +34,14 @@ String encB64 = ciphertext.encode(BASE64);
 
 ```java
 import static com.mirkocaserta.bruce.Bruce.Provider.*;
+import static com.mirkocaserta.bruce.Bruce.SymmetricKeyAlgorithm.*;
+import static com.mirkocaserta.bruce.Bruce.CipherAlgorithm.*;
 
 // String-based algorithms (open-ended, supports any JCA algorithm)
 SymmetricEncryptor encryptor = cipherBuilder()
     .key(keyBytes)               // raw byte[] or Bytes
-    .keyAlgorithm("AES")
-    .algorithm("AES/CBC/PKCS5Padding")
+    .keyAlgorithm(AES)
+    .algorithm(AES_CBC_PKCS5PADDING)
     .provider(BOUNCY_CASTLE)      // optional, defaults to JCA
     // .provider("BC")            // string-based alternative
     .buildSymmetricEncryptor();

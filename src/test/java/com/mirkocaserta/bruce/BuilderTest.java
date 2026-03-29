@@ -228,6 +228,47 @@ class BuilderTest {
     }
 
     @Test
+    void cipherAndKeystoreEnumOverloadsWork() throws Exception {
+        var rsa = keyPair(Bruce.AsymmetricKeyAlgorithm.RSA, Bruce.Provider.JCA, 2048);
+        Bytes payload = Bytes.from("enum-cipher-roundtrip");
+
+        byte[] ivBytes = new byte[16];
+        new SecureRandom().nextBytes(ivBytes);
+        Bytes iv = Bytes.from(ivBytes);
+        Bytes symmetricKeyBytes = Bytes.from(
+                symmetricKey(Bruce.SymmetricKeyAlgorithm.AES, Bruce.Provider.JCA, BASE64),
+                BASE64
+        );
+
+        var symmetricEncryptor = Bruce.cipherBuilder()
+                .key(symmetricKeyBytes)
+                .algorithms(Bruce.SymmetricKeyAlgorithm.AES, Bruce.CipherAlgorithm.AES_CBC_PKCS5PADDING)
+                .buildSymmetricEncryptor();
+        var symmetricDecryptor = Bruce.cipherBuilder()
+                .key(symmetricKeyBytes)
+                .algorithms(Bruce.SymmetricKeyAlgorithm.AES, Bruce.CipherAlgorithm.AES_CBC_PKCS5PADDING)
+                .buildSymmetricDecryptor();
+        Bytes cipher = symmetricEncryptor.encrypt(iv, payload);
+        assertEquals(payload, symmetricDecryptor.decrypt(iv, cipher));
+
+        var asymmetricEncryptor = Bruce.cipherBuilder()
+                .key(rsa.getPublic())
+                .algorithm(Bruce.CipherAlgorithm.RSA_ECB_PKCS1PADDING)
+                .buildAsymmetricEncryptor();
+        var asymmetricDecryptor = Bruce.cipherBuilder()
+                .key(rsa.getPrivate())
+                .algorithm(Bruce.CipherAlgorithm.RSA_ECB_PKCS1PADDING)
+                .buildAsymmetricDecryptor();
+        Bytes asymmetricCipher = asymmetricEncryptor.encrypt(payload);
+        assertEquals(payload, asymmetricDecryptor.decrypt(asymmetricCipher));
+
+        assertNotNull(keyPair(Bruce.AsymmetricKeyAlgorithm.RSA, 1024));
+        assertNotNull(keyPair(Bruce.AsymmetricKeyAlgorithm.RSA, 1024, SecureRandom.getInstanceStrong()));
+        assertFalse(symmetricKey(Bruce.SymmetricKeyAlgorithm.AES).length == 0);
+        assertFalse(symmetricKey(Bruce.SymmetricKeyAlgorithm.AES, BASE64).isBlank());
+    }
+
+    @Test
     void nullProviderEnumFallsBackToDefaultProviderAcrossBuildersAndKeystores() throws Exception {
         var keyPair = keyPair("RSA", 2048);
         var payload = Bytes.from("provider-null-fallback");

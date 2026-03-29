@@ -33,11 +33,12 @@ String encHex = encryptor.encrypt(Bytes.from("Hello Bob")).encode(HEX);
 
 ```java
 import static com.mirkocaserta.bruce.Bruce.Provider.*;
+import static com.mirkocaserta.bruce.Bruce.CipherAlgorithm.*;
 
 // String-based algorithm (open-ended, supports any JCA algorithm)
 AsymmetricEncryptor encryptor = cipherBuilder()
     .key(publicKey)
-    .algorithm("RSA/ECB/PKCS1Padding")
+    .algorithm(RSA_ECB_PKCS1PADDING)
     .provider(BOUNCY_CASTLE)  // optional, defaults to JCA
     // .provider("BC")        // string-based alternative
     .buildAsymmetricEncryptor();

@@ -6,7 +6,10 @@
 [![Maven Central](https://img.shields.io/maven-central/v/com.mirkocaserta.bruce/bruce)](https://central.sonatype.com/artifact/com.mirkocaserta.bruce/bruce)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-**Bruce** is an ergonomic, lightweight, pure Java wrapper around the [Java Cryptography Architecture (JCA)](https://docs.oracle.com/en/java/docs/books/security/JCA-1.html). It makes common cryptographic operations straightforward without adding any runtime dependencies beyond the JDK.
+**Bruce** is an ergonomic, lightweight, pure Java wrapper around the
+[Java Cryptography Architecture (JCA)](https://docs.oracle.com/en/java/docs/books/security/JCA-1.html).
+It makes common cryptographic operations straightforward without adding any
+runtime dependencies beyond the JDK.
 
 ## Features
 
@@ -15,13 +18,26 @@
 - **Asymmetric encryption** — RSA public/private-key encryption and decryption
 - **Message digests** — SHA-256, SHA-512, MD5, and any JCA-supported algorithm
 - **Message Authentication Codes (MAC)** — HmacSHA256, HmacSHA512, and more
-- **Keystore management** — load PKCS12/JKS keystores from classpath, file, HTTP(S)
-- **Key generation** — generate RSA/DSA/EC key pairs and symmetric keys on the fly
-- **PEM support** — read and write private keys, public keys, and certificates in PEM format
+- **Keystore management** — load PKCS12/JKS keystores from classpath, file,
+  HTTP(S)
+- **Key generation** — generate RSA/DSA/EC key pairs and symmetric keys on the
+  fly
+- **PEM support** — read and write private keys, public keys, and certificates
+  in PEM format
 - **Multiple encodings** — HEX, BASE64, URL-safe BASE64, and MIME BASE64
+<<<<<<< HEAD
 - **Pluggable providers** — works with any JCA provider (e.g., [Bouncy Castle](https://www.bouncycastle.org/))
 - **Multi-key APIs** — select a key by ID at call time for key-rotation scenarios
 - **Type-safe algorithm enums** — compile-time safety and IDE auto-completion for all algorithm names
+||||||| parent of f503119 (Extend #205 with cipher and key-generation algorithm enums)
+- **Pluggable providers** — works with any JCA provider (e.g., [Bouncy Castle](https://www.bouncycastle.org/))
+- **Multi-key APIs** — select a key by ID at call time for key-rotation scenarios
+=======
+- **Pluggable providers** — works with any JCA provider (e.g.,
+  [Bouncy Castle](https://www.bouncycastle.org/))
+- **Multi-key APIs** — select a key by ID at call time for key-rotation
+  scenarios
+>>>>>>> f503119 (Extend #205 with cipher and key-generation algorithm enums)
 - **Zero runtime dependencies** — pure JDK, no extra JARs required at runtime
 
 ## Requirements
@@ -46,11 +62,14 @@
 implementation 'com.mirkocaserta.bruce:bruce:2.0.0'
 ```
 
-> Check [Maven Central](https://central.sonatype.com/artifact/com.mirkocaserta.bruce/bruce) for the latest release version.
+> Check
+> [Maven Central](https://central.sonatype.com/artifact/com.mirkocaserta.bruce/bruce)
+> for the latest release version.
 
 ## Quick Start
 
-All operations are accessed through two static facades. Add these imports once at the top of your file:
+All operations are accessed through two static facades. Add these imports once
+at the top of your file:
 
 ```java
 import static com.mirkocaserta.bruce.Bruce.*;
@@ -81,12 +100,12 @@ PublicKey  publicKey  = publicKey(ks, "alice");
 
 Keystores can be loaded from multiple sources:
 
-| Prefix | Example |
-|--------|---------|
-| `classpath:` | `classpath:keystore.p12` |
-| `file:` | `file:/etc/ssl/keystore.p12` |
-| `http://` | `http://config-server/keystore.p12` |
-| `https://` | `https://config-server/keystore.p12` |
+| Prefix       | Example                              |
+| ------------ | ------------------------------------ |
+| `classpath:` | `classpath:keystore.p12`             |
+| `file:`      | `file:/etc/ssl/keystore.p12`         |
+| `http://`    | `http://config-server/keystore.p12`  |
+| `https://`   | `https://config-server/keystore.p12` |
 
 ### Digital Signatures
 
@@ -132,19 +151,19 @@ String b64Hash = hash.encode(BASE64); // "/fVgIbsr1v..."
 
 ```java
 // Generate a random AES key
-byte[] keyBytes = symmetricKey("AES");
+byte[] keyBytes = symmetricKey(Bruce.SymmetricKeyAlgorithm.AES);
 byte[] ivBytes  = new byte[16];
 new SecureRandom().nextBytes(ivBytes);
 
 // Build encryptor and decryptor (string-based)
 SymmetricEncryptor encryptor = cipherBuilder()
     .key(keyBytes)
-    .algorithms("AES", "AES/CBC/PKCS5Padding")
+    .algorithms(Bruce.SymmetricKeyAlgorithm.AES, Bruce.CipherAlgorithm.AES_CBC_PKCS5PADDING)
     .buildSymmetricEncryptor();
 
 SymmetricDecryptor decryptor = cipherBuilder()
     .key(keyBytes)
-    .algorithms("AES", "AES/CBC/PKCS5Padding")
+    .algorithms(Bruce.SymmetricKeyAlgorithm.AES, Bruce.CipherAlgorithm.AES_CBC_PKCS5PADDING)
     .buildSymmetricDecryptor();
 
 // Or use type-safe enums:
@@ -165,16 +184,16 @@ String encoded = cipherText.encode(BASE64);
 
 ```java
 // Generate an RSA key pair
-KeyPair keyPair = keyPair("RSA", 2048);
+KeyPair keyPair = keyPair(Bruce.AsymmetricKeyAlgorithm.RSA, 2048);
 
 AsymmetricEncryptor encryptor = cipherBuilder()
     .key(keyPair.getPublic())
-    .algorithm("RSA/ECB/PKCS1Padding")
+    .algorithm(Bruce.CipherAlgorithm.RSA_ECB_PKCS1PADDING)
     .buildAsymmetricEncryptor();
 
 AsymmetricDecryptor decryptor = cipherBuilder()
     .key(keyPair.getPrivate())
-    .algorithm("RSA/ECB/PKCS1Padding")
+    .algorithm(Bruce.CipherAlgorithm.RSA_ECB_PKCS1PADDING)
     .buildAsymmetricDecryptor();
 
 Bytes cipherText = encryptor.encrypt(Bytes.from("Top secret"));
@@ -234,7 +253,8 @@ String b64AesKey = symmetricKey("AES", BASE64); // encoded for storage
 
 ### Multi-Key APIs
 
-Bruce supports selecting a key by ID at runtime, which is useful for key-rotation scenarios:
+Bruce supports selecting a key by ID at runtime, which is useful for
+key-rotation scenarios:
 
 ```java
 Map<String, PrivateKey> privateKeys = Map.of(
@@ -295,7 +315,8 @@ Digester digester = digestBuilder()
 
 ## The `Bytes` Type
 
-`Bytes` is Bruce's universal currency type. It wraps a raw byte array and provides convenient conversions:
+`Bytes` is Bruce's universal currency type. It wraps a raw byte array and
+provides convenient conversions:
 
 ```java
 // Construction
@@ -337,7 +358,8 @@ Generate Javadoc:
 
 ## License
 
-Bruce is released under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+Bruce is released under the
+[Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
 ## Links
 
