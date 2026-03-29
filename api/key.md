@@ -138,3 +138,54 @@ SecureRandom random = SecureRandom.getInstanceStrong();
 random.setSeed(new byte[]{0, 1, 2, 3, 4, 5});
 KeyPair keyPair = keyPair(AsymmetricKeyAlgorithm.RSA, 4096, random);
 ```
+
+## Key Format Conversions (PEM / DER / PKCS#1)
+
+Bruce supports key format conversions without Bouncy Castle.
+
+```java
+// Generic key PEM/DER exports
+String keyToPem(Key key);
+byte[] keyToDer(Key key);
+
+// PKCS#8 PEM/DER -> key
+PrivateKey privateKeyFromPem(String pem, String algorithm);
+PublicKey publicKeyFromPem(String pem, String algorithm);
+PrivateKey privateKeyFromDer(byte[] der, String algorithm);
+PublicKey publicKeyFromDer(byte[] der, String algorithm);
+
+// Generic PEM <-> DER helpers
+byte[] pemToDer(String pem);
+String derToPem(byte[] der, PemType type);
+
+// RSA PKCS#1 support
+PrivateKey rsaPrivateKeyFromPkcs1(byte[] pkcs1Der);
+PrivateKey rsaPrivateKeyFromPkcs1Pem(String pem);
+byte[] rsaPrivateKeyToPkcs1(PrivateKey privateKey);
+String rsaPrivateKeyToPkcs1Pem(PrivateKey privateKey);
+
+PublicKey rsaPublicKeyFromPkcs1(byte[] pkcs1Der);
+PublicKey rsaPublicKeyFromPkcs1Pem(String pem);
+byte[] rsaPublicKeyToPkcs1(PublicKey publicKey);
+String rsaPublicKeyToPkcs1Pem(PublicKey publicKey);
+```
+
+### Usage Example
+
+```java
+KeyPair kp = keyPair("RSA", 2048);
+
+// PKCS#8 / SPKI PEM
+String privatePem = keyToPem(kp.getPrivate());
+String publicPem  = keyToPem(kp.getPublic());
+
+PrivateKey privateFromPem = privateKeyFromPem(privatePem, "RSA");
+PublicKey publicFromPem   = publicKeyFromPem(publicPem, "RSA");
+
+// RSA PKCS#1
+String rsaPrivatePkcs1Pem = rsaPrivateKeyToPkcs1Pem(kp.getPrivate());
+String rsaPublicPkcs1Pem  = rsaPublicKeyToPkcs1Pem(kp.getPublic());
+
+PrivateKey rsaPrivateRestored = rsaPrivateKeyFromPkcs1Pem(rsaPrivatePkcs1Pem);
+PublicKey rsaPublicRestored   = rsaPublicKeyFromPkcs1Pem(rsaPublicPkcs1Pem);
+```
