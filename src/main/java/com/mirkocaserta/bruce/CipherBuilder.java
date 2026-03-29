@@ -97,7 +97,6 @@ public class CipherBuilder {
     }
 
     /**
-<<<<<<< HEAD
      * Sets the symmetric key algorithm using the type-safe {@link SymmetricAlgorithm} enum.
      *
      * @param keyAlgorithm symmetric key algorithm constant; must not be {@code null}
@@ -106,16 +105,6 @@ public class CipherBuilder {
     public CipherBuilder keyAlgorithm(SymmetricAlgorithm keyAlgorithm) {
         Preconditions.requireNonNull(keyAlgorithm, "keyAlgorithm");
         this.keyAlgorithm = keyAlgorithm.algorithmName();
-||||||| parent of f503119 (Extend #205 with cipher and key-generation algorithm enums)
-=======
-     * Sets the key algorithm for symmetric ciphers via enum.
-     *
-     * @param keyAlgorithm symmetric key algorithm enum value
-     * @return this builder
-     */
-    public CipherBuilder keyAlgorithm(Bruce.SymmetricKeyAlgorithm keyAlgorithm) {
-        this.keyAlgorithm = keyAlgorithm == null ? null : keyAlgorithm.algorithmName();
->>>>>>> f503119 (Extend #205 with cipher and key-generation algorithm enums)
         return this;
     }
 
@@ -131,7 +120,6 @@ public class CipherBuilder {
     }
 
     /**
-<<<<<<< HEAD
      * Sets the symmetric cipher transformation using the type-safe
      * {@link SymmetricCipherAlgorithm} enum.
      *
@@ -168,16 +156,6 @@ public class CipherBuilder {
     public CipherBuilder algorithm(AsymmetricAlgorithm cipherAlgorithm) {
         Preconditions.requireNonNull(cipherAlgorithm, "cipherAlgorithm");
         this.cipherAlgorithm = cipherAlgorithm.algorithmName();
-||||||| parent of f503119 (Extend #205 with cipher and key-generation algorithm enums)
-=======
-     * Sets the cipher algorithm/transformation via enum.
-     *
-     * @param cipherAlgorithm cipher algorithm enum value
-     * @return this builder
-     */
-    public CipherBuilder algorithm(Bruce.CipherAlgorithm cipherAlgorithm) {
-        this.cipherAlgorithm = cipherAlgorithm == null ? null : cipherAlgorithm.algorithmName();
->>>>>>> f503119 (Extend #205 with cipher and key-generation algorithm enums)
         return this;
     }
 
@@ -195,7 +173,6 @@ public class CipherBuilder {
     }
 
     /**
-<<<<<<< HEAD
      * Sets both key and cipher algorithms using the type-safe enums (convenience method).
      *
      * <pre>{@code
@@ -214,18 +191,6 @@ public class CipherBuilder {
         Preconditions.requireNonNull(cipherAlgorithm, "cipherAlgorithm");
         this.keyAlgorithm = keyAlgorithm.algorithmName();
         this.cipherAlgorithm = cipherAlgorithm.algorithmName();
-||||||| parent of f503119 (Extend #205 with cipher and key-generation algorithm enums)
-=======
-     * Sets both key and cipher algorithms via enums.
-     *
-     * @param keyAlgorithm symmetric key algorithm enum value
-     * @param cipherAlgorithm cipher algorithm enum value
-     * @return this builder
-     */
-    public CipherBuilder algorithms(Bruce.SymmetricKeyAlgorithm keyAlgorithm, Bruce.CipherAlgorithm cipherAlgorithm) {
-        this.keyAlgorithm = keyAlgorithm == null ? null : keyAlgorithm.algorithmName();
-        this.cipherAlgorithm = cipherAlgorithm == null ? null : cipherAlgorithm.algorithmName();
->>>>>>> f503119 (Extend #205 with cipher and key-generation algorithm enums)
         return this;
     }
 

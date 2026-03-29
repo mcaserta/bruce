@@ -56,7 +56,6 @@ public class VerifierBuilder {
     }
 
     /**
-<<<<<<< HEAD
      * Sets the verification algorithm using the type-safe {@link SignatureAlgorithm} enum.
      *
      * <pre>{@code
@@ -72,16 +71,6 @@ public class VerifierBuilder {
     public VerifierBuilder algorithm(SignatureAlgorithm algorithm) {
         Preconditions.requireNonNull(algorithm, "algorithm");
         this.algorithm = algorithm.algorithmName();
-||||||| parent of 6848bc6 (Add #205 phase 1 algorithm enums for builder APIs)
-=======
-     * Sets the verification algorithm via enum.
-     *
-     * @param algorithm signature algorithm enum value
-     * @return this builder
-     */
-    public VerifierBuilder algorithm(Bruce.SignatureAlgorithm algorithm) {
-        this.algorithm = algorithm == null ? null : algorithm.algorithmName();
->>>>>>> 6848bc6 (Add #205 phase 1 algorithm enums for builder APIs)
         return this;
     }
 
