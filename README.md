@@ -126,6 +126,10 @@ Digester sha512 = digestBuilder().algorithm("SHA-512").build();
 Bytes hash    = sha256.digest(Bytes.from("Hello, World!"));
 String hexHash = hash.encode(HEX);    // "dffd6021bb2bd5b0af676290809ec3a5..."
 String b64Hash = hash.encode(BASE64); // "/fVgIbsr1v..."
+
+// File hashing is streamed in chunks (does not load the full file in memory)
+Bytes fileHashFromPath = sha256.digest(Path.of("/var/log/app.log"));
+Bytes fileHashFromFile = sha256.digest(new File("/var/log/app.log"));
 ```
 
 ### Symmetric Encryption (AES)

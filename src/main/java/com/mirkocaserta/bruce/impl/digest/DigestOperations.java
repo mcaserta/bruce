@@ -48,6 +48,7 @@ public final class DigestOperations {
                     var digest = newMessageDigest(algorithm, resolvedProvider);
                     var buffer = new byte[8192];
                     int read;
+                    // Update incrementally while streaming chunks to keep memory usage bounded.
                     while ((read = inputStream.read(buffer)) > 0) {
                         digest.update(buffer, 0, read);
                     }
