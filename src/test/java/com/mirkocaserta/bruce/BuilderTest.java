@@ -194,6 +194,40 @@ class BuilderTest {
     }
 
     @Test
+    void algorithmEnumOverloadsWorkAcrossDigestMacSignerAndVerifierBuilders() {
+        var keyPair = keyPair("RSA", 2048);
+        KeyStore keyStore = keystore("classpath:/keystore.p12", "password".toCharArray(), Keystores.DEFAULT_KEYSTORE_TYPE);
+        var hmacKey = secretKey(keyStore, "hmac", "password".toCharArray());
+
+        Bytes message = Bytes.from("enum-algorithms");
+
+        var digest = Bruce.digestBuilder()
+                .algorithm(Bruce.DigestAlgorithm.SHA_256)
+                .build()
+                .digest(message);
+        assertEquals(32, digest.length());
+
+        var mac = Bruce.macBuilder()
+                .key(hmacKey)
+                .algorithm(Bruce.MacAlgorithm.HMAC_SHA1)
+                .build()
+                .get(message);
+        assertFalse(mac.isEmpty());
+
+        var signer = Bruce.signerBuilder()
+                .key(keyPair.getPrivate())
+                .algorithm(Bruce.SignatureAlgorithm.SHA256_WITH_RSA)
+                .build();
+        var verifier = Bruce.verifierBuilder()
+                .key(keyPair.getPublic())
+                .algorithm(Bruce.SignatureAlgorithm.SHA256_WITH_RSA)
+                .build();
+
+        var signature = signer.sign(message);
+        assertTrue(verifier.verify(message, signature));
+    }
+
+    @Test
     void nullProviderEnumFallsBackToDefaultProviderAcrossBuildersAndKeystores() throws Exception {
         var keyPair = keyPair("RSA", 2048);
         var payload = Bytes.from("provider-null-fallback");
