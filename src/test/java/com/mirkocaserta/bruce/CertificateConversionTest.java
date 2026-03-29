@@ -4,10 +4,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 
 import static com.mirkocaserta.bruce.Keystores.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -88,6 +94,30 @@ class CertificateConversionTest {
         void keyToDerThrowsOnNullEncoding() {
             // Use a key implementation that returns null from getEncoded()
             assertThrows(BruceException.class, () -> keyToDer(new NoEncodingKey()));
+        }
+
+        @Test
+        @DisplayName("privateKeyFromDer throws on unknown algorithm")
+        void privateKeyFromDerThrowsOnUnknownAlgorithm() {
+            assertThrows(BruceException.class, () -> privateKeyFromDer(new byte[]{0x00}, "INVALID_ALGO"));
+        }
+
+        @Test
+        @DisplayName("publicKeyFromDer throws on unknown algorithm")
+        void publicKeyFromDerThrowsOnUnknownAlgorithm() {
+            assertThrows(BruceException.class, () -> publicKeyFromDer(new byte[]{0x00}, "INVALID_ALGO"));
+        }
+
+        @Test
+        @DisplayName("certificateFromDer throws on invalid bytes")
+        void certificateFromDerThrowsOnInvalidBytes() {
+            assertThrows(BruceException.class, () -> certificateFromDer(new byte[]{0x00}));
+        }
+
+        @Test
+        @DisplayName("certificateToDer throws when certificate encoding fails")
+        void certificateToDerThrowsOnEncodingFailure() {
+            assertThrows(BruceException.class, () -> certificateToDer(new FailingCertificate()));
         }
     }
 
@@ -195,10 +225,44 @@ class CertificateConversionTest {
         }
 
         @Test
-        @DisplayName("rsaPrivateKeyFromPkcs1 throws on null-encoding key")
+        @DisplayName("rsaPrivateKeyToPkcs1 throws on null-encoding key")
         void rsaPrivateKeyToPkcs1ThrowsOnNullEncoding() {
             assertThrows(BruceException.class,
                     () -> rsaPrivateKeyToPkcs1(new NoEncodingPrivateKey()));
+        }
+
+        @Test
+        @DisplayName("rsaPrivateKeyFromPkcs1 throws on invalid DER bytes")
+        void rsaPrivateKeyFromPkcs1ThrowsOnInvalidBytes() {
+            // 128 garbage bytes: triggers encodeLength 128-255 branch and then
+            // InvalidKeySpecException when the JDK rejects the wrapped garbage as RSA
+            assertThrows(BruceException.class, () -> rsaPrivateKeyFromPkcs1(new byte[128]));
+        }
+
+        @Test
+        @DisplayName("rsaPrivateKeyToPkcs1 throws on truncated PKCS#8 encoding")
+        void rsaPrivateKeyToPkcs1ThrowsOnTruncatedPkcs8() {
+            // 0x30 0x00 is a valid SEQUENCE tag but an empty body; parsing fails
+            assertThrows(BruceException.class,
+                    () -> rsaPrivateKeyToPkcs1(new StubPrivateKey(new byte[]{0x30, 0x00})));
+        }
+
+        @Test
+        @DisplayName("rsaPrivateKeyToPkcs1 throws on wrong outer DER tag")
+        void rsaPrivateKeyToPkcs1ThrowsOnWrongOuterTag() {
+            // 0x04 is OCTET STRING, not the expected SEQUENCE (0x30)
+            assertThrows(BruceException.class,
+                    () -> rsaPrivateKeyToPkcs1(new StubPrivateKey(new byte[]{0x04, 0x01, 0x00})));
+        }
+
+        @Test
+        @DisplayName("rsaPrivateKeyToPkcs1 throws when OCTET STRING tag is missing in PKCS#8")
+        void rsaPrivateKeyToPkcs1ThrowsOnMissingOctetString() {
+            // Valid SEQUENCE containing version INTEGER + algorithmId SEQUENCE,
+            // but BIT STRING (0x03) where OCTET STRING (0x04) is expected
+            byte[] crafted = {0x30, 0x0a, 0x02, 0x01, 0x00, 0x30, 0x02, 0x05, 0x00, 0x03, 0x01, 0x00};
+            assertThrows(BruceException.class,
+                    () -> rsaPrivateKeyToPkcs1(new StubPrivateKey(crafted)));
         }
     }
 
@@ -255,6 +319,55 @@ class CertificateConversionTest {
             assertThrows(BruceException.class,
                     () -> rsaPublicKeyToPkcs1(new NoEncodingPublicKey()));
         }
+
+        @Test
+        @DisplayName("rsaPublicKeyFromPkcs1 throws on empty DER bytes")
+        void rsaPublicKeyFromPkcs1ThrowsOnEmptyBytes() {
+            // empty pkcs1: buildBitString adds 1 byte → encodeLength(1) hits the
+            // short-form (< 128) branch, then generatePublic rejects the wrapped garbage
+            assertThrows(BruceException.class, () -> rsaPublicKeyFromPkcs1(new byte[0]));
+        }
+
+        @Test
+        @DisplayName("rsaPublicKeyFromPkcs1 throws on invalid DER bytes")
+        void rsaPublicKeyFromPkcs1ThrowsOnInvalidBytes() {
+            // 127 garbage bytes: buildBitString adds 1 → encodeLength(128) hits
+            // the 128-255 branch, then generatePublic rejects the wrapped garbage
+            assertThrows(BruceException.class, () -> rsaPublicKeyFromPkcs1(new byte[127]));
+        }
+
+        @Test
+        @DisplayName("rsaPublicKeyToPkcs1 throws on truncated SPKI encoding")
+        void rsaPublicKeyToPkcs1ThrowsOnTruncatedSpki() {
+            assertThrows(BruceException.class,
+                    () -> rsaPublicKeyToPkcs1(new StubPublicKey(new byte[]{0x30, 0x00})));
+        }
+
+        @Test
+        @DisplayName("rsaPublicKeyToPkcs1 throws on wrong outer DER tag")
+        void rsaPublicKeyToPkcs1ThrowsOnWrongOuterTag() {
+            assertThrows(BruceException.class,
+                    () -> rsaPublicKeyToPkcs1(new StubPublicKey(new byte[]{0x04, 0x01, 0x00})));
+        }
+
+        @Test
+        @DisplayName("rsaPublicKeyToPkcs1 throws when BIT STRING tag is missing in SPKI")
+        void rsaPublicKeyToPkcs1ThrowsOnMissingBitString() {
+            // Valid SEQUENCE + algorithmId SEQUENCE, but OCTET STRING (0x04) where
+            // BIT STRING (0x03) is expected
+            byte[] crafted = {0x30, 0x07, 0x30, 0x02, 0x05, 0x00, 0x04, 0x01, 0x00};
+            assertThrows(BruceException.class,
+                    () -> rsaPublicKeyToPkcs1(new StubPublicKey(crafted)));
+        }
+
+        @Test
+        @DisplayName("rsaPublicKeyToPkcs1 throws on BIT STRING with non-zero unused bits")
+        void rsaPublicKeyToPkcs1ThrowsOnNonZeroUnusedBits() {
+            // BIT STRING value byte 0x01 (non-zero unused bits count) is invalid DER
+            byte[] crafted = {0x30, 0x08, 0x30, 0x02, 0x05, 0x00, 0x03, 0x02, 0x01, 0x00};
+            assertThrows(BruceException.class,
+                    () -> rsaPublicKeyToPkcs1(new StubPublicKey(crafted)));
+        }
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────
@@ -280,5 +393,39 @@ class CertificateConversionTest {
         @Override public String getAlgorithm() { return "NONE"; }
         @Override public String getFormat()    { return null; }
         @Override public byte[] getEncoded()   { return null; }
+    }
+
+    /** Stub private key that returns a fixed byte array from getEncoded(). */
+    private static final class StubPrivateKey implements PrivateKey {
+        private final byte[] encoding;
+        StubPrivateKey(byte[] encoding) { this.encoding = encoding; }
+        @Override public String getAlgorithm() { return "RSA"; }
+        @Override public String getFormat()    { return "PKCS#8"; }
+        @Override public byte[] getEncoded()   { return encoding; }
+    }
+
+    /** Stub public key that returns a fixed byte array from getEncoded(). */
+    private static final class StubPublicKey implements PublicKey {
+        private final byte[] encoding;
+        StubPublicKey(byte[] encoding) { this.encoding = encoding; }
+        @Override public String getAlgorithm() { return "RSA"; }
+        @Override public String getFormat()    { return "X.509"; }
+        @Override public byte[] getEncoded()   { return encoding; }
+    }
+
+    /** Stub certificate whose getEncoded() always throws CertificateEncodingException. */
+    private static final class FailingCertificate extends Certificate {
+        FailingCertificate() { super("TEST"); }
+        @Override public byte[] getEncoded() throws CertificateEncodingException {
+            throw new CertificateEncodingException("simulated encoding failure");
+        }
+        @Override public void verify(PublicKey key)
+                throws CertificateException, NoSuchAlgorithmException,
+                       InvalidKeyException, NoSuchProviderException, SignatureException {}
+        @Override public void verify(PublicKey key, String sigProvider)
+                throws CertificateException, NoSuchAlgorithmException,
+                       InvalidKeyException, NoSuchProviderException, SignatureException {}
+        @Override public String toString()     { return "FailingCertificate"; }
+        @Override public PublicKey getPublicKey() { return null; }
     }
 }
