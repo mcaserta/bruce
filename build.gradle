@@ -16,7 +16,6 @@ dependencies {
     testImplementation 'org.conscrypt:conscrypt-openjdk-uber:2.5.2'
     testRuntimeOnly 'org.conscrypt:conscrypt-openjdk:2.5.2:linux-x86_64'
     testRuntimeOnly 'org.conscrypt:conscrypt-openjdk:2.5.2:osx-x86_64'
-    testRuntimeOnly 'org.conscrypt:conscrypt-openjdk:2.5.2:windows-x86'
     testRuntimeOnly 'org.conscrypt:conscrypt-openjdk:2.5.2:windows-x86_64'
     testImplementation platform('org.junit:junit-bom:6.0.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
