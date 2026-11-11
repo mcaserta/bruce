@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.bouncycastle:bcprov-jdk18on:1.86'
+    testImplementation 'org.bouncycastle:bcprov-jdk18on:1.87'
     testImplementation 'org.conscrypt:conscrypt-openjdk-uber:2.9.0'
     testRuntimeOnly 'org.conscrypt:conscrypt-openjdk:2.9.0:linux-x86_64'
     testRuntimeOnly 'org.conscrypt:conscrypt-openjdk:2.9.0:osx-x86_64'
