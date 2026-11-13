@@ -1,6 +1,6 @@
 plugins {
     id 'java-library'
-    id 'org.sonarqube' version '7.5.0.8588'
+    id 'org.sonarqube' version '7.6.0.18749'
     id 'jacoco'
     id 'maven-publish'
     id 'signing'
