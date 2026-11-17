@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Builder for creating {@link Signer} and {@link SignerByKey} instances.
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public class SignerBuilder {
 

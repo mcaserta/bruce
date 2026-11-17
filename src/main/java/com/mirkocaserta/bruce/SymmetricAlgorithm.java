@@ -21,7 +21,7 @@ package com.mirkocaserta.bruce;
  * <a href="https://docs.oracle.com/en/java/docs/specs/security/standard-names.html#keygenerator-algorithms">
  * JCA Standard Algorithm Names</a> specification.
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  * @see CipherBuilder#keyAlgorithm(SymmetricAlgorithm)
  * @see CipherBuilder#algorithms(SymmetricAlgorithm, SymmetricCipherAlgorithm)
  * @see SymmetricCipherAlgorithm

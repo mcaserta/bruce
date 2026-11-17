@@ -17,7 +17,7 @@ import java.nio.file.Path;
  * Bytes fileHash = digester.digest(Path.of("data.bin"));
  * }</pre>
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public interface Digester {
 

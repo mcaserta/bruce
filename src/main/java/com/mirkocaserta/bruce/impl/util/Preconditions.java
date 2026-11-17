@@ -8,7 +8,7 @@ import java.util.Map;
  * Lightweight argument-validation helpers that throw {@link BruceException}
  * with a standardized message on failure.
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public final class Preconditions {
 

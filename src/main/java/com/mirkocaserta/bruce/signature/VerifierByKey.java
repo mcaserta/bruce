@@ -13,7 +13,7 @@ import com.mirkocaserta.bruce.Bytes;
  *     Bytes.from(base64Signature, Bruce.Encoding.BASE64));
  * }</pre>
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 @FunctionalInterface
 public interface VerifierByKey {

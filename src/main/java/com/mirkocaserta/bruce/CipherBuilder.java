@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * Builder for creating cipher instances.
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public class CipherBuilder {
 

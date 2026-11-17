@@ -8,7 +8,7 @@ package com.mirkocaserta.bruce;
  * {@link SymmetricCipherAlgorithm}, {@link AsymmetricAlgorithm}) implement
  * this interface so callers can treat them uniformly when needed.
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public interface AlgorithmId {
 

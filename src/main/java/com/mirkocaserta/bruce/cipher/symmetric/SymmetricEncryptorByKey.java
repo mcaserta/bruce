@@ -10,7 +10,7 @@ import com.mirkocaserta.bruce.Bytes;
  * Bytes ciphertext = encryptorByKey.encrypt(keyBytes, ivBytes, Bytes.from("secret"));
  * }</pre>
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 @FunctionalInterface
 public interface SymmetricEncryptorByKey {

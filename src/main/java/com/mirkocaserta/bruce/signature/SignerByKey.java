@@ -11,7 +11,7 @@ import com.mirkocaserta.bruce.Bytes;
  * String hex = signature.encode(Bruce.Encoding.HEX);
  * }</pre>
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 @FunctionalInterface
 public interface SignerByKey {

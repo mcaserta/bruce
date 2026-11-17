@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * Implementation class for signature operations.
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public final class SignatureOperations {
 

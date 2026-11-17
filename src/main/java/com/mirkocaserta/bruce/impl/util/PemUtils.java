@@ -10,7 +10,7 @@ import java.util.Base64;
  * <p>PEM (Privacy-Enhanced Mail) is a Base64-encoded format wrapped in
  * {@code -----BEGIN <type>-----} / {@code -----END <type>-----} header and footer lines.</p>
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public final class PemUtils {
 

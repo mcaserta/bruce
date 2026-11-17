@@ -7,7 +7,7 @@ import com.mirkocaserta.bruce.impl.util.Preconditions;
 /**
  * Builder for creating {@link Digester} instances.
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public class DigestBuilder {
 

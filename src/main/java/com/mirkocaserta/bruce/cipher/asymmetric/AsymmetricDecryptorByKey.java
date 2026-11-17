@@ -10,7 +10,7 @@ import com.mirkocaserta.bruce.Bytes;
  * Bytes plaintext = decryptorByKey.decrypt("alice", ciphertext);
  * }</pre>
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 @FunctionalInterface
 public interface AsymmetricDecryptorByKey {

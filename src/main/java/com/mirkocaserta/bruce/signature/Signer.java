@@ -12,7 +12,7 @@ import com.mirkocaserta.bruce.Bytes;
  * String base64   = signature.encode(Bruce.Encoding.BASE64);
  * }</pre>
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 @FunctionalInterface
 public interface Signer {

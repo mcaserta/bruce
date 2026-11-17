@@ -64,7 +64,7 @@ publishing {
                     developer {
                         id = 'mcaserta'
                         name = 'Mirko Caserta'
-                        email = 'mirko.caserta@gmail.com'
+                        email = 'info@mirkocaserta.com'
                     }
                 }
                 scm {

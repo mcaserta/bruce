@@ -28,7 +28,7 @@ import java.util.Arrays;
  *   <li>SubjectPublicKeyInfo DER → PKCS#1 RSA public key DER (by unwrapping the BIT STRING)</li>
  * </ul>
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public final class Pkcs1Utils {
 

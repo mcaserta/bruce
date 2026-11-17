@@ -17,7 +17,7 @@ import java.util.Optional;
  * Implementation class for keystore operations.
  * This class is package-private and should only be accessed through the Bruce facade.
  * 
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public final class KeyStoreOperations {
     

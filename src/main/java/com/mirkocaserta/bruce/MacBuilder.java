@@ -10,7 +10,7 @@ import java.security.Key;
  * Builder for creating MAC (Message Authentication Code) generators with fluent API 
  * to reduce parameter overload.
  * 
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public class MacBuilder {
     

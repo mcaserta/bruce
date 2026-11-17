@@ -13,7 +13,7 @@ import java.security.Provider;
 /**
  * Implementation class for MAC (Message Authentication Code) operations.
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public final class MacOperations {
 

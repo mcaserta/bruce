@@ -40,7 +40,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * boolean empty  = b.isEmpty();
  * }</pre>
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public final class Bytes {
 

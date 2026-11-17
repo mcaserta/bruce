@@ -15,7 +15,7 @@ package com.mirkocaserta.bruce;
  *   <li>RFC 5208 - "PKCS #8: Private-Key Information Syntax"</li>
  * </ul>
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public enum PemType {
 

@@ -23,7 +23,7 @@ package com.mirkocaserta.bruce;
  * <a href="https://docs.oracle.com/en/java/docs/specs/security/standard-names.html#signature-algorithms">
  * JCA Standard Algorithm Names</a> specification.
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  * @see SignerBuilder#algorithm(SignatureAlgorithm)
  * @see VerifierBuilder#algorithm(SignatureAlgorithm)
  */

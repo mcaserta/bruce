@@ -12,7 +12,7 @@ import java.security.*;
  * Implementation class for key generation operations.
  * This class is package-private and should only be accessed through the Bruce facade.
  * 
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public final class KeyGenerators {
     

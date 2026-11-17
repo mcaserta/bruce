@@ -10,7 +10,7 @@ import java.util.Base64;
  * Implementation class for encoding/decoding operations.
  * This class is package-private and should only be accessed through the Bruce facade.
  * 
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public final class EncodingUtils {
     

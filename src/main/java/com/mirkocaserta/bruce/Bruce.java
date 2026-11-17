@@ -7,7 +7,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Main backward-compatible facade delegating to feature-focused facades.
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public final class Bruce {
     /** Default binary-to-text encoding used by helper methods in the API. */

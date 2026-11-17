@@ -15,7 +15,7 @@ import java.security.Provider;
 /**
  * Implementation class for digest operations.
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public final class DigestOperations {
 

@@ -29,7 +29,7 @@ import java.security.spec.X509EncodedKeySpec;
  * Feature-focused facade for keystore and key-management operations,
  * including keystore serialization to bytes, encoded strings, and files.
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public final class Keystores {
 

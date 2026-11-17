@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * Implementation class for asymmetric cipher operations.
  *
- * @author Mirko Caserta (mirko.caserta@gmail.com)
+ * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public final class AsymmetricCipherOperations {
 
