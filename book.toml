@@ -1,0 +1,18 @@
+# Online docs at https://bruce.mirkocaserta.com, built with mdBook.
+# The pages live at the repo root (README.md, SUMMARY.md, essentials/, api/),
+# so scripts/build-docs.sh stages them into build/book-src before building.
+[book]
+title = "Bruce"
+description = "An ergonomic, lightweight, pure Java wrapper around the Java Cryptography Architecture (JCA)"
+authors = ["Mirko Caserta"]
+language = "en"
+src = "build/book-src"
+
+[build]
+build-dir = "build/book"
+create-missing = false
+
+[output.html]
+git-repository-url = "https://github.com/mcaserta/bruce"
+edit-url-template = "https://github.com/mcaserta/bruce/edit/main/{path}"
+site-url = "/"
