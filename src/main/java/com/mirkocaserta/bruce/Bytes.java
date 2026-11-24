@@ -240,6 +240,20 @@ public final class Bytes {
 
     // ── Object contract ──────────────────────────────────────────────────────
 
+    /**
+     * Compares the byte contents of this instance with another {@code Bytes}.
+     *
+     * <p><strong>Not constant-time.</strong> This comparison returns as soon as
+     * a difference is found, so its running time leaks where the values first
+     * differ. Do not use it to compare secrets such as MAC tags, password
+     * hashes or tokens. To check a MAC tag use
+     * {@link com.mirkocaserta.bruce.mac.Mac#verify(Bytes, Bytes)}; for other
+     * secrets use {@link java.security.MessageDigest#isEqual(byte[], byte[])}
+     * on {@link #asBytes()}.</p>
+     *
+     * @param o the object to compare with
+     * @return {@code true} if {@code o} is a {@code Bytes} holding the same bytes
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

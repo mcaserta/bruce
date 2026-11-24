@@ -222,5 +222,6 @@ MacBuilder macBuilder()
   .build()                           // → Mac
 
 // Mac interface
-Bytes  Mac.get(Bytes message)
+Bytes   Mac.get(Bytes message)
+boolean Mac.verify(Bytes message, Bytes tag)  // constant-time; never compare tags with equals
 ```

@@ -25,17 +25,28 @@ String hex = mac.get(Bytes.from("Hello there")).encode(HEX);
 // explicit charset → BASE64 string
 String b64_2 = mac.get(Bytes.from("Hello 👋🏻", UTF_16)).encode(BASE64);
 
-// Verify both parties produce the same MAC
-Mac alice = macBuilder().key(key).algorithm("HmacSHA256").build();
-Mac bob   = macBuilder().key(key).algorithm("HmacSHA256").build();
-
-Bytes aliceMac = alice.get(Bytes.from("Hi Bob"));
-Bytes bobMac   = bob.get(Bytes.from("Hi Bob"));
-assertEquals(aliceMac, bobMac);
-
-// compare as encoded strings
-assertEquals(aliceMac.encode(BASE64), bobMac.encode(BASE64));
 ```
+
+### Verifying a MAC
+
+Use `verify` to check a received tag. It recomputes the MAC and compares it in
+constant time with `MessageDigest.isEqual`. Do not compare tags with
+`Bytes.equals`, `Arrays.equals` or `String.equals` on the encoded form: those
+return at the first differing byte and leak timing information that can help an
+attacker forge a valid tag.
+
+```java
+// Alice sends the message and its tag
+Mac alice = macBuilder().key(key).algorithm(MacAlgorithm.HMAC_SHA_256).build();
+String tag = alice.get(Bytes.from("Hi Bob")).encode(BASE64);
+
+// Bob, holding the same key, checks it
+Mac bob = macBuilder().key(key).algorithm(MacAlgorithm.HMAC_SHA_256).build();
+boolean authentic = bob.verify(Bytes.from("Hi Bob"), Bytes.from(tag, BASE64));
+```
+
+`verify` returns `false` for a wrong or tampered tag, including one of a
+different length, and throws `BruceException` if `message` or `tag` is `null`.
 
 ### Builder options
 
@@ -69,6 +80,9 @@ Available `MacAlgorithm` constants: `HMAC_MD5`, `HMAC_SHA_1`, `HMAC_SHA_224`,
 @FunctionalInterface
 public interface Mac {
     Bytes get(Bytes message);
+
+    // constant-time comparison of get(message) against tag
+    default boolean verify(Bytes message, Bytes tag) { ... }
 }
 ```
 
