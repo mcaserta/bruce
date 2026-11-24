@@ -11,12 +11,15 @@ import com.mirkocaserta.bruce.impl.util.Providers;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
+import java.security.spec.AlgorithmParameterSpec;
+import java.util.Locale;
 
 /**
  * Implementation class for symmetric cipher operations.
@@ -24,6 +27,8 @@ import java.security.Provider;
  * @author Mirko Caserta (info@mirkocaserta.com)
  */
 public final class SymmetricCipherOperations {
+
+    private static final int GCM_TAG_LENGTH_BITS = 128;
 
     private SymmetricCipherOperations() {}
 
@@ -80,16 +85,38 @@ public final class SymmetricCipherOperations {
     private static byte[] crypt(byte[] key, String keyAlgorithm, String cipherAlgorithm, String provider, int mode, byte[] iv, byte[] message) {
         Provider resolvedProvider = Providers.resolve(provider);
         try {
-            var initializationVectorSpec = new IvParameterSpec(iv);
             var secretKey = new SecretKeySpec(key, keyAlgorithm);
             var cipher = resolvedProvider == null
                     ? javax.crypto.Cipher.getInstance(cipherAlgorithm)
                     : javax.crypto.Cipher.getInstance(cipherAlgorithm, resolvedProvider);
-            cipher.init(mode, secretKey, initializationVectorSpec);
+            AlgorithmParameterSpec parameters = parametersFor(cipherAlgorithm, iv);
+            if (parameters == null) {
+                cipher.init(mode, secretKey);
+            } else {
+                cipher.init(mode, secretKey, parameters);
+            }
             return cipher.doFinal(message);
         } catch (NoSuchAlgorithmException | BadPaddingException | InvalidKeyException |
                  InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException e) {
             throw new BruceException("error encrypting/decrypting message", e);
         }
+    }
+
+    /**
+     * Picks the parameter spec the transformation's mode expects: a 128-bit tag
+     * {@link GCMParameterSpec} for GCM, none for ECB or a transformation without
+     * a mode (the IV is ignored), and an {@link IvParameterSpec} otherwise.
+     */
+    static AlgorithmParameterSpec parametersFor(String cipherAlgorithm, byte[] iv) {
+        String[] parts = cipherAlgorithm.split("/");
+        if (parts.length < 2) {
+            return null;
+        }
+        String cipherMode = parts[1].trim().toUpperCase(Locale.ROOT);
+        return switch (cipherMode) {
+            case "ECB" -> null;
+            case "GCM" -> new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv);
+            default -> new IvParameterSpec(iv);
+        };
     }
 }

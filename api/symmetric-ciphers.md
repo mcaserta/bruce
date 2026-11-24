@@ -60,6 +60,37 @@ Common `SymmetricCipherAlgorithm` transformation constants: `AES_CBC_PKCS5`,
 `AES_CBC_NO_PADDING`, `AES_GCM_NO_PADDING`, `AES_CTR_NO_PADDING`,
 `AES_ECB_PKCS5`, `DES_CBC_PKCS5`, `DESEDE_CBC_PKCS5`.
 
+### Choosing a mode and an IV
+
+Prefer `AES_GCM_NO_PADDING`: it is the only mode here that detects tampering.
+Decrypting a modified GCM ciphertext throws a `BruceException` instead of
+returning garbage. The output is the ciphertext followed by a 16-byte
+authentication tag.
+
+The IV depends on the mode:
+
+- **GCM**: 12 random bytes. Never encrypt two messages with the same key and IV;
+  with GCM that leaks plaintext and lets an attacker forge messages.
+- **CBC / CTR**: one block of random bytes (16 for AES, 8 for DES, DESede and
+  Blowfish). Don't reuse it with the same key either.
+- **ECB**: no IV. Whatever you pass is ignored. ECB leaks patterns in the
+  plaintext, so only use it for interoperability.
+
+The IV is not secret: store or send it next to the ciphertext.
+
+```java
+byte[] rawIv = new byte[12];
+new SecureRandom().nextBytes(rawIv);
+Bytes iv = Bytes.from(rawIv);
+
+SymmetricEncryptor gcm = cipherBuilder()
+    .key(keyBytes)
+    .algorithms(SymmetricAlgorithm.AES, SymmetricCipherAlgorithm.AES_GCM_NO_PADDING)
+    .buildSymmetricEncryptor();
+
+Bytes ciphertext = gcm.encrypt(iv, Bytes.from("Hello World"));
+```
+
 ---
 
 ## Decryptor

@@ -20,7 +20,9 @@ public interface SymmetricEncryptor {
     /**
      * Encrypts the given plaintext using the given initialization vector.
      *
-     * @param iv        the initialization vector
+     * @param iv        the initialization vector: block size for CBC/CTR (16 bytes for AES),
+     *                  12 bytes recommended for GCM, ignored for ECB. Never reuse an IV with the
+     *                  same key; for GCM that breaks both confidentiality and integrity
      * @param plaintext the plaintext to encrypt
      * @return the ciphertext wrapped in {@link Bytes}
      */

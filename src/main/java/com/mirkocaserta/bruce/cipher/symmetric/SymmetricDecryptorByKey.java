@@ -20,7 +20,7 @@ public interface SymmetricDecryptorByKey {
      * Decrypts the given ciphertext using the provided key and initialization vector.
      *
      * @param key        the decryption key
-     * @param iv         the initialization vector
+     * @param iv         the initialization vector used for encryption (ignored for ECB)
      * @param ciphertext the ciphertext to decrypt
      * @return the plaintext wrapped in {@link Bytes}
      */
