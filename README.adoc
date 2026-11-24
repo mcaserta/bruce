@@ -92,9 +92,10 @@ Keystores can be loaded from multiple sources:
 
 | `classpath:` | `classpath:keystore.p12`
 | `file:` | `file:/etc/ssl/keystore.p12`
-| `http://` | `http://config-server/keystore.p12`
 | `https://` | `https://config-server/keystore.p12`
 |===
+
+Plain `http://` is rejected: anyone on the network could swap the keystore.
 
 === Keystore Serialization
 
