@@ -44,6 +44,10 @@ AsymmetricAlgorithm      // RSA, RSA_ECB_PKCS1, RSA_ECB_OAEP_SHA1_MGF1,
                          // RSA_ECB_OAEP_SHA256_MGF1, RSA_ECB_OAEP_SHA384_MGF1,
                          // RSA_ECB_OAEP_SHA512_MGF1, RSA_ECB_NO_PADDING
 
+// Weak, interoperability only: MD5, SHA-1 (digests, HMACs, signatures),
+// DES, DESEDE, BLOWFISH, RC2, RC4, every ECB mode, RSA, RSA_ECB_PKCS1,
+// RSA_ECB_NO_PADDING. See each constant's javadoc for the replacement.
+
 // ─── Bytes ───────────────────────────────────────────────────────────────────
 // Construction
 Bytes.from(byte[]);

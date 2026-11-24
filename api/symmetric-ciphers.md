@@ -60,6 +60,10 @@ Common `SymmetricCipherAlgorithm` transformation constants: `AES_CBC_PKCS5`,
 `AES_CBC_NO_PADDING`, `AES_GCM_NO_PADDING`, `AES_CTR_NO_PADDING`,
 `AES_ECB_PKCS5`, `DES_CBC_PKCS5`, `DESEDE_CBC_PKCS5`.
 
+DES, DESede (3DES), Blowfish, RC2, RC4 and every ECB mode are weak: keep them
+for interoperability only and use AES (preferably `AES_GCM_NO_PADDING`) for
+anything new.
+
 ### Choosing a mode and an IV
 
 Prefer `AES_GCM_NO_PADDING`: it is the only mode here that detects tampering.
@@ -122,15 +126,15 @@ String decrypted = decryptor.decrypt(ivFromB64, encFromB64).asString();
 ## Full round-trip
 
 ```java
-byte[] keyBytes = symmetricKey("DESede");
+byte[] keyBytes = symmetricKey("AES");
 SymmetricEncryptor enc = cipherBuilder()
-    .key(keyBytes).keyAlgorithm("DESede").algorithm("DESede/CBC/PKCS5Padding")
+    .key(keyBytes).keyAlgorithm("AES").algorithm("AES/GCM/NoPadding")
     .buildSymmetricEncryptor();
 SymmetricDecryptor dec = cipherBuilder()
-    .key(keyBytes).keyAlgorithm("DESede").algorithm("DESede/CBC/PKCS5Padding")
+    .key(keyBytes).keyAlgorithm("AES").algorithm("AES/GCM/NoPadding")
     .buildSymmetricDecryptor();
 
-byte[] rawIv    = new byte[8];
+byte[] rawIv    = new byte[12];
 new SecureRandom().nextBytes(rawIv);
 Bytes iv        = Bytes.from(rawIv);
 

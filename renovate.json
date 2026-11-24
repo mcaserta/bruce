@@ -8,6 +8,11 @@
     {
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
       "automerge": true
+    },
+    {
+      "description": "Action updates run with access to CI secrets: review them by hand",
+      "matchManagers": ["github-actions"],
+      "automerge": false
     }
   ]
 }

@@ -73,6 +73,10 @@ Bytes b = Bytes.from("hello");
 assertEquals(a, b);  // true
 ```
 
+`equals` stops at the first differing byte, so its running time leaks where two
+values differ. Never use it to check a MAC, tag or other secret: use
+[`Mac.verify`](message-authentication-codes.md) or `MessageDigest.isEqual`.
+
 ## Why Bytes?
 
 Previous Bruce versions provided dozens of overloaded methods — one for each

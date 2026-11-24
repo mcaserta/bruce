@@ -55,6 +55,9 @@ Available `DigestAlgorithm` constants: `MD5`, `SHA_1`, `SHA_224`, `SHA_256`,
 `SHA_384`, `SHA_512`, `SHA_512_224`, `SHA_512_256`, `SHA3_224`, `SHA3_256`,
 `SHA3_384`, `SHA3_512`.
 
+`MD5` and `SHA_1` are broken for collision resistance: keep them for
+interoperability only and use `SHA_256` or stronger for anything new.
+
 ### Interface
 
 ```java

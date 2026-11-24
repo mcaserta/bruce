@@ -16,7 +16,7 @@ PublicKey bobPublicKey = publicKey(bobKeystore, "bob");
 
 AsymmetricEncryptor encryptor = cipherBuilder()
     .key(bobPublicKey)
-    .algorithm("RSA/ECB/PKCS1Padding")
+    .algorithm("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
     .buildAsymmetricEncryptor();
 
 // raw bytes → Bytes
@@ -33,12 +33,11 @@ String encHex = encryptor.encrypt(Bytes.from("Hello Bob")).encode(HEX);
 
 ```java
 import static com.mirkocaserta.bruce.Bruce.Provider.*;
-import static com.mirkocaserta.bruce.Bruce.CipherAlgorithm.*;
 
 // String-based algorithm (open-ended, supports any JCA algorithm)
 AsymmetricEncryptor encryptor = cipherBuilder()
     .key(publicKey)
-    .algorithm(RSA_ECB_PKCS1PADDING)
+    .algorithm("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
     .provider(BOUNCY_CASTLE)  // optional, defaults to JCA
     // .provider("BC")        // string-based alternative
     .buildAsymmetricEncryptor();
@@ -46,7 +45,7 @@ AsymmetricEncryptor encryptor = cipherBuilder()
 // Enum-based algorithm (type-safe, IDE auto-completion)
 AsymmetricEncryptor encryptor2 = cipherBuilder()
     .key(publicKey)
-    .algorithm(AsymmetricAlgorithm.RSA_ECB_PKCS1)
+    .algorithm(AsymmetricAlgorithm.RSA_ECB_OAEP_SHA256_MGF1)
     .provider(BOUNCY_CASTLE)  // optional
     .buildAsymmetricEncryptor();
 ```
@@ -54,6 +53,10 @@ AsymmetricEncryptor encryptor2 = cipherBuilder()
 Available `AsymmetricAlgorithm` constants: `RSA`, `RSA_ECB_PKCS1`,
 `RSA_ECB_OAEP_SHA1_MGF1`, `RSA_ECB_OAEP_SHA256_MGF1`,
 `RSA_ECB_OAEP_SHA384_MGF1`, `RSA_ECB_OAEP_SHA512_MGF1`, `RSA_ECB_NO_PADDING`.
+
+Prefer an OAEP variant such as `RSA_ECB_OAEP_SHA256_MGF1`. `RSA`,
+`RSA_ECB_PKCS1` (PKCS #1 v1.5 padding, open to padding-oracle attacks) and
+`RSA_ECB_NO_PADDING` are weak: keep them for interoperability only.
 
 ---
 
@@ -70,7 +73,7 @@ PrivateKey bobPrivateKey = privateKey(bobKeystore, "bob", "password".toCharArray
 
 AsymmetricDecryptor decryptor = cipherBuilder()
     .key(bobPrivateKey)
-    .algorithm("RSA/ECB/PKCS1Padding")
+    .algorithm("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
     .buildAsymmetricDecryptor();
 
 // Bytes → Bytes
@@ -92,10 +95,10 @@ String plain3 = decryptor.decrypt(Bytes.from(encHex, HEX)).asString();
 KeyStore aliceKs = keystore("classpath:/keystore-alice.p12", "password".toCharArray(), "PKCS12");
 KeyStore bobKs   = keystore("classpath:/keystore-bob.p12",   "password".toCharArray(), "PKCS12");
 
-AsymmetricEncryptor encryptForBob   = cipherBuilder().key(publicKey(bobKs, "bob")).algorithm("RSA/ECB/PKCS1Padding").buildAsymmetricEncryptor();
-AsymmetricDecryptor decryptAsBob    = cipherBuilder().key(privateKey(bobKs, "bob", "password".toCharArray())).algorithm("RSA/ECB/PKCS1Padding").buildAsymmetricDecryptor();
-AsymmetricEncryptor encryptForAlice = cipherBuilder().key(publicKey(aliceKs, "alice")).algorithm("RSA/ECB/PKCS1Padding").buildAsymmetricEncryptor();
-AsymmetricDecryptor decryptAsAlice  = cipherBuilder().key(privateKey(aliceKs, "alice", "password".toCharArray())).algorithm("RSA/ECB/PKCS1Padding").buildAsymmetricDecryptor();
+AsymmetricEncryptor encryptForBob   = cipherBuilder().key(publicKey(bobKs, "bob")).algorithm("RSA/ECB/OAEPWithSHA-256AndMGF1Padding").buildAsymmetricEncryptor();
+AsymmetricDecryptor decryptAsBob    = cipherBuilder().key(privateKey(bobKs, "bob", "password".toCharArray())).algorithm("RSA/ECB/OAEPWithSHA-256AndMGF1Padding").buildAsymmetricDecryptor();
+AsymmetricEncryptor encryptForAlice = cipherBuilder().key(publicKey(aliceKs, "alice")).algorithm("RSA/ECB/OAEPWithSHA-256AndMGF1Padding").buildAsymmetricEncryptor();
+AsymmetricDecryptor decryptAsAlice  = cipherBuilder().key(privateKey(aliceKs, "alice", "password".toCharArray())).algorithm("RSA/ECB/OAEPWithSHA-256AndMGF1Padding").buildAsymmetricDecryptor();
 
 // Alice → Bob (raw bytes)
 Bytes aliceMsg  = Bytes.from("Hello Bob");
@@ -120,8 +123,8 @@ For runtime key selection:
 Map<String, Key> pubKeys  = Map.of("alice", alicePub, "bob", bobPub);
 Map<String, Key> privKeys = Map.of("alice", alicePriv, "bob", bobPriv);
 
-AsymmetricEncryptorByKey encryptors = cipherBuilder().keys(pubKeys).algorithm("RSA/ECB/PKCS1Padding").buildAsymmetricEncryptorByKey();
-AsymmetricDecryptorByKey decryptors = cipherBuilder().keys(privKeys).algorithm("RSA/ECB/PKCS1Padding").buildAsymmetricDecryptorByKey();
+AsymmetricEncryptorByKey encryptors = cipherBuilder().keys(pubKeys).algorithm("RSA/ECB/OAEPWithSHA-256AndMGF1Padding").buildAsymmetricEncryptorByKey();
+AsymmetricDecryptorByKey decryptors = cipherBuilder().keys(privKeys).algorithm("RSA/ECB/OAEPWithSHA-256AndMGF1Padding").buildAsymmetricDecryptorByKey();
 
 Bytes enc = encryptors.encrypt("bob", Bytes.from("Hello Bob"));
 Bytes dec = decryptors.decrypt("bob", enc);
