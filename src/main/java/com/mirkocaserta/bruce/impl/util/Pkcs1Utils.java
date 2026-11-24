@@ -17,7 +17,7 @@ import java.util.Arrays;
  * <p>The JDK's {@link KeyFactory} understands PKCS#8 (private keys) and
  * SubjectPublicKeyInfo / X.509 (public keys) but not the older PKCS#1 /
  * SEC1 "traditional" formats.  This class bridges that gap by manually
- * wrapping or unwrapping the ASN.1 envelope — without relying on
+ * wrapping or unwrapping the ASN.1 envelope, without relying on
  * Bouncy Castle or any other third-party library.</p>
  *
  * <p>Supported conversions:</p>
@@ -103,13 +103,16 @@ public final class Pkcs1Utils {
     public static byte[] pkcs8ToPkcs1PrivateKey(byte[] pkcs8Der) {
         // PKCS#8: SEQUENCE { INTEGER(version=0), algorithmId SEQUENCE, OCTET STRING { pkcs1 } }
         try {
-            int pos = 0;
-            pos = skipTagAndLength(pkcs8Der, pos, 0x30); // outer SEQUENCE
-            pos = skipTlv(pkcs8Der, pos);                 // version INTEGER
-            pos = skipTlv(pkcs8Der, pos);                 // algorithmId SEQUENCE
-            return extractOctetString(pkcs8Der, pos);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new BruceException("invalid PKCS#8 structure", e);
+            requireInput(pkcs8Der);
+            Tlv outer = readTlv(pkcs8Der, 0, pkcs8Der.length);
+            requireTag(outer, 0x30, "SEQUENCE");
+            Tlv version = readTlv(pkcs8Der, outer.valueStart(), outer.end());
+            Tlv algorithmId = readTlv(pkcs8Der, version.end(), outer.end());
+            Tlv octetString = readTlv(pkcs8Der, algorithmId.end(), outer.end());
+            requireTag(octetString, 0x04, "OCTET STRING");
+            return Arrays.copyOfRange(pkcs8Der, octetString.valueStart(), octetString.end());
+        } catch (BruceException e) {
+            throw new BruceException("invalid PKCS#8 structure: " + e.getMessage(), e);
         }
     }
 
@@ -127,12 +130,23 @@ public final class Pkcs1Utils {
     public static byte[] spkiToPkcs1PublicKey(byte[] spkiDer) {
         // SPKI: SEQUENCE { algorithmId SEQUENCE, BIT STRING { 0x00, pkcs1 } }
         try {
-            int pos = 0;
-            pos = skipTagAndLength(spkiDer, pos, 0x30); // outer SEQUENCE
-            pos = skipTlv(spkiDer, pos);                 // algorithmId SEQUENCE
-            return extractBitStringContent(spkiDer, pos);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new BruceException("invalid SubjectPublicKeyInfo structure", e);
+            requireInput(spkiDer);
+            Tlv outer = readTlv(spkiDer, 0, spkiDer.length);
+            requireTag(outer, 0x30, "SEQUENCE");
+            Tlv algorithmId = readTlv(spkiDer, outer.valueStart(), outer.end());
+            Tlv bitString = readTlv(spkiDer, algorithmId.end(), outer.end());
+            requireTag(bitString, 0x03, "BIT STRING");
+            if (bitString.length() == 0) {
+                throw new BruceException("BIT STRING is empty (missing unused-bits byte)");
+            }
+            // first byte is unused-bits count; for DER-encoded keys it must be 0x00
+            int unusedBits = spkiDer[bitString.valueStart()] & 0xFF;
+            if (unusedBits != 0) {
+                throw new BruceException("BIT STRING has non-zero unused-bits byte: " + unusedBits);
+            }
+            return Arrays.copyOfRange(spkiDer, bitString.valueStart() + 1, bitString.end());
+        } catch (BruceException e) {
+            throw new BruceException("invalid SubjectPublicKeyInfo structure: " + e.getMessage(), e);
         }
     }
 
@@ -162,89 +176,107 @@ public final class Pkcs1Utils {
     // ── DER parsing helpers ───────────────────────────────────────────────────
 
     /**
-     * Checks the tag at {@code pos}, advances past the tag and length, returns
-     * the new position at the start of the value.
+     * A decoded DER tag-length-value header.
+     *
+     * @param tag        the single-byte tag
+     * @param valueStart index of the first value byte
+     * @param length     number of value bytes
      */
-    private static int skipTagAndLength(byte[] der, int pos, int expectedTag) {
-        if ((der[pos] & 0xFF) != expectedTag) {
-            throw new BruceException(
-                    "unexpected DER tag 0x%02x at pos %d (expected 0x%02x)"
-                            .formatted(der[pos] & 0xFF, pos, expectedTag));
+    private record Tlv(int tag, int valueStart, int length) {
+        /** Index just past the last value byte. */
+        int end() {
+            return valueStart + length;
         }
-        pos++; // skip tag
-        int lenFieldSize = lengthFieldSize(der, pos);
-        return pos + lenFieldSize;  // skip length, sit at start of value
+    }
+
+    private static void requireInput(byte[] der) {
+        if (der == null) {
+            throw new BruceException("input is null");
+        }
+    }
+
+    private static void requireTag(Tlv tlv, int expectedTag, String name) {
+        if (tlv.tag() != expectedTag) {
+            throw new BruceException("expected %s (0x%02x), got tag 0x%02x"
+                    .formatted(name, expectedTag, tlv.tag()));
+        }
     }
 
     /**
-     * Skips an entire TLV (tag + length + value), returning the position after it.
+     * Reads the TLV header at {@code pos}, ensuring the header and the whole
+     * value lie within {@code [pos, limit)}. {@code limit} is the end of the
+     * enclosing structure (or of the input).
      */
-    private static int skipTlv(byte[] der, int pos) {
-        pos++; // skip tag
-        int len = readLength(der, pos);
-        int lenFieldSize = lengthFieldSize(der, pos);
-        return pos + lenFieldSize + len;
-    }
-
-    /**
-     * Reads an OCTET STRING at {@code pos} and returns its contents.
-     */
-    private static byte[] extractOctetString(byte[] der, int pos) {
-        if ((der[pos] & 0xFF) != 0x04) {
-            throw new BruceException(
-                    "expected OCTET STRING (0x04) at pos %d, got 0x%02x".formatted(pos, der[pos] & 0xFF));
+    private static Tlv readTlv(byte[] der, int pos, int limit) {
+        if (pos < 0 || pos >= limit) {
+            throw new BruceException("unexpected end of DER data at pos %d".formatted(pos));
         }
-        pos++;
-        int len = readLength(der, pos);
-        int lenFieldSize = lengthFieldSize(der, pos);
-        pos += lenFieldSize;
-        return Arrays.copyOfRange(der, pos, pos + len);
-    }
-
-    /**
-     * Reads a BIT STRING at {@code pos}, strips the leading unused-bits byte,
-     * and returns the payload.
-     */
-    private static byte[] extractBitStringContent(byte[] der, int pos) {
-        if ((der[pos] & 0xFF) != 0x03) {
-            throw new BruceException(
-                    "expected BIT STRING (0x03) at pos %d, got 0x%02x".formatted(pos, der[pos] & 0xFF));
+        int tag = der[pos] & 0xFF;
+        int lenPos = pos + 1;
+        int len = readLength(der, lenPos, limit);
+        int valueStart = lenPos + lengthFieldSize(der, lenPos, limit);
+        if ((long) valueStart + len > limit) {
+            throw new BruceException("DER value of tag 0x%02x at pos %d has length %d, exceeding available %d bytes"
+                    .formatted(tag, pos, len, limit - valueStart));
         }
-        pos++;
-        int len = readLength(der, pos);
-        int lenFieldSize = lengthFieldSize(der, pos);
-        pos += lenFieldSize;
-        // first byte is unused-bits count; for DER it must be 0x00
-        if (der[pos] != 0x00) {
-            throw new BruceException("BIT STRING has non-zero unused-bits byte: " + (der[pos] & 0xFF));
-        }
-        pos++; // skip unused-bits byte
-        return Arrays.copyOfRange(der, pos, pos + len - 1);
+        return new Tlv(tag, valueStart, len);
     }
 
     /**
      * Reads the DER length field starting at {@code pos} (multi-byte form supported).
+     *
+     * @throws BruceException if the length field is truncated, uses the
+     *                        indefinite form, has more than 4 length bytes,
+     *                        or encodes a value that does not fit in a non-negative int
      */
     static int readLength(byte[] data, int pos) {
-        int b = data[pos] & 0xFF;
-        if (b < 128) {
-            return b;
+        return readLength(data, pos, data.length);
+    }
+
+    private static int readLength(byte[] data, int pos, int limit) {
+        int numBytes = lengthFieldSize(data, pos, limit) - 1;
+        if (numBytes == 0) {
+            return data[pos] & 0xFF;
         }
-        int numBytes = b & 0x7F;
-        int length = 0;
+        long length = 0;
         for (int i = 1; i <= numBytes; i++) {
             length = (length << 8) | (data[pos + i] & 0xFF);
         }
-        return length;
+        if (length > Integer.MAX_VALUE) {
+            throw new BruceException("DER length %d at pos %d is too large".formatted(length, pos));
+        }
+        return (int) length;
     }
 
     /**
      * Returns the number of bytes used by the length field at {@code pos}.
+     *
+     * @throws BruceException if the length field is truncated, uses the
+     *                        indefinite form, or has more than 4 length bytes
      */
     static int lengthFieldSize(byte[] data, int pos) {
+        return lengthFieldSize(data, pos, data.length);
+    }
+
+    private static int lengthFieldSize(byte[] data, int pos, int limit) {
+        if (pos < 0 || pos >= limit) {
+            throw new BruceException("unexpected end of DER data reading length at pos %d".formatted(pos));
+        }
         int b = data[pos] & 0xFF;
-        if (b < 128) return 1;
-        return 1 + (b & 0x7F);
+        if (b < 0x80) {
+            return 1;
+        }
+        int numBytes = b & 0x7F;
+        if (numBytes == 0) {
+            throw new BruceException("indefinite DER length at pos %d is not allowed".formatted(pos));
+        }
+        if (numBytes > 4) {
+            throw new BruceException("DER length field at pos %d uses %d bytes (max 4)".formatted(pos, numBytes));
+        }
+        if ((long) pos + numBytes >= limit) {
+            throw new BruceException("truncated DER length field at pos %d".formatted(pos));
+        }
+        return 1 + numBytes;
     }
 
     // ── Low-level DER building ────────────────────────────────────────────────
@@ -266,14 +298,24 @@ public final class Pkcs1Utils {
         return buildTlv(0x03, bitContent);
     }
 
-    private static byte[] encodeLength(int length) {
-        if (length < 128) {
-            return new byte[]{(byte) length};
-        } else if (length < 256) {
-            return new byte[]{(byte) 0x81, (byte) length};
-        } else {
-            return new byte[]{(byte) 0x82, (byte) (length >> 8), (byte) length};
+    /**
+     * Encodes a DER length using the minimal definite form (short form below
+     * 128, otherwise 0x81..0x84 followed by 1 to 4 big-endian bytes).
+     */
+    static byte[] encodeLength(int length) {
+        if (length < 0) {
+            throw new BruceException("negative DER length: " + length);
         }
+        if (length < 0x80) {
+            return new byte[]{(byte) length};
+        }
+        int numBytes = (Integer.SIZE - Integer.numberOfLeadingZeros(length) + 7) / 8;
+        byte[] result = new byte[1 + numBytes];
+        result[0] = (byte) (0x80 | numBytes);
+        for (int i = 0; i < numBytes; i++) {
+            result[numBytes - i] = (byte) (length >>> (8 * i));
+        }
+        return result;
     }
 
     private static byte[] concat(byte[]... arrays) {
