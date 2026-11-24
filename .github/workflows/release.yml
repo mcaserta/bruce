@@ -9,28 +9,28 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+permissions:
+  contents: read
+
 jobs:
   release:
     name: Release to Maven Central
+    # workflow_dispatch can be started from any ref: only publish from a tag.
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write  # needed to create GitHub Releases
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6
         with:
           distribution: 'temurin'
           java-version: 25
 
-      - name: Cache Gradle packages
-        uses: actions/cache@v6
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle
-
+      # No Gradle cache restore here on purpose: this job holds the signing
+      # keys, so it should not run anything a poisoned cache could inject.
       - name: Build and test
         run: ./gradlew build
 
