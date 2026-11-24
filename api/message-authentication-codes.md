@@ -24,7 +24,6 @@ String hex = mac.get(Bytes.from("Hello there")).encode(HEX);
 
 // explicit charset → BASE64 string
 String b64_2 = mac.get(Bytes.from("Hello 👋🏻", UTF_16)).encode(BASE64);
-
 ```
 
 ### Verifying a MAC
@@ -73,6 +72,9 @@ Available `MacAlgorithm` constants: `HMAC_MD5`, `HMAC_SHA_1`, `HMAC_SHA_224`,
 `HMAC_SHA_256`, `HMAC_SHA_384`, `HMAC_SHA_512`, `HMAC_SHA_512_224`,
 `HMAC_SHA_512_256`, `HMAC_SHA3_224`, `HMAC_SHA3_256`, `HMAC_SHA3_384`,
 `HMAC_SHA3_512`.
+
+`HMAC_MD5` and `HMAC_SHA_1` are weak: kept for interoperability only; prefer
+`HMAC_SHA_256`.
 
 ### Interface
 

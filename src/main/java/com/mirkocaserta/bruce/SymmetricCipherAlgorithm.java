@@ -39,10 +39,16 @@ public enum SymmetricCipherAlgorithm implements AlgorithmId {
     /** AES in CTR (counter) mode without padding. Stream-cipher-like behaviour. */
     AES_CTR_NO_PADDING("AES/CTR/NoPadding"),
 
-    /** AES in ECB mode with PKCS #5 padding. Not recommended; does not hide patterns. */
+    /**
+     * AES in ECB mode with PKCS #5 padding (identical blocks encrypt identically, leaking patterns).
+     * Weak: kept for interoperability only; prefer {@link #AES_GCM_NO_PADDING}.
+     */
     AES_ECB_PKCS5("AES/ECB/PKCS5Padding"),
 
-    /** AES in ECB mode without padding. Not recommended; does not hide patterns. */
+    /**
+     * AES in ECB mode without padding (identical blocks encrypt identically, leaking patterns).
+     * Weak: kept for interoperability only; prefer {@link #AES_GCM_NO_PADDING}.
+     */
     AES_ECB_NO_PADDING("AES/ECB/NoPadding"),
 
     /**
@@ -53,26 +59,44 @@ public enum SymmetricCipherAlgorithm implements AlgorithmId {
 
     // ── DES ─────────────────────────────────────────────────────────────────
 
-    /** DES in CBC mode with PKCS #5 padding. Not recommended for new applications. */
+    /**
+     * DES in CBC mode with PKCS #5 padding (56-bit key, brute-forceable).
+     * Weak: kept for interoperability only; prefer {@link #AES_GCM_NO_PADDING}.
+     */
     DES_CBC_PKCS5("DES/CBC/PKCS5Padding"),
 
-    /** DES in ECB mode with PKCS #5 padding. Not recommended for new applications. */
+    /**
+     * DES in ECB mode with PKCS #5 padding (56-bit key, ECB leaks patterns).
+     * Weak: kept for interoperability only; prefer {@link #AES_GCM_NO_PADDING}.
+     */
     DES_ECB_PKCS5("DES/ECB/PKCS5Padding"),
 
     // ── DESede (3DES) ────────────────────────────────────────────────────────
 
-    /** Triple DES in CBC mode with PKCS #5 padding. Deprecated; prefer AES. */
+    /**
+     * Triple DES in CBC mode with PKCS #5 padding (64-bit block).
+     * Weak: kept for interoperability only; prefer {@link #AES_GCM_NO_PADDING}.
+     */
     DESEDE_CBC_PKCS5("DESede/CBC/PKCS5Padding"),
 
-    /** Triple DES in ECB mode with PKCS #5 padding. Deprecated; prefer AES. */
+    /**
+     * Triple DES in ECB mode with PKCS #5 padding (64-bit block, ECB leaks patterns).
+     * Weak: kept for interoperability only; prefer {@link #AES_GCM_NO_PADDING}.
+     */
     DESEDE_ECB_PKCS5("DESede/ECB/PKCS5Padding"),
 
     // ── Blowfish ─────────────────────────────────────────────────────────────
 
-    /** Blowfish in CBC mode with PKCS #5 padding. */
+    /**
+     * Blowfish in CBC mode with PKCS #5 padding (64-bit block).
+     * Weak: kept for interoperability only; prefer {@link #AES_GCM_NO_PADDING}.
+     */
     BLOWFISH_CBC_PKCS5("Blowfish/CBC/PKCS5Padding"),
 
-    /** Blowfish in ECB mode with PKCS #5 padding. */
+    /**
+     * Blowfish in ECB mode with PKCS #5 padding (64-bit block, ECB leaks patterns).
+     * Weak: kept for interoperability only; prefer {@link #AES_GCM_NO_PADDING}.
+     */
     BLOWFISH_ECB_PKCS5("Blowfish/ECB/PKCS5Padding");
 
     private final String algorithmName;

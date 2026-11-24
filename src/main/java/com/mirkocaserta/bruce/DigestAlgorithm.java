@@ -21,10 +21,16 @@ package com.mirkocaserta.bruce;
  */
 public enum DigestAlgorithm implements AlgorithmId {
 
-    /** MD5 message digest (128-bit). Not recommended for security-sensitive uses. */
+    /**
+     * MD5 message digest (128-bit, collisions are practical).
+     * Weak: kept for interoperability only; prefer {@link #SHA_256}.
+     */
     MD5("MD5"),
 
-    /** SHA-1 message digest (160-bit). Not recommended for security-sensitive uses. */
+    /**
+     * SHA-1 message digest (160-bit, collisions are practical).
+     * Weak: kept for interoperability only; prefer {@link #SHA_256}.
+     */
     SHA_1("SHA-1"),
 
     /** SHA-224 message digest (224-bit, SHA-2 family). */

@@ -9,7 +9,7 @@ package com.mirkocaserta.bruce;
  * <pre>{@code
  * AsymmetricEncryptor encryptor = Bruce.cipherBuilder()
  *     .key(publicKey)
- *     .algorithm(AsymmetricAlgorithm.RSA_ECB_PKCS1)
+ *     .algorithm(AsymmetricAlgorithm.RSA_ECB_OAEP_SHA256_MGF1)
  *     .buildAsymmetricEncryptor();
  * }</pre>
  *
@@ -27,10 +27,14 @@ public enum AsymmetricAlgorithm implements AlgorithmId {
     /**
      * RSA cipher (defaults to ECB mode with PKCS1 padding on most JVMs).
      * Equivalent to {@link #RSA_ECB_PKCS1} on standard JDK.
+     * Weak: kept for interoperability only; prefer {@link #RSA_ECB_OAEP_SHA256_MGF1}.
      */
     RSA("RSA"),
 
-    /** RSA in ECB mode with PKCS #1 v1.5 padding. Widely supported; adequate for most uses. */
+    /**
+     * RSA in ECB mode with PKCS #1 v1.5 padding (exposed to padding-oracle attacks).
+     * Weak: kept for interoperability only; prefer {@link #RSA_ECB_OAEP_SHA256_MGF1}.
+     */
     RSA_ECB_PKCS1("RSA/ECB/PKCS1Padding"),
 
     /**
@@ -55,7 +59,10 @@ public enum AsymmetricAlgorithm implements AlgorithmId {
      */
     RSA_ECB_OAEP_SHA512_MGF1("RSA/ECB/OAEPWithSHA-512AndMGF1Padding"),
 
-    /** RSA in ECB mode without padding. Rarely used directly; prefer a padded variant. */
+    /**
+     * Raw (textbook) RSA without padding (deterministic and malleable).
+     * Weak: kept for interoperability only; prefer {@link #RSA_ECB_OAEP_SHA256_MGF1}.
+     */
     RSA_ECB_NO_PADDING("RSA/ECB/NoPadding");
 
     private final String algorithmName;

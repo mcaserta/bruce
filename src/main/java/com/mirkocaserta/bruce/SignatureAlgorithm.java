@@ -31,10 +31,16 @@ public enum SignatureAlgorithm implements AlgorithmId {
 
     // ── RSA signatures ──────────────────────────────────────────────────────
 
-    /** MD5 with RSA. Not recommended for new applications. */
+    /**
+     * MD5 with RSA (signatures can be forged via MD5 collisions).
+     * Weak: kept for interoperability only; prefer {@link #SHA256_WITH_RSA} or {@link #RSASSA_PSS}.
+     */
     MD5_WITH_RSA("MD5withRSA"),
 
-    /** SHA-1 with RSA. Not recommended for new applications. */
+    /**
+     * SHA-1 with RSA (signatures can be forged via SHA-1 collisions).
+     * Weak: kept for interoperability only; prefer {@link #SHA256_WITH_RSA} or {@link #RSASSA_PSS}.
+     */
     SHA1_WITH_RSA("SHA1withRSA"),
 
     /** SHA-224 with RSA. */
@@ -69,7 +75,10 @@ public enum SignatureAlgorithm implements AlgorithmId {
 
     // ── DSA signatures ──────────────────────────────────────────────────────
 
-    /** SHA-1 with DSA. Not recommended for new applications. */
+    /**
+     * SHA-1 with DSA (signatures can be forged via SHA-1 collisions).
+     * Weak: kept for interoperability only; prefer {@link #SHA256_WITH_DSA}.
+     */
     SHA1_WITH_DSA("SHA1withDSA"),
 
     /** SHA-224 with DSA. */
@@ -98,7 +107,10 @@ public enum SignatureAlgorithm implements AlgorithmId {
 
     // ── ECDSA signatures ────────────────────────────────────────────────────
 
-    /** SHA-1 with ECDSA. Not recommended for new applications. */
+    /**
+     * SHA-1 with ECDSA (signatures can be forged via SHA-1 collisions).
+     * Weak: kept for interoperability only; prefer {@link #SHA256_WITH_ECDSA}.
+     */
     SHA1_WITH_ECDSA("SHA1withECDSA"),
 
     /** SHA-224 with ECDSA. */

@@ -31,19 +31,34 @@ public enum SymmetricAlgorithm implements AlgorithmId {
     /** Advanced Encryption Standard (AES). Recommended for general symmetric encryption. */
     AES("AES"),
 
-    /** Data Encryption Standard (DES, 56-bit). Not recommended for new applications. */
+    /**
+     * Data Encryption Standard (DES, 56-bit key, brute-forceable).
+     * Weak: kept for interoperability only; prefer {@link #AES}.
+     */
     DES("DES"),
 
-    /** Triple DES / DES-EDE (112-bit or 168-bit). Deprecated; prefer AES. */
+    /**
+     * Triple DES / DES-EDE (112-bit or 168-bit key, 64-bit block).
+     * Weak: kept for interoperability only; prefer {@link #AES}.
+     */
     DESEDE("DESede"),
 
-    /** Blowfish variable-key-length cipher (32–448 bits). */
+    /**
+     * Blowfish variable-key-length cipher (32 to 448-bit key, 64-bit block).
+     * Weak: kept for interoperability only; prefer {@link #AES}.
+     */
     BLOWFISH("Blowfish"),
 
-    /** RC2 variable-key-length cipher. Not recommended for new applications. */
+    /**
+     * RC2 variable-key-length cipher (64-bit block).
+     * Weak: kept for interoperability only; prefer {@link #AES}.
+     */
     RC2("RC2"),
 
-    /** ARC4 / RC4 stream cipher. Not recommended for new applications. */
+    /**
+     * ARC4 / RC4 stream cipher (biased keystream).
+     * Weak: kept for interoperability only; prefer {@link #AES} or {@link #CHACHA20}.
+     */
     RC4("RC4"),
 
     /** ChaCha20 stream cipher. Requires JDK 11+ or a provider such as Bouncy Castle. */

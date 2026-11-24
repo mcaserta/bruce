@@ -104,7 +104,10 @@ public final class Bruce {
 
     /** Curated digest algorithms exposed as enum alternatives to raw strings. */
     public enum DigestAlgorithm {
-        /** SHA-1 digest algorithm. */
+        /**
+         * SHA-1 digest algorithm.
+         * Weak: kept for interoperability only; prefer {@link #SHA_256}.
+         */
         SHA_1("SHA-1"),
         /** SHA-224 digest algorithm. */
         SHA_224("SHA-224"),
@@ -114,7 +117,7 @@ public final class Bruce {
         SHA_384("SHA-384"),
         /** SHA-512 digest algorithm. */
         SHA_512("SHA-512"),
-        /** MD5 digest algorithm. */
+        /** MD5 digest algorithm. Weak: kept for interoperability only; prefer {@link #SHA_256}. */
         MD5("MD5");
 
         private final String algorithmName;
@@ -135,9 +138,15 @@ public final class Bruce {
 
     /** Curated MAC algorithms exposed as enum alternatives to raw strings. */
     public enum MacAlgorithm {
-        /** HmacMD5 MAC algorithm. */
+        /**
+         * HmacMD5 MAC algorithm.
+         * Weak: kept for interoperability only; prefer {@link #HMAC_SHA256}.
+         */
         HMAC_MD5("HmacMD5"),
-        /** HmacSHA1 MAC algorithm. */
+        /**
+         * HmacSHA1 MAC algorithm.
+         * Weak: kept for interoperability only; prefer {@link #HMAC_SHA256}.
+         */
         HMAC_SHA1("HmacSHA1"),
         /** HmacSHA256 MAC algorithm. */
         HMAC_SHA256("HmacSHA256"),
@@ -164,7 +173,10 @@ public final class Bruce {
 
     /** Curated signature algorithms exposed as enum alternatives to raw strings. */
     public enum SignatureAlgorithm {
-        /** SHA1withRSA signature algorithm. */
+        /**
+         * SHA1withRSA signature algorithm.
+         * Weak: kept for interoperability only; prefer {@link #SHA256_WITH_RSA}.
+         */
         SHA1_WITH_RSA("SHA1withRSA"),
         /** SHA256withRSA signature algorithm. */
         SHA256_WITH_RSA("SHA256withRSA"),
@@ -224,11 +236,20 @@ public final class Bruce {
     public enum SymmetricKeyAlgorithm {
         /** AES symmetric key algorithm. */
         AES("AES"),
-        /** DES symmetric key algorithm. */
+        /**
+         * DES symmetric key algorithm.
+         * Weak: kept for interoperability only; prefer {@link #AES}.
+         */
         DES("DES"),
-        /** Triple DES symmetric key algorithm. */
+        /**
+         * Triple DES symmetric key algorithm.
+         * Weak: kept for interoperability only; prefer {@link #AES}.
+         */
         DESEDE("DESede"),
-        /** HmacSHA1 key algorithm. */
+        /**
+         * HmacSHA1 key algorithm.
+         * Weak: kept for interoperability only; prefer {@link #HMAC_SHA256}.
+         */
         HMAC_SHA1("HmacSHA1"),
         /** HmacSHA256 key algorithm. */
         HMAC_SHA256("HmacSHA256"),
@@ -255,13 +276,22 @@ public final class Bruce {
 
     /** Curated cipher transformations exposed as enum alternatives to raw strings. */
     public enum CipherAlgorithm {
-        /** RSA transformation using provider defaults. */
+        /**
+         * RSA transformation using provider defaults (PKCS #1 v1.5 padding on standard JDKs).
+         * Weak: kept for interoperability only; prefer {@link AsymmetricAlgorithm#RSA_ECB_OAEP_SHA256_MGF1}.
+         */
         RSA("RSA"),
-        /** RSA/ECB/PKCS1Padding transformation. */
+        /**
+         * RSA/ECB/PKCS1Padding transformation.
+         * Weak: kept for interoperability only; prefer {@link AsymmetricAlgorithm#RSA_ECB_OAEP_SHA256_MGF1}.
+         */
         RSA_ECB_PKCS1PADDING("RSA/ECB/PKCS1Padding"),
         /** AES/CBC/PKCS5Padding transformation. */
         AES_CBC_PKCS5PADDING("AES/CBC/PKCS5Padding"),
-        /** DESede/CBC/PKCS5Padding transformation. */
+        /**
+         * DESede/CBC/PKCS5Padding transformation.
+         * Weak: kept for interoperability only; prefer {@link #AES_CBC_PKCS5PADDING}.
+         */
         DESEDE_CBC_PKCS5PADDING("DESede/CBC/PKCS5Padding");
 
         private final String algorithmName;

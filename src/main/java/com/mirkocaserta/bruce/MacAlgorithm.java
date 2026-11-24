@@ -23,10 +23,16 @@ package com.mirkocaserta.bruce;
  */
 public enum MacAlgorithm implements AlgorithmId {
 
-    /** HMAC using MD5 (128-bit). Not recommended for security-sensitive uses. */
+    /**
+     * HMAC using MD5 (128-bit).
+     * Weak: kept for interoperability only; prefer {@link #HMAC_SHA_256}.
+     */
     HMAC_MD5("HmacMD5"),
 
-    /** HMAC using SHA-1 (160-bit). Not recommended for new applications. */
+    /**
+     * HMAC using SHA-1 (160-bit).
+     * Weak: kept for interoperability only; prefer {@link #HMAC_SHA_256}.
+     */
     HMAC_SHA_1("HmacSHA1"),
 
     /** HMAC using SHA-224 (224-bit). */
