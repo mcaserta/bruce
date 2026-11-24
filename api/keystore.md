@@ -21,12 +21,17 @@ properties:
 The key store location supports the following protocols:
 
 - `classpath:`
-- `http:`
-- `https:`
+- `https://`
 - `file:`
 
-If no protocol is specified, `file` is assumed. The default key store type is
-`PKCS12`.
+If no protocol is specified, `file` is assumed (Windows paths like
+`C:\keys\keystore.p12` work too). Plain `http://` is not supported: a keystore
+fetched over an unauthenticated channel can be swapped in transit, so it fails
+with an error telling you to use `https://`. Any other `scheme://` location
+fails with an "unsupported keystore location scheme" error instead of being
+treated as a file path. Https downloads use a 10 second connect timeout and a 30
+second read timeout. Error messages redact any userinfo (`user:password@`) in
+the location. The default key store type is `PKCS12`.
 
 ### Usage Example
 
@@ -147,4 +152,3 @@ String base64 = keystoreToString(ks, "password", Bruce.Encoding.BASE64);
 keystoreToFile(ks, "password", Path.of("/tmp/keystore-copy.p12"));
 keystoreToFile(ks, "password", new File("/tmp/keystore-copy-2.p12"));
 ```
-

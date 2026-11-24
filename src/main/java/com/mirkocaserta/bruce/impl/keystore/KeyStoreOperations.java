@@ -54,7 +54,7 @@ public final class KeyStoreOperations {
     /**
      * Loads a keystore from a location using the default type.
      *
-     * @param location the location (classpath:, http(s):, file:)
+     * @param location the location (classpath:, file:, https://, or a filesystem path)
      * @param password the password
      * @return the loaded keystore
      */
@@ -65,7 +65,7 @@ public final class KeyStoreOperations {
     /**
      * Loads a keystore from a location with a specific type.
      *
-     * @param location the location (classpath:, http(s):, file:)
+     * @param location the location (classpath:, file:, https://, or a filesystem path)
      * @param password the password
      * @param type the keystore type
      * @return the loaded keystore
@@ -77,7 +77,7 @@ public final class KeyStoreOperations {
     /**
      * Loads a keystore from a location with a specific type and provider.
      *
-     * @param location the location (classpath:, http(s):, file:)
+     * @param location the location (classpath:, file:, https://, or a filesystem path)
      * @param password the password
      * @param type the keystore type
      * @param provider the JCA provider name
@@ -98,7 +98,11 @@ public final class KeyStoreOperations {
             }
             return keyStore;
         } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException e) {
-            throw new BruceException(String.format("error loading keystore: location=%s", location), e);
+            String message = String.format("error loading keystore: location=%s", KeyStoreSources.redact(location));
+            if (e.getMessage() != null) {
+                message += ": " + KeyStoreSources.redact(e.getMessage());
+            }
+            throw new BruceException(message, e);
         } catch (Exception e) {
             throw new BruceException("error loading keystore", e);
         }

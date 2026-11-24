@@ -7,15 +7,23 @@ import java.nio.file.Path;
 
 final class FileKeyStoreSource implements KeyStoreSource {
 
+    /**
+     * Supports plain filesystem paths (including Windows paths), the
+     * {@code file:} prefix and {@code file://} URIs. Anything else written as
+     * {@code scheme://} is not a file and is left to the resolver to reject.
+     */
     @Override
     public boolean supports(String location) {
-        return location != null;
+        if (location == null) {
+            return false;
+        }
+        String scheme = KeyStoreSources.scheme(location);
+        return scheme == null || "file".equals(scheme);
     }
 
     @Override
     public InputStream open(String location) throws IOException {
-        String path = location.replaceFirst("^file:", "");
+        String path = location.replaceFirst("^(?i)file:", "");
         return Files.newInputStream(Path.of(path));
     }
 }
-

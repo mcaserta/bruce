@@ -62,7 +62,7 @@ public final class Keystores {
     /**
      * Loads a keystore from a location using the default keystore type.
      *
-     * @param location keystore location (classpath/file/http/https)
+     * @param location keystore location (classpath/file/https)
      * @param password keystore password
      * @return loaded keystore
      */
@@ -73,7 +73,7 @@ public final class Keystores {
     /**
      * Loads a keystore from a location using the default keystore type.
      *
-     * @param location keystore location (classpath/file/http/https)
+     * @param location keystore location (classpath/file/https)
      * @param password keystore password
      * @return loaded keystore
      */
@@ -84,7 +84,7 @@ public final class Keystores {
     /**
      * Loads a keystore from a location with explicit type.
      *
-     * @param location keystore location (classpath/file/http/https)
+     * @param location keystore location (classpath/file/https)
      * @param password keystore password
      * @param type keystore type
      * @return loaded keystore
@@ -96,7 +96,7 @@ public final class Keystores {
     /**
      * Loads a keystore from a location with explicit type.
      *
-     * @param location keystore location (classpath/file/http/https)
+     * @param location keystore location (classpath/file/https)
      * @param password keystore password
      * @param type keystore type
      * @return loaded keystore
@@ -108,7 +108,7 @@ public final class Keystores {
     /**
      * Loads a keystore from a location with explicit type and provider.
      *
-     * @param location keystore location (classpath/file/http/https)
+     * @param location keystore location (classpath/file/https)
      * @param password keystore password
      * @param type keystore type
      * @param provider provider name, or empty for default
@@ -121,7 +121,7 @@ public final class Keystores {
     /**
      * Loads a keystore from a location with explicit type and provider.
      *
-     * @param location keystore location (classpath/file/http/https)
+     * @param location keystore location (classpath/file/https)
      * @param password keystore password
      * @param type keystore type
      * @param provider provider selection
@@ -134,7 +134,7 @@ public final class Keystores {
     /**
      * Loads a keystore from a location with explicit type and provider.
      *
-     * @param location keystore location (classpath/file/http/https)
+     * @param location keystore location (classpath/file/https)
      * @param password keystore password
      * @param type keystore type
      * @param provider provider name, or empty for default
@@ -147,7 +147,7 @@ public final class Keystores {
     /**
      * Loads a keystore from a location with explicit type and provider.
      *
-     * @param location keystore location (classpath/file/http/https)
+     * @param location keystore location (classpath/file/https)
      * @param password keystore password
      * @param type keystore type
      * @param provider provider selection
