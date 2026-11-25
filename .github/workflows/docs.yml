@@ -31,12 +31,17 @@ env:
   # Update together with MDBOOK_VERSION.
   MDBOOK_SHA256: 3f28de05dafca9d0f2eab99c662116b0e37b89b1d96a08f8f430b9eeae958cd7
 
+permissions:
+  contents: read
+
 jobs:
   docs:
     name: Build and deploy docs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
       - name: Install mdBook
         run: |
           tarball="${RUNNER_TEMP}/mdbook.tar.gz"

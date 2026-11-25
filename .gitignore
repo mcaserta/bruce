@@ -8,3 +8,16 @@ bin/
 .classpath
 .project
 .settings/
+
+# Credentials and signing material: never commit
+/gradle.properties
+local.properties
+.env
+.env.*
+*.gpg
+*.asc
+*.key
+*.pem
+secring.*
+settings.xml
+.gnupg/

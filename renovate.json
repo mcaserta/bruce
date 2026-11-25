@@ -1,9 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base",
-    "helpers:pinGitHubActionDigests"
-  ],
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+  "minimumReleaseAge": "3 days",
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
@@ -12,6 +10,17 @@
     {
       "description": "Action updates run with access to CI secrets: review them by hand",
       "matchManagers": ["github-actions"],
+      "automerge": false
+    },
+    {
+      "description": "Build plugins and the wrapper run in the release job next to the signing keys: review them by hand",
+      "matchManagers": ["gradle-wrapper"],
+      "automerge": false
+    },
+    {
+      "description": "Build plugins run in the release job next to the signing keys: review them by hand",
+      "matchManagers": ["gradle"],
+      "matchDepTypes": ["plugin"],
       "automerge": false
     }
   ]
