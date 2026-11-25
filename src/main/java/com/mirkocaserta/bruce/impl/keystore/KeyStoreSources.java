@@ -2,6 +2,8 @@ package com.mirkocaserta.bruce.impl.keystore;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -23,6 +25,21 @@ final class KeyStoreSources {
      */
     private static final Pattern USER_INFO = Pattern.compile("(?<=://)[^/?#]*@");
 
+    /**
+     * Matches the query string of a URL. Presigned object-store URLs and
+     * {@code ?token=} style links carry their credentials here.
+     */
+    private static final Pattern QUERY = Pattern.compile("(://[^\\s?#]*)\\?[^\\s#]*");
+
+    /** Matches the fragment of a URL. */
+    private static final Pattern FRAGMENT = Pattern.compile("(://[^\\s#]*)#\\S*");
+
+    /** Keystores are a few KB; anything this large is not one. */
+    static final long MAX_KEYSTORE_BYTES = 16L * 1024 * 1024;
+
+    /** Upper bound for a whole https download, on top of the per-read timeout. */
+    static final Duration MAX_DOWNLOAD_TIME = Duration.ofMinutes(2);
+
     private static final List<KeyStoreSource> SOURCES = List.of(
             new ClasspathKeyStoreSource(),
             new HttpsKeyStoreSource(),
@@ -42,7 +59,10 @@ final class KeyStoreSources {
         for (KeyStoreSource source : SOURCES) {
             if (source.supports(location)) {
                 try {
-                    return source.open(location);
+                    InputStream in = source.open(location);
+                    return source instanceof HttpsKeyStoreSource
+                            ? new BoundedInputStream(in, MAX_KEYSTORE_BYTES, MAX_DOWNLOAD_TIME)
+                            : in;
                 } catch (IOException e) {
                     throw sanitize(e, location);
                 }
@@ -72,11 +92,17 @@ final class KeyStoreSources {
     }
 
     /**
-     * Replaces any userinfo (for example {@code user:password@}) in the given
-     * text with {@code ***@}, so it is safe to put in error messages.
+     * Replaces any userinfo (for example {@code user:password@}), query string
+     * and fragment of URLs in the given text with {@code ***}, so it is safe
+     * to put in error messages.
      */
     static String redact(String text) {
-        return text == null ? null : USER_INFO.matcher(text).replaceAll("***@");
+        if (text == null) {
+            return null;
+        }
+        String redacted = USER_INFO.matcher(text).replaceAll("***@");
+        redacted = QUERY.matcher(redacted).replaceAll("$1?***");
+        return FRAGMENT.matcher(redacted).replaceAll("$1#***");
     }
 
     /**
@@ -88,15 +114,41 @@ final class KeyStoreSources {
      * the original exception is returned untouched.
      */
     static IOException sanitize(IOException e, String location) {
-        String userInfo = userInfo(location);
-        if (userInfo == null || !leaks(e, userInfo)) {
+        List<String> secrets = secrets(location);
+        if (secrets.isEmpty() || !leaks(e, secrets)) {
             return e;
         }
-        String message = redact(String.valueOf(e.getMessage()).replace(userInfo + "@", "***@"));
+        String message = String.valueOf(e.getMessage());
+        for (String secret : secrets) {
+            message = message.replace(secret, "***");
+        }
         IOException sanitized = new IOException(String.format("%s: %s (location=%s)",
-                e.getClass().getName(), message, redact(location)));
+                e.getClass().getName(), redact(message), redact(location)));
         sanitized.setStackTrace(e.getStackTrace());
         return sanitized;
+    }
+
+    /** The parts of a location that may carry credentials: userinfo, query and fragment. */
+    private static List<String> secrets(String location) {
+        List<String> secrets = new ArrayList<>();
+        String userInfo = userInfo(location);
+        if (userInfo != null) {
+            secrets.add(userInfo);
+        }
+        if (location != null && scheme(location) != null) {
+            int fragment = location.indexOf('#');
+            int query = location.indexOf('?');
+            if (query >= 0 && (fragment < 0 || query < fragment)) {
+                String q = location.substring(query + 1, fragment < 0 ? location.length() : fragment);
+                if (!q.isEmpty()) {
+                    secrets.add(q);
+                }
+            }
+            if (fragment >= 0 && fragment + 1 < location.length()) {
+                secrets.add(location.substring(fragment + 1));
+            }
+        }
+        return secrets;
     }
 
     private static String userInfo(String location) {
@@ -112,10 +164,13 @@ final class KeyStoreSources {
         return userInfo.isEmpty() ? null : userInfo;
     }
 
-    private static boolean leaks(Throwable t, String userInfo) {
+    private static boolean leaks(Throwable t, List<String> secrets) {
         for (Throwable c = t; c != null; c = c.getCause()) {
-            if (c.toString().contains(userInfo)) {
-                return true;
+            String text = c.toString();
+            for (String secret : secrets) {
+                if (text.contains(secret)) {
+                    return true;
+                }
             }
         }
         return false;

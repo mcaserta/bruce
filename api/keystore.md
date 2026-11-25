@@ -30,8 +30,10 @@ fetched over an unauthenticated channel can be swapped in transit, so it fails
 with an error telling you to use `https://`. Any other `scheme://` location
 fails with an "unsupported keystore location scheme" error instead of being
 treated as a file path. Https downloads use a 10 second connect timeout and a 30
-second read timeout. Error messages redact any userinfo (`user:password@`) in
-the location. The default key store type is `PKCS12`.
+second read timeout, must finish within 2 minutes overall, and are capped at 16
+MB. Error messages redact the userinfo (`user:password@`), query string and
+fragment of the location, so presigned URLs and `?token=` links do not end up in
+logs. The default key store type is `PKCS12`.
 
 ### Usage Example
 
