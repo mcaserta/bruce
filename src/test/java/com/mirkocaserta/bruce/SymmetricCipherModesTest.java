@@ -80,6 +80,29 @@ class SymmetricCipherModesTest {
         assertEquals(PLAINTEXT, decryptor.decrypt(Bytes.from(new byte[0]), ciphertext));
     }
 
+    @Test
+    void chaCha20Poly1305UsesTheCallersNonce() {
+        Bytes key = Bytes.from(Keystores.symmetricKey("ChaCha20", BASE64), BASE64);
+        Bytes nonce = Bytes.from(new byte[12]);
+        var encryptor = Bruce.cipherBuilder().key(key).keyAlgorithm(SymmetricAlgorithm.CHACHA20).algorithm("ChaCha20-Poly1305").buildSymmetricEncryptor();
+        var decryptor = Bruce.cipherBuilder().key(key).keyAlgorithm(SymmetricAlgorithm.CHACHA20).algorithm("ChaCha20-Poly1305").buildSymmetricDecryptor();
+
+        Bytes ciphertext = encryptor.encrypt(nonce, PLAINTEXT);
+        // the JDK may refuse to reuse a nonce on one Cipher instance, but each call gets a fresh one
+        Bytes other = Bruce.cipherBuilder().key(key).keyAlgorithm(SymmetricAlgorithm.CHACHA20).algorithm("ChaCha20-Poly1305").buildSymmetricEncryptor().encrypt(Bytes.from(new byte[12]), PLAINTEXT);
+        assertEquals(ciphertext, other, "the caller's nonce must be used, not a random one");
+        assertEquals(PLAINTEXT.length() + 16, ciphertext.length());
+        assertEquals(PLAINTEXT, decryptor.decrypt(nonce, ciphertext));
+    }
+
+    @Test
+    void plainChaCha20IsRejectedWithAClearMessage() {
+        Bytes key = Bytes.from(Keystores.symmetricKey("ChaCha20", BASE64), BASE64);
+        var encryptor = Bruce.cipherBuilder().key(key).keyAlgorithm(SymmetricAlgorithm.CHACHA20).algorithm("ChaCha20").buildSymmetricEncryptor();
+        BruceException e = assertThrows(BruceException.class, () -> encryptor.encrypt(Bytes.from(new byte[12]), PLAINTEXT));
+        assertTrue(e.getMessage().contains("ChaCha20-Poly1305"), e.getMessage());
+    }
+
     private static Bytes aesKey() {
         return Bytes.from(Keystores.symmetricKey("AES", BASE64), BASE64);
     }

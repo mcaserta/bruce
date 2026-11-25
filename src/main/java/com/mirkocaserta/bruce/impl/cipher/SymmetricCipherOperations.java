@@ -104,13 +104,23 @@ public final class SymmetricCipherOperations {
 
     /**
      * Picks the parameter spec the transformation's mode expects: a 128-bit tag
-     * {@link GCMParameterSpec} for GCM, none for ECB or a transformation without
-     * a mode (the IV is ignored), and an {@link IvParameterSpec} otherwise.
+     * {@link GCMParameterSpec} for GCM, none for ECB, an {@link IvParameterSpec}
+     * for other modes and for {@code ChaCha20-Poly1305} (the IV is its 12-byte
+     * nonce). A transformation without a mode gets the provider default and the
+     * IV is ignored, except plain {@code ChaCha20}, which is rejected: the
+     * provider would make up a nonce of its own and the ciphertext could not be
+     * decrypted.
      */
     static AlgorithmParameterSpec parametersFor(String cipherAlgorithm, byte[] iv) {
         String[] parts = cipherAlgorithm.split("/");
         if (parts.length < 2) {
-            return null;
+            String name = parts[0].trim().toUpperCase(Locale.ROOT);
+            return switch (name) {
+                case "CHACHA20-POLY1305" -> new IvParameterSpec(iv);
+                case "CHACHA20" -> throw new BruceException(
+                        "unauthenticated ChaCha20 is not supported, use ChaCha20-Poly1305");
+                default -> null;
+            };
         }
         String cipherMode = parts[1].trim().toUpperCase(Locale.ROOT);
         return switch (cipherMode) {
