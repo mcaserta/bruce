@@ -43,6 +43,8 @@ public final class Pkcs1Utils {
             0x05, 0x00                                                        // NULL
     };
 
+    private static final String SEQUENCE = "SEQUENCE";
+
     private Pkcs1Utils() {
         // utility class
     }
@@ -105,7 +107,7 @@ public final class Pkcs1Utils {
         try {
             requireInput(pkcs8Der);
             Tlv outer = readTlv(pkcs8Der, 0, pkcs8Der.length);
-            requireTag(outer, 0x30, "SEQUENCE");
+            requireTag(outer, 0x30, SEQUENCE);
             requireNoTrailingData(outer, pkcs8Der);
             Tlv version = readTlv(pkcs8Der, outer.valueStart(), outer.end());
             requireTag(version, 0x02, "INTEGER");
@@ -135,7 +137,7 @@ public final class Pkcs1Utils {
         try {
             requireInput(spkiDer);
             Tlv outer = readTlv(spkiDer, 0, spkiDer.length);
-            requireTag(outer, 0x30, "SEQUENCE");
+            requireTag(outer, 0x30, SEQUENCE);
             requireNoTrailingData(outer, spkiDer);
             Tlv algorithmId = readTlv(spkiDer, outer.valueStart(), outer.end());
             requireRsaAlgorithm(spkiDer, algorithmId);
@@ -212,7 +214,7 @@ public final class Pkcs1Utils {
      * key is not passed off as PKCS#1 RSA.
      */
     private static void requireRsaAlgorithm(byte[] der, Tlv algorithmId) {
-        requireTag(algorithmId, 0x30, "SEQUENCE");
+        requireTag(algorithmId, 0x30, SEQUENCE);
         Tlv oid = readTlv(der, algorithmId.valueStart(), algorithmId.end());
         requireTag(oid, 0x06, "OBJECT IDENTIFIER");
         // RSA_ALGORITHM_IDENTIFIER is 30 0d | 06 09 <oid> | 05 00: the OID TLV starts at index 2

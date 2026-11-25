@@ -45,26 +45,38 @@ public final class PemUtils {
         for (var it = pem.lines().iterator(); it.hasNext(); ) {
             var line = it.next().strip();
             if (label == null) {
-                if (line.startsWith(BEGIN) && line.endsWith(DASHES)) {
-                    label = line.substring(BEGIN.length(), line.length() - DASHES.length());
-                }
-                continue;
-            }
-            if (line.startsWith(END)) {
-                if (!line.equals(END + label + DASHES)) {
-                    throw new BruceException("PEM END line does not match BEGIN " + label);
-                }
+                label = beginLabel(line);
+            } else if (line.startsWith(END)) {
+                requireMatchingEnd(line, label);
                 return decodeBody(body);
+            } else {
+                requireNoHeader(line);
+                body.append(line);
             }
-            if (line.indexOf(':') >= 0) {
-                throw new BruceException("PEM headers are not supported (encrypted legacy keys must be decrypted first)");
-            }
-            body.append(line);
         }
         if (label == null) {
             throw new BruceException("no PEM BEGIN line found");
         }
         throw new BruceException("PEM END line missing for BEGIN " + label);
+    }
+
+    /** Returns the label of a BEGIN line, or {@code null} for any other line. */
+    private static String beginLabel(String line) {
+        return line.startsWith(BEGIN) && line.endsWith(DASHES)
+                ? line.substring(BEGIN.length(), line.length() - DASHES.length())
+                : null;
+    }
+
+    private static void requireMatchingEnd(String line, String label) {
+        if (!line.equals(END + label + DASHES)) {
+            throw new BruceException("PEM END line does not match BEGIN " + label);
+        }
+    }
+
+    private static void requireNoHeader(String line) {
+        if (line.indexOf(':') >= 0) {
+            throw new BruceException("PEM headers are not supported (encrypted legacy keys must be decrypted first)");
+        }
     }
 
     private static byte[] decodeBody(CharSequence body) {
@@ -94,9 +106,9 @@ public final class PemUtils {
         }
         // MIME encoder wraps at 76 chars, matching PEM convention
         var b64 = Base64.getMimeEncoder(64, LINE_SEPARATOR.getBytes()).encodeToString(bytes);
-        return "-----BEGIN " + type.label() + "-----" + LINE_SEPARATOR
+        return BEGIN + type.label() + DASHES + LINE_SEPARATOR
                 + b64 + LINE_SEPARATOR
-                + "-----END " + type.label() + "-----";
+                + END + type.label() + DASHES;
     }
 
 }
