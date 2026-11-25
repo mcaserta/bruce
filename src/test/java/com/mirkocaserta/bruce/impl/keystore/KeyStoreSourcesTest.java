@@ -260,6 +260,15 @@ class KeyStoreSourcesTest {
     }
 
     @Test
+    void locationAwareRedactionCoversWhitespace() {
+        assertEquals("https://exa mple.com/ks.p12?***",
+                KeyStoreSources.redact("https://exa mple.com/ks.p12?token=secret", "https://exa mple.com/ks.p12?token=secret"));
+        assertEquals("open failed: //***@host/share",
+                KeyStoreSources.redact("open failed: //u:secret@host/share", "file://u:secret@host/share"));
+        assertNull(KeyStoreSources.redact(null, "https://example.com/?t=1"));
+    }
+
+    @Test
     void sanitizeRedactsQueryTokens() {
         IOException leaky = new IOException("Server returned 403 for https://example.com/ks.p12?token=secret");
         IOException sanitized = KeyStoreSources.sanitize(leaky, "https://example.com/ks.p12?token=secret");
@@ -268,9 +277,16 @@ class KeyStoreSourcesTest {
 
     @Test
     void loadKeyStoreDoesNotLeakQueryTokens() {
-        BruceException e = assertThrows(BruceException.class,
-                () -> KeyStoreOperations.loadKeyStore("https://exa%zzmple.com/ks.p12?token=secret", "pw".toCharArray()));
-        assertNoSecretInChain(e);
+        for (String location : new String[]{
+                "https://exa%zzmple.com/ks.p12?token=secret",
+                "https://exa mple.com/ks.p12?token=secret",
+                "https://example.com/k s.p12?token=secret",
+                "https://example.com/ks.p12?a=1 &token=secret",
+                "https://example.com/ks.p12#token=secret x"}) {
+            BruceException e = assertThrows(BruceException.class,
+                    () -> KeyStoreOperations.loadKeyStore(location, "pw".toCharArray()));
+            assertNoSecretInChain(e);
+        }
     }
 
     @Test
@@ -281,9 +297,9 @@ class KeyStoreSourcesTest {
     }
 
     @Test
-    void boundedStreamStopsAtTheSizeLimit() throws IOException {
+    void boundedStreamStopsAtTheSizeLimit() {
         var in = new BoundedInputStream(new java.io.ByteArrayInputStream(new byte[100]), 64, java.time.Duration.ofMinutes(1));
-        IOException e = assertThrows(IOException.class, () -> in.readAllBytes());
+        IOException e = assertThrows(IOException.class, in::readAllBytes);
         assertTrue(e.getMessage().contains("64"), e.getMessage());
     }
 

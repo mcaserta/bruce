@@ -98,9 +98,9 @@ public final class KeyStoreOperations {
             }
             return keyStore;
         } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException e) {
-            String message = String.format("error loading keystore: location=%s", KeyStoreSources.redact(location));
+            String message = String.format("error loading keystore: location=%s", KeyStoreSources.redact(location, location));
             if (e.getMessage() != null) {
-                message += ": " + KeyStoreSources.redact(e.getMessage());
+                message += ": " + KeyStoreSources.redact(e.getMessage(), location);
             }
             throw new BruceException(message, e);
         } catch (Exception e) {
