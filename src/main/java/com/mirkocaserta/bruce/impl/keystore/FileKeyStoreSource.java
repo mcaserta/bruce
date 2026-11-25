@@ -30,7 +30,7 @@ final class FileKeyStoreSource implements KeyStoreSource {
             resolved = Path.of(path);
         } catch (InvalidPathException e) {
             // the JDK message echoes the raw path, so it is not kept as the cause
-            throw new IOException("invalid keystore file path: " + KeyStoreSources.redact(location));
+            throw new IOException("invalid keystore file path: " + KeyStoreSources.redact(location, location));
         }
         return Files.newInputStream(resolved);
     }

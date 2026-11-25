@@ -54,7 +54,7 @@ final class KeyStoreSources {
         if ("http".equals(scheme(location))) {
             throw new IOException(String.format(
                     "plain HTTP is not supported for keystore locations, use https:// instead: location=%s",
-                    redact(location)));
+                    redact(location, location)));
         }
         for (KeyStoreSource source : SOURCES) {
             if (source.supports(location)) {
@@ -72,9 +72,9 @@ final class KeyStoreSources {
         if (scheme != null) {
             throw new IOException(String.format(
                     "unsupported keystore location scheme: %s (supported: classpath:, file:, https://): location=%s",
-                    scheme, redact(location)));
+                    scheme, redact(location, location)));
         }
-        throw new IOException("unsupported keystore location: " + redact(location));
+        throw new IOException("unsupported keystore location: " + redact(location, location));
     }
 
     /**
@@ -97,8 +97,21 @@ final class KeyStoreSources {
      * to put in error messages.
      */
     static String redact(String text) {
+        return redact(text, null);
+    }
+
+    /**
+     * Like {@link #redact(String)}, but first replaces the userinfo, query and
+     * fragment of {@code location} literally wherever they appear in
+     * {@code text}. The patterns alone miss them when the location contains
+     * whitespace or shows up in a non-URL form (for example as a file path).
+     */
+    static String redact(String text, String location) {
         if (text == null) {
             return null;
+        }
+        for (String secret : secrets(location)) {
+            text = text.replace(secret, "***");
         }
         String redacted = USER_INFO.matcher(text).replaceAll("***@");
         redacted = QUERY.matcher(redacted).replaceAll("$1?***");
@@ -123,7 +136,7 @@ final class KeyStoreSources {
             message = message.replace(secret, "***");
         }
         IOException sanitized = new IOException(String.format("%s: %s (location=%s)",
-                e.getClass().getName(), redact(message), redact(location)));
+                e.getClass().getName(), redact(message, location), redact(location, location)));
         sanitized.setStackTrace(e.getStackTrace());
         return sanitized;
     }
@@ -136,19 +149,25 @@ final class KeyStoreSources {
             secrets.add(userInfo);
         }
         if (location != null && scheme(location) != null) {
+            addIfNotEmpty(secrets, query(location));
             int fragment = location.indexOf('#');
-            int query = location.indexOf('?');
-            if (query >= 0 && (fragment < 0 || query < fragment)) {
-                String q = location.substring(query + 1, fragment < 0 ? location.length() : fragment);
-                if (!q.isEmpty()) {
-                    secrets.add(q);
-                }
-            }
-            if (fragment >= 0 && fragment + 1 < location.length()) {
-                secrets.add(location.substring(fragment + 1));
-            }
+            addIfNotEmpty(secrets, fragment < 0 ? null : location.substring(fragment + 1));
         }
         return secrets;
+    }
+
+    /** The query string of a URL location (between {@code ?} and {@code #}), or {@code null}. */
+    private static String query(String location) {
+        int fragment = location.indexOf('#');
+        int end = fragment < 0 ? location.length() : fragment;
+        int query = location.indexOf('?');
+        return query < 0 || query > end ? null : location.substring(query + 1, end);
+    }
+
+    private static void addIfNotEmpty(List<String> list, String value) {
+        if (value != null && !value.isEmpty()) {
+            list.add(value);
+        }
     }
 
     private static String userInfo(String location) {

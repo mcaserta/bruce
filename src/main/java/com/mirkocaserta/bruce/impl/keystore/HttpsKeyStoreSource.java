@@ -62,12 +62,12 @@ final class HttpsKeyStoreSource implements KeyStoreSource {
             url = URI.create(location).toURL();
         } catch (IllegalArgumentException | MalformedURLException e) {
             // the JDK message echoes the raw location, so it is not kept as the cause
-            throw new IOException("invalid keystore location: " + KeyStoreSources.redact(location));
+            throw new IOException("invalid keystore location: " + KeyStoreSources.redact(location, location));
         }
         URLConnection connection = connectionFactory.open(url);
         if (!(connection instanceof HttpsURLConnection)) {
             throw new IOException("expected an https connection for keystore location: "
-                    + KeyStoreSources.redact(location));
+                    + KeyStoreSources.redact(location, location));
         }
         connection.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);
         connection.setReadTimeout(READ_TIMEOUT_MILLIS);
