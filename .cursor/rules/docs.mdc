@@ -4,7 +4,7 @@ description: Documentation pointers and examples
 ### Docs & Examples
 
 - Online docs: `https://bruce.mirkocaserta.com`
-- Download via JitPack: `https://jitpack.io/#mcaserta/bruce`
+- Maven Central: `com.mirkocaserta.bruce:bruce` (https://central.sonatype.com/artifact/com.mirkocaserta.bruce/bruce)
 - Project readme: [README.adoc](mdc:README.adoc), [README.md](mdc:README.md)
 - Claude guidance: [CLAUDE.md](mdc:CLAUDE.md)
 - API entry: [Bruce.java](mdc:src/main/java/com/mirkocaserta/bruce/Bruce.java)
