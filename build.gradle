@@ -68,7 +68,7 @@ publishing {
                     }
                 }
                 scm {
-                    connection = 'scm:git:git://github.com/mcaserta/bruce.git'
+                    connection = 'scm:git:https://github.com/mcaserta/bruce.git'
                     developerConnection = 'scm:git:ssh://github.com/mcaserta/bruce.git'
                     url = 'https://github.com/mcaserta/bruce'
                 }
