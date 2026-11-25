@@ -79,8 +79,12 @@ public class Hex {
          * @return the decoded bytes
          */
         public byte[] decode(String hex) {
+            // Never echo the input: hex strings are a common way to carry keys.
             if (!hex.matches("^[0-9a-fA-F]+$")) {
-                throw new BruceException(String.format("input is not a valid hexadecimal string: %s", hex));
+                throw new BruceException(String.format("input is not a valid hexadecimal string (length %d)", hex.length()));
+            }
+            if (hex.length() % 2 != 0) {
+                throw new BruceException(String.format("hexadecimal input must have an even length, got %d", hex.length()));
             }
             var l = hex.length();
             var data = new byte[l / 2];

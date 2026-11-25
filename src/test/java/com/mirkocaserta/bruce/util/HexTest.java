@@ -37,4 +37,25 @@ class HexTest {
         assertThrows(BruceException.class, () -> DECODER.decode("sgiao belo"));
     }
 
+    @Test
+    @DisplayName("The error message must not echo the input, which may be key material")
+    void errorDoesNotEchoInput() {
+        var secret = "00112233445566778899aabbccddeeff00112233445566778899aabbccddeezz";
+        var e = assertThrows(BruceException.class, () -> DECODER.decode(secret));
+        assertFalse(e.getMessage().contains("00112233"), e.getMessage());
+    }
+
+    @Test
+    @DisplayName("Odd-length input is rejected with a BruceException")
+    void oddLengthIsRejected() {
+        var e = assertThrows(BruceException.class, () -> DECODER.decode("abc"));
+        assertFalse(e.getMessage().contains("abc"), e.getMessage());
+    }
+
+    @Test
+    @DisplayName("Uppercase digits decode")
+    void uppercaseDecodes() {
+        assertArrayEquals(new byte[]{(byte) 0xAB, 0x01}, DECODER.decode("AB01"));
+    }
+
 }
