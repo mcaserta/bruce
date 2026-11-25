@@ -220,7 +220,11 @@ class KeyStoreSourcesTest {
         assertEquals("https://***@example.com/ks.p12", KeyStoreSources.redact("https://user:p@ss@example.com/ks.p12"));
         assertEquals("https://***@example.com/ks.p12", KeyStoreSources.redact("https://token@example.com/ks.p12"));
         assertEquals("https://example.com/a@b.p12", KeyStoreSources.redact("https://example.com/a@b.p12"));
-        assertEquals("https://example.com/ks.p12?u=a@b", KeyStoreSources.redact("https://example.com/ks.p12?u=a@b"));
+        assertEquals("https://example.com/ks.p12?***", KeyStoreSources.redact("https://example.com/ks.p12?u=a@b"));
+        assertEquals("https://bucket.s3.amazonaws.com/ks.p12?*** failed",
+                KeyStoreSources.redact("https://bucket.s3.amazonaws.com/ks.p12?X-Amz-Signature=abc123&X-Amz-Expires=60 failed"));
+        assertEquals("https://example.com/ks.p12#***", KeyStoreSources.redact("https://example.com/ks.p12#token=abc"));
+        assertEquals("https://***@example.com/ks.p12?***", KeyStoreSources.redact("https://u:p@example.com/ks.p12?t=1"));
         assertEquals("keys/ks.p12", KeyStoreSources.redact("keys/ks.p12"));
         assertNull(KeyStoreSources.redact(null));
     }
@@ -253,6 +257,65 @@ class KeyStoreSourcesTest {
         IOException sanitized = KeyStoreSources.sanitize(nested, "file://user:secret@host/ks.p12");
         assertNoSecretInChain(sanitized);
         assertTrue(sanitized.getMessage().contains("***@host"), sanitized.getMessage());
+    }
+
+    @Test
+    void sanitizeRedactsQueryTokens() {
+        IOException leaky = new IOException("Server returned 403 for https://example.com/ks.p12?token=secret");
+        IOException sanitized = KeyStoreSources.sanitize(leaky, "https://example.com/ks.p12?token=secret");
+        assertNoSecretInChain(sanitized);
+    }
+
+    @Test
+    void loadKeyStoreDoesNotLeakQueryTokens() {
+        BruceException e = assertThrows(BruceException.class,
+                () -> KeyStoreOperations.loadKeyStore("https://exa%zzmple.com/ks.p12?token=secret", "pw".toCharArray()));
+        assertNoSecretInChain(e);
+    }
+
+    @Test
+    void invalidFilePathDoesNotLeakTheLocation() {
+        BruceException e = assertThrows(BruceException.class,
+                () -> KeyStoreOperations.loadKeyStore("file://user:secret@host/ks\u0000.p12", "pw".toCharArray()));
+        assertNoSecretInChain(e);
+    }
+
+    @Test
+    void boundedStreamStopsAtTheSizeLimit() throws IOException {
+        var in = new BoundedInputStream(new java.io.ByteArrayInputStream(new byte[100]), 64, java.time.Duration.ofMinutes(1));
+        IOException e = assertThrows(IOException.class, () -> in.readAllBytes());
+        assertTrue(e.getMessage().contains("64"), e.getMessage());
+    }
+
+    @Test
+    void boundedStreamPassesSmallInputThrough() throws IOException {
+        var data = new byte[]{1, 2, 3, 4};
+        try (var in = new BoundedInputStream(new java.io.ByteArrayInputStream(data), 4, java.time.Duration.ofMinutes(1))) {
+            assertEquals(1, in.read());
+            org.junit.jupiter.api.Assertions.assertArrayEquals(new byte[]{2, 3, 4}, in.readAllBytes());
+            assertEquals(-1, in.read());
+        }
+    }
+
+    @Test
+    void boundedStreamCountsSkippedBytes() throws IOException {
+        var in = new BoundedInputStream(new java.io.ByteArrayInputStream(new byte[100]), 64, java.time.Duration.ofMinutes(1));
+        assertFalse(in.markSupported());
+        assertEquals(60, in.skip(60));
+        assertThrows(IOException.class, () -> in.skip(10));
+    }
+
+    @Test
+    void boundedStreamEnforcesTheDeadline() {
+        var slow = new java.io.InputStream() {
+            @Override public int read() {
+                try { Thread.sleep(20); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
+                return 0;
+            }
+        };
+        var in = new BoundedInputStream(slow, Long.MAX_VALUE, java.time.Duration.ofMillis(50));
+        IOException e = assertThrows(IOException.class, () -> { for (int i = 0; i < 100; i++) in.read(); });
+        assertTrue(e.getMessage().contains("time"), e.getMessage());
     }
 
     private static void assertNoSecretInChain(Throwable t) {

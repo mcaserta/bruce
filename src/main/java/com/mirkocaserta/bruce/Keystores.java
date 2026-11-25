@@ -24,6 +24,8 @@ import java.security.cert.CertificateFactory;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
+import java.util.function.Function;
 
 /**
  * Feature-focused facade for keystore and key-management operations,
@@ -41,7 +43,12 @@ public final class Keystores {
     }
 
     /**
-     * Loads an empty default-type keystore.
+     * Loads the JVM's default keystore: the location in the
+     * {@code javax.net.ssl.keyStore} system property, opened with the password
+     * in {@code javax.net.ssl.keyStorePassword}, as a PKCS12 keystore.
+     *
+     * <p>This is the JVM's TLS client keystore, not an empty one. It fails if
+     * the property is not set.</p>
      *
      * @return loaded keystore instance
      */
@@ -50,7 +57,8 @@ public final class Keystores {
     }
 
     /**
-     * Loads an empty keystore of the given type.
+     * Loads the JVM's default keystore (see {@link #keystore()}) with the
+     * given keystore type.
      *
      * @param type keystore type (for example {@code PKCS12} or {@code JKS})
      * @return loaded keystore instance
@@ -78,7 +86,7 @@ public final class Keystores {
      * @return loaded keystore
      */
     public static KeyStore keystore(String location, String password) {
-        return KeyStoreOperations.loadKeyStore(location, password.toCharArray());
+        return withPassword(password, chars -> KeyStoreOperations.loadKeyStore(location, chars));
     }
 
     /**
@@ -102,7 +110,7 @@ public final class Keystores {
      * @return loaded keystore
      */
     public static KeyStore keystore(String location, String password, String type) {
-        return KeyStoreOperations.loadKeyStore(location, password.toCharArray(), type);
+        return withPassword(password, chars -> KeyStoreOperations.loadKeyStore(location, chars, type));
     }
 
     /**
@@ -141,7 +149,7 @@ public final class Keystores {
      * @return loaded keystore
      */
     public static KeyStore keystore(String location, String password, String type, String provider) {
-        return KeyStoreOperations.loadKeyStore(location, password.toCharArray(), type, provider);
+        return withPassword(password, chars -> KeyStoreOperations.loadKeyStore(location, chars, type, provider));
     }
 
     /**
@@ -154,7 +162,7 @@ public final class Keystores {
      * @return loaded keystore
      */
     public static KeyStore keystore(String location, String password, String type, Bruce.Provider provider) {
-        return KeyStoreOperations.loadKeyStore(location, password.toCharArray(), type, providerName(provider));
+        return withPassword(password, chars -> KeyStoreOperations.loadKeyStore(location, chars, type, providerName(provider)));
     }
 
     /**
@@ -176,7 +184,7 @@ public final class Keystores {
      * @return serialized keystore bytes
      */
     public static byte[] keystoreToBytes(KeyStore keystore, String password) {
-        return KeyStoreOperations.storeKeyStore(keystore, password.toCharArray());
+        return withPassword(password, chars -> KeyStoreOperations.storeKeyStore(keystore, chars));
     }
 
     /**
@@ -222,7 +230,10 @@ public final class Keystores {
      * @param path destination file path
      */
     public static void keystoreToFile(KeyStore keystore, String password, Path path) {
-        KeyStoreOperations.storeKeyStore(keystore, password.toCharArray(), path);
+        withPassword(password, chars -> {
+            KeyStoreOperations.storeKeyStore(keystore, chars, path);
+            return null;
+        });
     }
 
     /**
@@ -244,7 +255,10 @@ public final class Keystores {
      * @param file destination file
      */
     public static void keystoreToFile(KeyStore keystore, String password, File file) {
-        KeyStoreOperations.storeKeyStore(keystore, password.toCharArray(), file.toPath());
+        withPassword(password, chars -> {
+            KeyStoreOperations.storeKeyStore(keystore, chars, file.toPath());
+            return null;
+        });
     }
 
     /**
@@ -278,7 +292,7 @@ public final class Keystores {
      * @return private key
      */
     public static PrivateKey privateKey(KeyStore keystore, String alias, String password) {
-        return KeyStoreOperations.loadPrivateKey(keystore, alias, password.toCharArray());
+        return withPassword(password, chars -> KeyStoreOperations.loadPrivateKey(keystore, alias, chars));
     }
 
     /**
@@ -302,7 +316,7 @@ public final class Keystores {
      * @return secret key
      */
     public static Key secretKey(KeyStore keystore, String alias, String password) {
-        return KeyStoreOperations.loadSecretKey(keystore, alias, password.toCharArray());
+        return withPassword(password, chars -> KeyStoreOperations.loadSecretKey(keystore, alias, chars));
     }
 
     /**
@@ -936,5 +950,19 @@ public final class Keystores {
      */
     public static String rsaPublicKeyToPkcs1Pem(PublicKey publicKey) {
         return PemUtils.encode(PemType.RSA_PUBLIC_KEY, rsaPublicKeyToPkcs1(publicKey));
+    }
+
+    /**
+     * Runs {@code op} with a char[] copy of {@code password} and wipes the copy
+     * afterwards. The caller's String stays on the heap, but at least the
+     * library does not leave extra copies behind.
+     */
+    private static <T> T withPassword(String password, Function<char[], T> op) {
+        char[] chars = password.toCharArray();
+        try {
+            return op.apply(chars);
+        } finally {
+            Arrays.fill(chars, '\0');
+        }
     }
 }

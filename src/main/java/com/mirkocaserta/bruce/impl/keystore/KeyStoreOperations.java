@@ -149,8 +149,9 @@ public final class KeyStoreOperations {
      * @return the private key
      */
     public static PrivateKey loadPrivateKey(KeyStore keystore, String alias, char[] password) {
+        var protection = new KeyStore.PasswordProtection(password);
         try {
-            var privateKeyEntry = (KeyStore.PrivateKeyEntry) keystore.getEntry(alias, new KeyStore.PasswordProtection(password));
+            var privateKeyEntry = (KeyStore.PrivateKeyEntry) keystore.getEntry(alias, protection);
 
             if (privateKeyEntry == null) {
                 throw new BruceException(String.format("no such private key with alias: %s", alias));
@@ -159,6 +160,13 @@ public final class KeyStoreOperations {
             return privateKeyEntry.getPrivateKey();
         } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException e) {
             throw new BruceException(String.format("error loading private key with alias: %s", alias), e);
+        } finally {
+            try {
+                // wipes the protection's own copy of the password
+                protection.destroy();
+            } catch (javax.security.auth.DestroyFailedException ignored) {
+                // PasswordProtection.destroy does not fail in practice
+            }
         }
     }
     
