@@ -106,8 +106,11 @@ public final class Pkcs1Utils {
             requireInput(pkcs8Der);
             Tlv outer = readTlv(pkcs8Der, 0, pkcs8Der.length);
             requireTag(outer, 0x30, "SEQUENCE");
+            requireNoTrailingData(outer, pkcs8Der);
             Tlv version = readTlv(pkcs8Der, outer.valueStart(), outer.end());
+            requireTag(version, 0x02, "INTEGER");
             Tlv algorithmId = readTlv(pkcs8Der, version.end(), outer.end());
+            requireRsaAlgorithm(pkcs8Der, algorithmId);
             Tlv octetString = readTlv(pkcs8Der, algorithmId.end(), outer.end());
             requireTag(octetString, 0x04, "OCTET STRING");
             return Arrays.copyOfRange(pkcs8Der, octetString.valueStart(), octetString.end());
@@ -133,7 +136,9 @@ public final class Pkcs1Utils {
             requireInput(spkiDer);
             Tlv outer = readTlv(spkiDer, 0, spkiDer.length);
             requireTag(outer, 0x30, "SEQUENCE");
+            requireNoTrailingData(outer, spkiDer);
             Tlv algorithmId = readTlv(spkiDer, outer.valueStart(), outer.end());
+            requireRsaAlgorithm(spkiDer, algorithmId);
             Tlv bitString = readTlv(spkiDer, algorithmId.end(), outer.end());
             requireTag(bitString, 0x03, "BIT STRING");
             if (bitString.length() == 0) {
@@ -192,6 +197,31 @@ public final class Pkcs1Utils {
     private static void requireInput(byte[] der) {
         if (der == null) {
             throw new BruceException("input is null");
+        }
+    }
+
+    private static void requireNoTrailingData(Tlv outer, byte[] der) {
+        if (outer.end() != der.length) {
+            throw new BruceException("%d trailing bytes after the outer SEQUENCE"
+                    .formatted(der.length - outer.end()));
+        }
+    }
+
+    /**
+     * Checks that an AlgorithmIdentifier names rsaEncryption, so an EC or DSA
+     * key is not passed off as PKCS#1 RSA.
+     */
+    private static void requireRsaAlgorithm(byte[] der, Tlv algorithmId) {
+        requireTag(algorithmId, 0x30, "SEQUENCE");
+        Tlv oid = readTlv(der, algorithmId.valueStart(), algorithmId.end());
+        requireTag(oid, 0x06, "OBJECT IDENTIFIER");
+        // RSA_ALGORITHM_IDENTIFIER is 30 0d | 06 09 <oid> | 05 00: the OID TLV starts at index 2
+        int expectedLength = RSA_ALGORITHM_IDENTIFIER[3];
+        boolean rsa = oid.length() == expectedLength && Arrays.equals(
+                der, oid.valueStart(), oid.end(),
+                RSA_ALGORITHM_IDENTIFIER, 4, 4 + expectedLength);
+        if (!rsa) {
+            throw new BruceException("key is not an RSA key (algorithm is not rsaEncryption)");
         }
     }
 
