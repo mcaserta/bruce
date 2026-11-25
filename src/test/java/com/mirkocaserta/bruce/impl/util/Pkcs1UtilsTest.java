@@ -227,4 +227,44 @@ class Pkcs1UtilsTest {
         assertThrows(BruceException.class, () -> Pkcs1Utils.rsaPrivateKeyFromPkcs1(new byte[]{0x01, 0x02}));
         assertThrows(BruceException.class, () -> Pkcs1Utils.rsaPublicKeyFromPkcs1(new byte[]{0x01, 0x02}));
     }
+
+    // ── key type and trailing data ────────────────────────────────────────────
+
+    @Test
+    void ecPrivateKeyIsRejected() throws Exception {
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC");
+        kpg.initialize(256);
+        byte[] ec = kpg.generateKeyPair().getPrivate().getEncoded();
+        BruceException e = assertThrows(BruceException.class, () -> Pkcs1Utils.pkcs8ToPkcs1PrivateKey(ec));
+        assertTrue(e.getMessage().contains("RSA"), e.getMessage());
+    }
+
+    @Test
+    void ecPublicKeyIsRejected() throws Exception {
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC");
+        kpg.initialize(256);
+        byte[] ec = kpg.generateKeyPair().getPublic().getEncoded();
+        BruceException e = assertThrows(BruceException.class, () -> Pkcs1Utils.spkiToPkcs1PublicKey(ec));
+        assertTrue(e.getMessage().contains("RSA"), e.getMessage());
+    }
+
+    @Test
+    void trailingBytesAfterPkcs8AreRejected() {
+        byte[] der = Arrays.copyOf(rsa.getPrivate().getEncoded(), rsa.getPrivate().getEncoded().length + 1);
+        assertThrows(BruceException.class, () -> Pkcs1Utils.pkcs8ToPkcs1PrivateKey(der));
+    }
+
+    @Test
+    void trailingBytesAfterSpkiAreRejected() {
+        byte[] der = Arrays.copyOf(rsa.getPublic().getEncoded(), rsa.getPublic().getEncoded().length + 1);
+        assertThrows(BruceException.class, () -> Pkcs1Utils.spkiToPkcs1PublicKey(der));
+    }
+
+    @Test
+    void nonIntegerVersionIsRejected() {
+        byte[] der = rsa.getPrivate().getEncoded().clone();
+        // version is the first element inside the outer SEQUENCE (30 82 xx xx | 02 01 00)
+        der[4] = 0x04;
+        assertThrows(BruceException.class, () -> Pkcs1Utils.pkcs8ToPkcs1PrivateKey(der));
+    }
 }
