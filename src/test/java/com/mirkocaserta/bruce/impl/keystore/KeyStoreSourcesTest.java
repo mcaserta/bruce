@@ -13,6 +13,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URLConnection;
 import java.nio.file.Path;
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -20,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -227,6 +229,40 @@ class KeyStoreSourcesTest {
         assertEquals("https://***@example.com/ks.p12?***", KeyStoreSources.redact("https://u:p@example.com/ks.p12?t=1"));
         assertEquals("keys/ks.p12", KeyStoreSources.redact("keys/ks.p12"));
         assertNull(KeyStoreSources.redact(null));
+    }
+
+    @Test
+    void userInfoRedactionEdgeCases() {
+        // the last @ before the path wins, so an @ in the password is covered
+        assertEquals("https://***@host/p", KeyStoreSources.redact("https://a@b@c:d@host/p"));
+        assertEquals("https://***@host", KeyStoreSources.redact("https://u:p@ss@host"));
+        assertEquals("https://***@host", KeyStoreSources.redact("https://@host"));
+        // an @ after the path, query or fragment delimiter is not userinfo
+        assertEquals("https://host/a@b", KeyStoreSources.redact("https://host/a@b"));
+        assertEquals("https://***@host/a@b", KeyStoreSources.redact("https://u@host/a@b"));
+        assertEquals("https://host#***", KeyStoreSources.redact("https://host#a@b"));
+        // whitespace does not end the authority
+        assertEquals("https://***@host", KeyStoreSources.redact("https://u s\ner@host"));
+        // every URL in the text is redacted, including back to back ones
+        assertEquals("a https://***@h/x and ftp://***@g/y",
+                KeyStoreSources.redact("a https://u:p@h/x and ftp://v:q@g/y"));
+        assertEquals("x://***@h://***@w", KeyStoreSources.redact("x://u@h://v@w"));
+        assertEquals("://://***@h", KeyStoreSources.redact("://://u@h"));
+        assertEquals("x://h y://***@z", KeyStoreSources.redact("x://h y://u@z"));
+        // no scheme separator or no @ leaves the text alone
+        assertEquals("user@host/path", KeyStoreSources.redact("user@host/path"));
+        assertEquals("https://host", KeyStoreSources.redact("https://host"));
+        assertEquals("", KeyStoreSources.redact(""));
+    }
+
+    @Test
+    void userInfoRedactionIsLinear() {
+        String noAt = "://" + "a".repeat(200_000);
+        String manySeparators = "://a".repeat(100_000);
+        assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
+            assertEquals(noAt, KeyStoreSources.redact(noAt));
+            assertEquals(manySeparators, KeyStoreSources.redact(manySeparators));
+        });
     }
 
     @Test
