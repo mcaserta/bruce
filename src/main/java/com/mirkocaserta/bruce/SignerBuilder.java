@@ -15,6 +15,8 @@ import java.util.Map;
  */
 public class SignerBuilder {
 
+    private static final String ALGORITHM = "algorithm";
+
     private PrivateKey privateKey;
     private Map<String, PrivateKey> privateKeyMap;
     private String algorithm;
@@ -69,7 +71,7 @@ public class SignerBuilder {
      * @return this builder
      */
     public SignerBuilder algorithm(SignatureAlgorithm algorithm) {
-        Preconditions.requireNonNull(algorithm, "algorithm");
+        Preconditions.requireNonNull(algorithm, ALGORITHM);
         this.algorithm = algorithm.algorithmName();
         return this;
     }
@@ -118,11 +120,11 @@ public class SignerBuilder {
 
     private void validateSingleKeySigner() {
         Preconditions.requireNonNull(privateKey, "privateKey");
-        Preconditions.requireNonBlank(algorithm, "algorithm");
+        Preconditions.requireNonBlank(algorithm, ALGORITHM);
     }
 
     private void validateMultiKeySigner() {
         Preconditions.requireNonEmpty(privateKeyMap, "privateKeyMap");
-        Preconditions.requireNonBlank(algorithm, "algorithm");
+        Preconditions.requireNonBlank(algorithm, ALGORITHM);
     }
 }

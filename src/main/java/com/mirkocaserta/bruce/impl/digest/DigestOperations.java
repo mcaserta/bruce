@@ -19,6 +19,8 @@ import java.security.Provider;
  */
 public final class DigestOperations {
 
+    private static final String NO_SUCH_ALGORITHM = "No such algorithm: %s";
+
     private DigestOperations() {}
 
     /**
@@ -38,7 +40,7 @@ public final class DigestOperations {
                 try {
                     return Bytes.from(newMessageDigest(algorithm, resolvedProvider).digest(input.asBytes()));
                 } catch (NoSuchAlgorithmException e) {
-                    throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
+                    throw new BruceException(String.format(NO_SUCH_ALGORITHM, algorithm), e);
                 }
             }
 
@@ -54,7 +56,7 @@ public final class DigestOperations {
                     }
                     return Bytes.from(digest.digest());
                 } catch (NoSuchAlgorithmException e) {
-                    throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
+                    throw new BruceException(String.format(NO_SUCH_ALGORITHM, algorithm), e);
                 } catch (IOException e) {
                     throw new BruceException(String.format("I/O error reading file: %s", file), e);
                 }
@@ -66,7 +68,7 @@ public final class DigestOperations {
         try {
             newMessageDigest(algorithm, provider);
         } catch (NoSuchAlgorithmException e) {
-            throw new BruceException(String.format("No such algorithm: %s", algorithm), e);
+            throw new BruceException(String.format(NO_SUCH_ALGORITHM, algorithm), e);
         }
     }
 
