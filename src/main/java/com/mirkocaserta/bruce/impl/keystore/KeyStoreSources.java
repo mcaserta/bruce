@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.IntPredicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,21 +19,12 @@ final class KeyStoreSources {
      */
     private static final Pattern SCHEME = Pattern.compile("^([A-Za-z][A-Za-z0-9+.-]*)://");
 
-    /**
-     * Matches the userinfo part of an authority, up to the last {@code @}
-     * before the path, query or fragment, so a raw {@code @} inside a
-     * password is covered too.
-     */
-    private static final Pattern USER_INFO = Pattern.compile("(?<=://)[^/?#]*@");
+    /** Separates a URL scheme from its authority. */
+    private static final String AUTHORITY_START = "://";
 
-    /**
-     * Matches the query string of a URL. Presigned object-store URLs and
-     * {@code ?token=} style links carry their credentials here.
-     */
-    private static final Pattern QUERY = Pattern.compile("(://[^\\s?#]*)\\?[^\\s#]*");
+    /** Characters that end an authority: path, query and fragment delimiters. */
+    private static final String AUTHORITY_END = "/?#";
 
-    /** Matches the fragment of a URL. */
-    private static final Pattern FRAGMENT = Pattern.compile("(://[^\\s#]*)#\\S*");
 
     /** Keystores are a few KB; anything this large is not one. */
     static final long MAX_KEYSTORE_BYTES = 16L * 1024 * 1024;
@@ -103,7 +95,7 @@ final class KeyStoreSources {
     /**
      * Like {@link #redact(String)}, but first replaces the userinfo, query and
      * fragment of {@code location} literally wherever they appear in
-     * {@code text}. The patterns alone miss them when the location contains
+     * {@code text}. The URL scans alone miss them when the location contains
      * whitespace or shows up in a non-URL form (for example as a file path).
      */
     static String redact(String text, String location) {
@@ -113,9 +105,11 @@ final class KeyStoreSources {
         for (String secret : secrets(location)) {
             text = text.replace(secret, "***");
         }
-        String redacted = USER_INFO.matcher(text).replaceAll("***@");
-        redacted = QUERY.matcher(redacted).replaceAll("$1?***");
-        return FRAGMENT.matcher(redacted).replaceAll("$1#***");
+        String redacted = redactUserInfo(text);
+        // Presigned object-store URLs and ?token= style links carry their
+        // credentials in the query string.
+        redacted = redactAfter(redacted, '?', c -> isSpace(c) || c == '?' || c == '#', c -> isSpace(c) || c == '#');
+        return redactAfter(redacted, '#', c -> isSpace(c) || c == '#', KeyStoreSources::isSpace);
     }
 
     /**
@@ -174,13 +168,98 @@ final class KeyStoreSources {
         if (location == null) {
             return null;
         }
-        Matcher matcher = USER_INFO.matcher(location);
-        if (!matcher.find()) {
+        Span span = findUserInfo(location, 0);
+        if (span == null) {
             return null;
         }
-        String userInfo = matcher.group();
-        userInfo = userInfo.substring(0, userInfo.length() - 1);
+        String userInfo = location.substring(span.start(), span.end() - 1);
         return userInfo.isEmpty() ? null : userInfo;
+    }
+
+    /** Replaces every userinfo found by {@link #findUserInfo} with {@code ***@}. */
+    private static String redactUserInfo(String text) {
+        StringBuilder out = new StringBuilder(text.length());
+        int copied = 0;
+        for (Span span = findUserInfo(text, 0); span != null; span = findUserInfo(text, span.end())) {
+            out.append(text, copied, span.start()).append("***@");
+            copied = span.end();
+        }
+        return copied == 0 ? text : out.append(text, copied, text.length()).toString();
+    }
+
+    /**
+     * Finds the first userinfo at or after {@code from}: the text right after
+     * a {@code ://}, up to and including the last {@code @} before the next
+     * path, query or fragment delimiter (or the end of the text), so a raw
+     * {@code @} inside a password is covered too. Anything else, whitespace
+     * included, is part of the run. When the run after a {@code ://} has no
+     * {@code @}, the search moves on to the next {@code ://}.
+     *
+     * <p>Runs in linear time: a run contains no {@code /}, so the next
+     * {@code ://} starts at the earliest on the last character of the current
+     * run, and runs never overlap.</p>
+     *
+     * @return the span, {@code @} included, or {@code null} if there is none
+     */
+    private static Span findUserInfo(String text, int from) {
+        int separator = text.indexOf(AUTHORITY_START, from);
+        while (separator >= 0) {
+            int start = separator + AUTHORITY_START.length();
+            int lastAt = -1;
+            for (int i = start; i < text.length() && AUTHORITY_END.indexOf(text.charAt(i)) < 0; i++) {
+                if (text.charAt(i) == '@') {
+                    lastAt = i;
+                }
+            }
+            if (lastAt >= 0) {
+                return new Span(start, lastAt + 1);
+            }
+            separator = text.indexOf(AUTHORITY_START, separator + 1);
+        }
+        return null;
+    }
+
+    /**
+     * Replaces the value after {@code marker} in every URL of the text with
+     * {@code ***}. A URL starts at {@code ://} and runs up to the first
+     * character matching {@code runEnd}; when that character is
+     * {@code marker}, everything after it up to the first character matching
+     * {@code valueEnd} (or the end of the text) is the value. The marker
+     * itself is kept, and an empty value is replaced too.
+     *
+     * <p>Runs in linear time: a {@code ://} inside a run that does not end
+     * in the marker would end at the same character, so the search resumes
+     * after the run instead of rescanning it.</p>
+     */
+    private static String redactAfter(String text, char marker, IntPredicate runEnd, IntPredicate valueEnd) {
+        StringBuilder out = new StringBuilder(text.length());
+        int copied = 0;
+        int separator = text.indexOf(AUTHORITY_START);
+        while (separator >= 0) {
+            int i = separator + AUTHORITY_START.length();
+            while (i < text.length() && !runEnd.test(text.charAt(i))) {
+                i++;
+            }
+            if (i < text.length() && text.charAt(i) == marker) {
+                out.append(text, copied, i + 1).append("***");
+                i++;
+                while (i < text.length() && !valueEnd.test(text.charAt(i))) {
+                    i++;
+                }
+                copied = i;
+            }
+            separator = text.indexOf(AUTHORITY_START, i);
+        }
+        return copied == 0 ? text : out.append(text, copied, text.length()).toString();
+    }
+
+    /** Whitespace as the regex class {@code \s} defines it. */
+    private static boolean isSpace(int c) {
+        return c == ' ' || c == '\t' || c == '\n' || c == 0x0B || c == '\f' || c == '\r';
+    }
+
+    /** A range of text, {@code end} exclusive. */
+    private record Span(int start, int end) {
     }
 
     private static boolean leaks(Throwable t, List<String> secrets) {
