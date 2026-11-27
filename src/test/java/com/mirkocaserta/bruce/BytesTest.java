@@ -104,7 +104,8 @@ class BytesTest {
 
     @Test
     void fromFileThrowsOnMissingFile(@TempDir Path tempDir) {
-        assertThrows(BruceException.class, () -> Bytes.from(tempDir.resolve("missing.bin")));
+        Path missing = tempDir.resolve("missing.bin");
+        assertThrows(BruceException.class, () -> Bytes.from(missing));
     }
 
     // ── Null guards ──────────────────────────────────────────────────────────
@@ -188,7 +189,8 @@ class BytesTest {
 
     @Test
     void encodeNullEncodingThrows() {
-        assertThrows(BruceException.class, () -> Bytes.from("x").encode(null));
+        Bytes bytes = Bytes.from("x");
+        assertThrows(BruceException.class, () -> bytes.encode(null));
     }
 
     // ── Object contract ──────────────────────────────────────────────────────

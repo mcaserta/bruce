@@ -6,7 +6,6 @@ import java.security.KeyStore;
 import java.security.SecureRandom;
 
 import static com.mirkocaserta.bruce.Bruce.Encoding.BASE64;
-import static com.mirkocaserta.bruce.Keystores.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FeatureFacadeTest {

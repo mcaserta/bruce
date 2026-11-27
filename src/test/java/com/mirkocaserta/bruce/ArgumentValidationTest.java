@@ -35,34 +35,34 @@ class ArgumentValidationTest {
 
     @Test
     void signerBuilderRejectsNullKey() {
-        var ex = assertThrows(BruceException.class, () ->
-                Bruce.signerBuilder().algorithm("SHA256withRSA").build());
+        var builder = Bruce.signerBuilder().algorithm("SHA256withRSA");
+        var ex = assertThrows(BruceException.class, builder::build);
         assertTrue(ex.getMessage().contains("privateKey"));
     }
 
     @Test
     void signerBuilderRejectsBlankAlgorithm() {
-        var kp = keyPair("RSA", 2048);
-        assertThrows(BruceException.class, () ->
-                Bruce.signerBuilder().key(kp.getPrivate()).build());
+        var builder = Bruce.signerBuilder().key(keyPair("RSA", 2048).getPrivate());
+        assertThrows(BruceException.class, builder::build);
     }
 
     @Test
     void verifierBuilderRejectsNullKey() {
-        var ex = assertThrows(BruceException.class, () ->
-                Bruce.verifierBuilder().algorithm("SHA256withRSA").build());
+        var builder = Bruce.verifierBuilder().algorithm("SHA256withRSA");
+        var ex = assertThrows(BruceException.class, builder::build);
         assertTrue(ex.getMessage().contains("publicKey"));
     }
 
     @Test
     void digestBuilderRejectsBlankAlgorithm() {
-        assertThrows(BruceException.class, () -> Bruce.digestBuilder().build());
+        var builder = Bruce.digestBuilder();
+        assertThrows(BruceException.class, builder::build);
     }
 
     @Test
     void macBuilderRejectsNullKey() {
-        assertThrows(BruceException.class, () ->
-                Bruce.macBuilder().algorithm("HmacSHA256").build());
+        var builder = Bruce.macBuilder().algorithm("HmacSHA256");
+        assertThrows(BruceException.class, builder::build);
     }
 }
 

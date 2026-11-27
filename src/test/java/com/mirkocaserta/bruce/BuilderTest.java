@@ -101,14 +101,19 @@ class BuilderTest {
 
     @Test
     void builderValidationRejectsMissingRequiredParameters() {
-        assertThrows(BruceException.class, () -> Bruce.digestBuilder().build());
-        assertThrows(BruceException.class, () -> Bruce.macBuilder().build());
-        assertThrows(BruceException.class, () -> Bruce.signerBuilder().build());
-        assertThrows(BruceException.class, () -> Bruce.verifierBuilder().build());
-        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().buildSymmetricEncryptor());
-        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().buildAsymmetricEncryptor());
-        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().buildSymmetricEncryptorByKey());
-        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().buildAsymmetricEncryptorByKey());
+        var digestBuilder = Bruce.digestBuilder();
+        var macBuilder = Bruce.macBuilder();
+        var signerBuilder = Bruce.signerBuilder();
+        var verifierBuilder = Bruce.verifierBuilder();
+        var cipherBuilder = Bruce.cipherBuilder();
+        assertThrows(BruceException.class, digestBuilder::build);
+        assertThrows(BruceException.class, macBuilder::build);
+        assertThrows(BruceException.class, signerBuilder::build);
+        assertThrows(BruceException.class, verifierBuilder::build);
+        assertThrows(BruceException.class, cipherBuilder::buildSymmetricEncryptor);
+        assertThrows(BruceException.class, cipherBuilder::buildAsymmetricEncryptor);
+        assertThrows(BruceException.class, cipherBuilder::buildSymmetricEncryptorByKey);
+        assertThrows(BruceException.class, cipherBuilder::buildAsymmetricEncryptorByKey);
     }
 
     @Test
@@ -134,16 +139,26 @@ class BuilderTest {
         KeyStore keyStore = keystore("classpath:/keystore.p12", "password".toCharArray(), Keystores.DEFAULT_KEYSTORE_TYPE);
         var hmacKey = secretKey(keyStore, "hmac", "password".toCharArray());
 
-        assertThrows(BruceException.class, () -> Bruce.signerBuilder().key(keyPair.getPrivate()).build());
-        assertThrows(BruceException.class, () -> Bruce.signerBuilder().keys(Collections.emptyMap()).algorithm("SHA256withRSA").buildByKey());
-        assertThrows(BruceException.class, () -> Bruce.verifierBuilder().key(keyPair.getPublic()).build());
-        assertThrows(BruceException.class, () -> Bruce.verifierBuilder().keys(Collections.emptyMap()).algorithm("SHA256withRSA").buildByKey());
-        assertThrows(BruceException.class, () -> Bruce.macBuilder().algorithm("HmacSHA1").build());
-        assertThrows(BruceException.class, () -> Bruce.macBuilder().key(hmacKey).build());
-        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().algorithm("AES/CBC/PKCS5Padding").buildSymmetricEncryptorByKey());
-        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().keyAlgorithm("AES").buildSymmetricEncryptorByKey());
-        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().keys(Collections.emptyMap()).algorithm("RSA").buildAsymmetricEncryptorByKey());
-        assertThrows(BruceException.class, () -> Bruce.cipherBuilder().keys(Map.of("key", keyPair.getPublic())).buildAsymmetricEncryptorByKey());
+        var signerWithoutAlgorithm = Bruce.signerBuilder().key(keyPair.getPrivate());
+        var signerByKeyWithoutKeys = Bruce.signerBuilder().keys(Collections.emptyMap()).algorithm("SHA256withRSA");
+        var verifierWithoutAlgorithm = Bruce.verifierBuilder().key(keyPair.getPublic());
+        var verifierByKeyWithoutKeys = Bruce.verifierBuilder().keys(Collections.emptyMap()).algorithm("SHA256withRSA");
+        var macWithoutKey = Bruce.macBuilder().algorithm("HmacSHA1");
+        var macWithoutAlgorithm = Bruce.macBuilder().key(hmacKey);
+        var symmetricByKeyWithoutKeyAlgorithm = Bruce.cipherBuilder().algorithm("AES/CBC/PKCS5Padding");
+        var symmetricByKeyWithoutAlgorithm = Bruce.cipherBuilder().keyAlgorithm("AES");
+        var asymmetricByKeyWithoutKeys = Bruce.cipherBuilder().keys(Collections.emptyMap()).algorithm("RSA");
+        var asymmetricByKeyWithoutAlgorithm = Bruce.cipherBuilder().keys(Map.of("key", keyPair.getPublic()));
+        assertThrows(BruceException.class, signerWithoutAlgorithm::build);
+        assertThrows(BruceException.class, signerByKeyWithoutKeys::buildByKey);
+        assertThrows(BruceException.class, verifierWithoutAlgorithm::build);
+        assertThrows(BruceException.class, verifierByKeyWithoutKeys::buildByKey);
+        assertThrows(BruceException.class, macWithoutKey::build);
+        assertThrows(BruceException.class, macWithoutAlgorithm::build);
+        assertThrows(BruceException.class, symmetricByKeyWithoutKeyAlgorithm::buildSymmetricEncryptorByKey);
+        assertThrows(BruceException.class, symmetricByKeyWithoutAlgorithm::buildSymmetricEncryptorByKey);
+        assertThrows(BruceException.class, asymmetricByKeyWithoutKeys::buildAsymmetricEncryptorByKey);
+        assertThrows(BruceException.class, asymmetricByKeyWithoutAlgorithm::buildAsymmetricEncryptorByKey);
         assertNotNull(Bruce.macBuilder().key(hmacKey).algorithm("HmacSHA1").provider((String) null).build());
     }
 
@@ -264,12 +279,12 @@ class BuilderTest {
 
         assertNotNull(keyPair(Bruce.AsymmetricKeyAlgorithm.RSA, 1024));
         assertNotNull(keyPair(Bruce.AsymmetricKeyAlgorithm.RSA, 1024, SecureRandom.getInstanceStrong()));
-        assertFalse(symmetricKey(Bruce.SymmetricKeyAlgorithm.AES).length == 0);
+        assertNotEquals(0, symmetricKey(Bruce.SymmetricKeyAlgorithm.AES).length);
         assertFalse(symmetricKey(Bruce.SymmetricKeyAlgorithm.AES, BASE64).isBlank());
     }
 
     @Test
-    void nullProviderEnumFallsBackToDefaultProviderAcrossBuildersAndKeystores() throws Exception {
+    void nullProviderEnumFallsBackToDefaultProviderAcrossBuildersAndKeystores() {
         var keyPair = keyPair("RSA", 2048);
         var payload = Bytes.from("provider-null-fallback");
 
@@ -318,7 +333,7 @@ class BuilderTest {
 
         assertNotNull(keystore("classpath:/keystore.p12", "password".toCharArray(), DEFAULT_KEYSTORE_TYPE, (Bruce.Provider) null));
         assertNotNull(keyPair("RSA", (Bruce.Provider) null, 1024));
-        assertFalse(symmetricKey("AES", (Bruce.Provider) null).length == 0);
+        assertNotEquals(0, symmetricKey("AES", (Bruce.Provider) null).length);
         assertFalse(symmetricKey("AES", (Bruce.Provider) null, BASE64).isBlank());
     }
 
@@ -330,7 +345,8 @@ class BuilderTest {
                 .algorithm("RSA/ECB/PKCS1Padding")
                 .buildAsymmetricEncryptorByKey();
 
-        var ex = assertThrows(BruceException.class, () -> encryptorByKey.encrypt("missing", Bytes.from("hello")));
+        var plaintext = Bytes.from("hello");
+        var ex = assertThrows(BruceException.class, () -> encryptorByKey.encrypt("missing", plaintext));
         assertTrue(ex.getMessage().contains("no such key"));
     }
 }
