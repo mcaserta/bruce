@@ -15,6 +15,8 @@ import java.util.Map;
  */
 public class VerifierBuilder {
 
+    private static final String ALGORITHM = "algorithm";
+
     private PublicKey publicKey;
     private Map<String, PublicKey> publicKeyMap;
     private String algorithm;
@@ -69,7 +71,7 @@ public class VerifierBuilder {
      * @return this builder
      */
     public VerifierBuilder algorithm(SignatureAlgorithm algorithm) {
-        Preconditions.requireNonNull(algorithm, "algorithm");
+        Preconditions.requireNonNull(algorithm, ALGORITHM);
         this.algorithm = algorithm.algorithmName();
         return this;
     }
@@ -118,11 +120,11 @@ public class VerifierBuilder {
 
     private void validateSingleKeyVerifier() {
         Preconditions.requireNonNull(publicKey, "publicKey");
-        Preconditions.requireNonBlank(algorithm, "algorithm");
+        Preconditions.requireNonBlank(algorithm, ALGORITHM);
     }
 
     private void validateMultiKeyVerifier() {
         Preconditions.requireNonEmpty(publicKeyMap, "publicKeyMap");
-        Preconditions.requireNonBlank(algorithm, "algorithm");
+        Preconditions.requireNonBlank(algorithm, ALGORITHM);
     }
 }

@@ -22,6 +22,10 @@ import java.util.Map;
  */
 public class CipherBuilder {
 
+    private static final String KEY_ALGORITHM = "keyAlgorithm";
+    private static final String CIPHER_ALGORITHM = "cipherAlgorithm";
+    private static final String ALGORITHM = "algorithm";
+
     private Bytes symmetricKey;
     private Key asymmetricKey;
     private Map<String, Key> asymmetricKeys;
@@ -103,7 +107,7 @@ public class CipherBuilder {
      * @return this builder
      */
     public CipherBuilder keyAlgorithm(SymmetricAlgorithm keyAlgorithm) {
-        Preconditions.requireNonNull(keyAlgorithm, "keyAlgorithm");
+        Preconditions.requireNonNull(keyAlgorithm, KEY_ALGORITHM);
         this.keyAlgorithm = keyAlgorithm.algorithmName();
         return this;
     }
@@ -134,7 +138,7 @@ public class CipherBuilder {
      * @return this builder
      */
     public CipherBuilder algorithm(SymmetricCipherAlgorithm cipherAlgorithm) {
-        Preconditions.requireNonNull(cipherAlgorithm, "cipherAlgorithm");
+        Preconditions.requireNonNull(cipherAlgorithm, CIPHER_ALGORITHM);
         this.cipherAlgorithm = cipherAlgorithm.algorithmName();
         return this;
     }
@@ -154,7 +158,7 @@ public class CipherBuilder {
      * @return this builder
      */
     public CipherBuilder algorithm(AsymmetricAlgorithm cipherAlgorithm) {
-        Preconditions.requireNonNull(cipherAlgorithm, "cipherAlgorithm");
+        Preconditions.requireNonNull(cipherAlgorithm, CIPHER_ALGORITHM);
         this.cipherAlgorithm = cipherAlgorithm.algorithmName();
         return this;
     }
@@ -187,8 +191,8 @@ public class CipherBuilder {
      * @return this builder
      */
     public CipherBuilder algorithms(SymmetricAlgorithm keyAlgorithm, SymmetricCipherAlgorithm cipherAlgorithm) {
-        Preconditions.requireNonNull(keyAlgorithm, "keyAlgorithm");
-        Preconditions.requireNonNull(cipherAlgorithm, "cipherAlgorithm");
+        Preconditions.requireNonNull(keyAlgorithm, KEY_ALGORITHM);
+        Preconditions.requireNonNull(cipherAlgorithm, CIPHER_ALGORITHM);
         this.keyAlgorithm = keyAlgorithm.algorithmName();
         this.cipherAlgorithm = cipherAlgorithm.algorithmName();
         return this;
@@ -298,23 +302,23 @@ public class CipherBuilder {
 
     private void validateFixedSymmetricCipher() {
         Preconditions.requireNonNull(symmetricKey, "key");
-        Preconditions.requireNonBlank(keyAlgorithm, "keyAlgorithm");
-        Preconditions.requireNonBlank(cipherAlgorithm, "algorithm");
+        Preconditions.requireNonBlank(keyAlgorithm, KEY_ALGORITHM);
+        Preconditions.requireNonBlank(cipherAlgorithm, ALGORITHM);
     }
 
     private void validateAsymmetricCipher() {
         Preconditions.requireNonNull(asymmetricKey, "key");
-        Preconditions.requireNonBlank(cipherAlgorithm, "algorithm");
+        Preconditions.requireNonBlank(cipherAlgorithm, ALGORITHM);
     }
 
     private void validateSymmetricByKeyCipher() {
-        Preconditions.requireNonBlank(keyAlgorithm, "keyAlgorithm");
-        Preconditions.requireNonBlank(cipherAlgorithm, "algorithm");
+        Preconditions.requireNonBlank(keyAlgorithm, KEY_ALGORITHM);
+        Preconditions.requireNonBlank(cipherAlgorithm, ALGORITHM);
     }
 
     private void validateAsymmetricByKeyCipher() {
         Preconditions.requireNonEmpty(asymmetricKeys, "keys");
-        Preconditions.requireNonBlank(cipherAlgorithm, "algorithm");
+        Preconditions.requireNonBlank(cipherAlgorithm, ALGORITHM);
     }
 
     private static void markApiMethodsAsUsedForAnalysis() {
