@@ -103,7 +103,8 @@ public final class Pkcs1Utils {
      * @throws BruceException if the structure cannot be parsed
      */
     public static byte[] pkcs8ToPkcs1PrivateKey(byte[] pkcs8Der) {
-        // PKCS#8: SEQUENCE { INTEGER(version=0), algorithmId SEQUENCE, OCTET STRING { pkcs1 } }
+        // PKCS#8 is a SEQUENCE of the version INTEGER (0), the AlgorithmIdentifier
+        // SEQUENCE and an OCTET STRING that holds the PKCS#1 key.
         try {
             requireInput(pkcs8Der);
             Tlv outer = readTlv(pkcs8Der, 0, pkcs8Der.length);
@@ -133,7 +134,8 @@ public final class Pkcs1Utils {
      * @throws BruceException if the structure cannot be parsed
      */
     public static byte[] spkiToPkcs1PublicKey(byte[] spkiDer) {
-        // SPKI: SEQUENCE { algorithmId SEQUENCE, BIT STRING { 0x00, pkcs1 } }
+        // SPKI is a SEQUENCE of the AlgorithmIdentifier SEQUENCE and a BIT STRING
+        // whose value is a zero unused-bits byte followed by the PKCS#1 key.
         try {
             requireInput(spkiDer);
             Tlv outer = readTlv(spkiDer, 0, spkiDer.length);
@@ -163,7 +165,8 @@ public final class Pkcs1Utils {
      * Wraps PKCS#1 RSA private key bytes in a PKCS#8 structure.
      */
     static byte[] pkcs1ToPkcs8(byte[] pkcs1Der) {
-        // PKCS#8: SEQUENCE { INTEGER(0), algorithmId, OCTET STRING { pkcs1 } }
+        // PKCS#8 is a SEQUENCE of version 0, the AlgorithmIdentifier and an
+        // OCTET STRING that holds the PKCS#1 key.
         byte[] version = {0x02, 0x01, 0x00};                   // INTEGER 0
         byte[] octetString = buildTlv(0x04, pkcs1Der);
         byte[] inner = concat(version, RSA_ALGORITHM_IDENTIFIER, octetString);
@@ -174,7 +177,8 @@ public final class Pkcs1Utils {
      * Wraps PKCS#1 RSA public key bytes in SubjectPublicKeyInfo (X.509) structure.
      */
     static byte[] pkcs1ToSpki(byte[] pkcs1Der) {
-        // SPKI: SEQUENCE { algorithmId, BIT STRING { 0x00, pkcs1 } }
+        // SPKI is a SEQUENCE of the AlgorithmIdentifier and a BIT STRING that
+        // holds the PKCS#1 key.
         byte[] bitString = buildBitString(pkcs1Der);
         byte[] inner = concat(RSA_ALGORITHM_IDENTIFIER, bitString);
         return buildTlv(0x30, inner);
@@ -323,7 +327,8 @@ public final class Pkcs1Utils {
     }
 
     private static byte[] buildBitString(byte[] content) {
-        // BIT STRING value = { unused_bits=0x00, content... }
+        // A BIT STRING value starts with the unused-bits count, zero here,
+        // followed by the content.
         byte[] bitContent = new byte[content.length + 1];
         bitContent[0] = 0x00;
         System.arraycopy(content, 0, bitContent, 1, content.length);
