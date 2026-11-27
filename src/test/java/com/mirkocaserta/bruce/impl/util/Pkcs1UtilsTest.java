@@ -110,7 +110,8 @@ class Pkcs1UtilsTest {
 
     @Test
     void octetStringPastEndOfInputIsRejected() {
-        // SEQUENCE { INTEGER 0, SEQUENCE {}, OCTET STRING len=10 but only 2 bytes }
+        // a SEQUENCE of INTEGER 0, an empty SEQUENCE and an OCTET STRING that
+        // claims 10 bytes but only has 2
         byte[] der = {0x30, 0x09, 0x02, 0x01, 0x00, 0x30, 0x00, 0x04, 0x0a, 0x01, 0x02};
         BruceException e = assertThrows(BruceException.class, () -> Pkcs1Utils.pkcs8ToPkcs1PrivateKey(der));
         assertTrue(e.getMessage().contains("PKCS#8"), e.getMessage());
@@ -186,7 +187,7 @@ class Pkcs1UtilsTest {
 
     @Test
     void emptyBitStringIsRejected() {
-        // SEQUENCE { SEQUENCE {}, BIT STRING len=0 }
+        // a SEQUENCE of an empty SEQUENCE and a zero-length BIT STRING
         byte[] der = {0x30, 0x04, 0x30, 0x00, 0x03, 0x00};
         BruceException e = assertThrows(BruceException.class, () -> Pkcs1Utils.spkiToPkcs1PublicKey(der));
         assertTrue(e.getMessage().contains("SubjectPublicKeyInfo"), e.getMessage());
