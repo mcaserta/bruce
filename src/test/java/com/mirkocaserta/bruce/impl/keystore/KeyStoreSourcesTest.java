@@ -267,18 +267,19 @@ class KeyStoreSourcesTest {
 
     @Test
     void loadKeyStoreDoesNotLeakUserInfo() {
+        char[] password = "pw".toCharArray();
         BruceException e = assertThrows(BruceException.class,
-                () -> KeyStoreOperations.loadKeyStore("https://user:secret@exa mple.com/ks.p12", "pw".toCharArray()));
+                () -> KeyStoreOperations.loadKeyStore("https://user:secret@exa mple.com/ks.p12", password));
         assertNoSecretInChain(e);
         assertTrue(e.getMessage().contains("https://***@exa mple.com/ks.p12"), e.getMessage());
 
         BruceException http = assertThrows(BruceException.class,
-                () -> KeyStoreOperations.loadKeyStore("http://user:secret@example.com/ks.p12", "pw".toCharArray()));
+                () -> KeyStoreOperations.loadKeyStore("http://user:secret@example.com/ks.p12", password));
         assertNoSecretInChain(http);
         assertTrue(http.getMessage().contains("plain HTTP is not supported"), http.getMessage());
 
         BruceException file = assertThrows(BruceException.class,
-                () -> KeyStoreOperations.loadKeyStore("file://user:secret@host/ks.p12", "pw".toCharArray()));
+                () -> KeyStoreOperations.loadKeyStore("file://user:secret@host/ks.p12", password));
         assertNoSecretInChain(file);
     }
 
@@ -313,6 +314,7 @@ class KeyStoreSourcesTest {
 
     @Test
     void loadKeyStoreDoesNotLeakQueryTokens() {
+        char[] password = "pw".toCharArray();
         for (String location : new String[]{
                 "https://exa%zzmple.com/ks.p12?token=secret",
                 "https://exa mple.com/ks.p12?token=secret",
@@ -320,15 +322,16 @@ class KeyStoreSourcesTest {
                 "https://example.com/ks.p12?a=1 &token=secret",
                 "https://example.com/ks.p12#token=secret x"}) {
             BruceException e = assertThrows(BruceException.class,
-                    () -> KeyStoreOperations.loadKeyStore(location, "pw".toCharArray()));
+                    () -> KeyStoreOperations.loadKeyStore(location, password));
             assertNoSecretInChain(e);
         }
     }
 
     @Test
     void invalidFilePathDoesNotLeakTheLocation() {
+        char[] password = "pw".toCharArray();
         BruceException e = assertThrows(BruceException.class,
-                () -> KeyStoreOperations.loadKeyStore("file://user:secret@host/ks\u0000.p12", "pw".toCharArray()));
+                () -> KeyStoreOperations.loadKeyStore("file://user:secret@host/ks\u0000.p12", password));
         assertNoSecretInChain(e);
     }
 
