@@ -277,7 +277,7 @@ class KeyStoreSourcesTest {
     }
 
     @Test
-    void userInfoRedactionIsLinear() {
+    void redactionIsLinear() {
         String noAt = "://" + "a".repeat(200_000);
         String manySeparators = "://a".repeat(100_000);
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
