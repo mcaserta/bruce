@@ -44,10 +44,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public final class Bytes {
 
-    private final byte[] bytes;
+    private final byte[] value;
 
     private Bytes(byte[] bytes) {
-        this.bytes = Arrays.copyOf(bytes, bytes.length);
+        this.value = Arrays.copyOf(bytes, bytes.length);
     }
 
     // ── Factories ────────────────────────────────────────────────────────────
@@ -173,7 +173,7 @@ public final class Bytes {
      * @return a defensive copy of the raw bytes
      */
     public byte[] asBytes() {
-        return Arrays.copyOf(bytes, bytes.length);
+        return Arrays.copyOf(value, value.length);
     }
 
     /**
@@ -184,7 +184,7 @@ public final class Bytes {
      */
     public String encode(Bruce.Encoding encoding) {
         Preconditions.requireNonNull(encoding, "encoding");
-        return EncodingUtils.encode(encoding, bytes);
+        return EncodingUtils.encode(encoding, value);
     }
 
     /**
@@ -196,7 +196,7 @@ public final class Bytes {
      */
     public String toPem(PemType type) {
         Preconditions.requireNonNull(type, "type");
-        return PemUtils.encode(type, bytes);
+        return PemUtils.encode(type, value);
     }
 
 
@@ -217,7 +217,7 @@ public final class Bytes {
      */
     public String asString(Charset charset) {
         Preconditions.requireNonNull(charset, "charset");
-        return new String(bytes, charset);
+        return new String(value, charset);
     }
 
     /**
@@ -226,7 +226,7 @@ public final class Bytes {
      * @return {@code true} if empty
      */
     public boolean isEmpty() {
-        return bytes.length == 0;
+        return value.length == 0;
     }
 
     /**
@@ -235,7 +235,7 @@ public final class Bytes {
      * @return byte count
      */
     public int length() {
-        return bytes.length;
+        return value.length;
     }
 
     // ── Object contract ──────────────────────────────────────────────────────
@@ -258,18 +258,18 @@ public final class Bytes {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Bytes other)) return false;
-        return Arrays.equals(bytes, other.bytes);
+        return Arrays.equals(value, other.value);
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(bytes);
+        return Arrays.hashCode(value);
     }
 
     /** Returns a safe summary string that does not expose the byte contents. */
     @Override
     public String toString() {
-        return "Bytes[" + bytes.length + "]";
+        return "Bytes[" + value.length + "]";
     }
 }
 
