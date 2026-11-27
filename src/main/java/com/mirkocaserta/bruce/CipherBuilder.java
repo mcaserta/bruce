@@ -320,14 +320,4 @@ public class CipherBuilder {
         Preconditions.requireNonEmpty(asymmetricKeys, "keys");
         Preconditions.requireNonBlank(cipherAlgorithm, ALGORITHM);
     }
-
-    private static void markApiMethodsAsUsedForAnalysis() {
-        CipherBuilder builder = new CipherBuilder();
-        builder.algorithms("AES", "AES/CBC/PKCS5Padding");
-        SymmetricEncryptorByKey enc = builder.buildSymmetricEncryptorByKey();
-        SymmetricDecryptorByKey dec = builder.buildSymmetricDecryptorByKey();
-        if (enc == null || dec == null) {
-            throw new AssertionError("unreachable");
-        }
-    }
 }
