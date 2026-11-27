@@ -31,7 +31,8 @@ class KeyStoreOperationsTest {
         KeyStore keyStore = mock(KeyStore.class);
         when(keyStore.getEntry(anyString(), any(KeyStore.ProtectionParameter.class))).thenThrow(new KeyStoreException("boom"));
 
-        assertThrows(BruceException.class, () -> KeyStoreOperations.loadPrivateKey(keyStore, "missing", "password".toCharArray()));
+        char[] password = "password".toCharArray();
+        assertThrows(BruceException.class, () -> KeyStoreOperations.loadPrivateKey(keyStore, "missing", password));
     }
 
     @Test
@@ -39,7 +40,8 @@ class KeyStoreOperationsTest {
         KeyStore keyStore = mock(KeyStore.class);
         when(keyStore.getKey(anyString(), any(char[].class))).thenThrow(new KeyStoreException("boom"));
 
-        assertThrows(BruceException.class, () -> KeyStoreOperations.loadSecretKey(keyStore, "missing", "password".toCharArray()));
+        char[] password = "password".toCharArray();
+        assertThrows(BruceException.class, () -> KeyStoreOperations.loadSecretKey(keyStore, "missing", password));
     }
 
     @Test
@@ -65,21 +67,22 @@ class KeyStoreOperationsTest {
 
     @Test
     void storeKeyStoreRejectsNullInputs() {
-        assertThrows(BruceException.class, () -> KeyStoreOperations.storeKeyStore(null, "password".toCharArray()));
+        char[] password = "password".toCharArray();
+        KeyStore keyStore = mock(KeyStore.class);
 
-        assertThrows(BruceException.class,
-                () -> KeyStoreOperations.storeKeyStore(mock(KeyStore.class), null));
+        assertThrows(BruceException.class, () -> KeyStoreOperations.storeKeyStore(null, password));
 
-        assertThrows(BruceException.class,
-                () -> KeyStoreOperations.storeKeyStore(mock(KeyStore.class), "password".toCharArray(), null));
+        assertThrows(BruceException.class, () -> KeyStoreOperations.storeKeyStore(keyStore, null));
+
+        assertThrows(BruceException.class, () -> KeyStoreOperations.storeKeyStore(keyStore, password, null));
     }
 
     @Test
     void storeKeyStoreWrapsSerializationFailure() throws Exception {
         KeyStore uninitialized = KeyStore.getInstance("PKCS12");
+        char[] password = "password".toCharArray();
 
-        assertThrows(BruceException.class,
-                () -> KeyStoreOperations.storeKeyStore(uninitialized, "password".toCharArray()));
+        assertThrows(BruceException.class, () -> KeyStoreOperations.storeKeyStore(uninitialized, password));
     }
 
     @Test
@@ -87,9 +90,9 @@ class KeyStoreOperationsTest {
         var keyStore = KeyStoreOperations.loadKeyStore("classpath:/keystore-alice.p12", "password".toCharArray(), "PKCS12");
         Path tempDir = Files.createTempDirectory("bruce-keystore-ops-dir-");
         Path missingParent = tempDir.resolve("missing-dir").resolve("keystore.p12");
+        char[] password = "password".toCharArray();
 
-        assertThrows(BruceException.class,
-                () -> KeyStoreOperations.storeKeyStore(keyStore, "password".toCharArray(), missingParent));
+        assertThrows(BruceException.class, () -> KeyStoreOperations.storeKeyStore(keyStore, password, missingParent));
 
         Files.deleteIfExists(tempDir);
     }

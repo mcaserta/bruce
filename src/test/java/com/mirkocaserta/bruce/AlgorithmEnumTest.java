@@ -172,8 +172,8 @@ class AlgorithmEnumTest {
 
     @Test
     void digestBuilderRejectsNullEnumAlgorithm() {
-        assertThrows(BruceException.class, () ->
-                Bruce.digestBuilder().algorithm((DigestAlgorithm) null).build());
+        var builder = Bruce.digestBuilder();
+        assertThrows(BruceException.class, () -> builder.algorithm((DigestAlgorithm) null));
     }
 
     // ── MacBuilder enum overload ─────────────────────────────────────────────
@@ -206,8 +206,8 @@ class AlgorithmEnumTest {
     void macBuilderRejectsNullEnumAlgorithm() {
         var keyStore = keystore("classpath:/keystore.p12", "password".toCharArray(), DEFAULT_KEYSTORE_TYPE);
         var hmacKey  = secretKey(keyStore, "hmac", "password".toCharArray());
-        assertThrows(BruceException.class, () ->
-                Bruce.macBuilder().key(hmacKey).algorithm((MacAlgorithm) null).build());
+        var builder = Bruce.macBuilder().key(hmacKey);
+        assertThrows(BruceException.class, () -> builder.algorithm((MacAlgorithm) null));
     }
 
     // ── SignerBuilder / VerifierBuilder enum overloads ───────────────────────
@@ -250,15 +250,15 @@ class AlgorithmEnumTest {
     @Test
     void signerBuilderRejectsNullEnumAlgorithm() {
         var keyPair = keyPair("RSA", 2048);
-        assertThrows(BruceException.class, () ->
-                Bruce.signerBuilder().key(keyPair.getPrivate()).algorithm((SignatureAlgorithm) null).build());
+        var builder = Bruce.signerBuilder().key(keyPair.getPrivate());
+        assertThrows(BruceException.class, () -> builder.algorithm((SignatureAlgorithm) null));
     }
 
     @Test
     void verifierBuilderRejectsNullEnumAlgorithm() {
         var keyPair = keyPair("RSA", 2048);
-        assertThrows(BruceException.class, () ->
-                Bruce.verifierBuilder().key(keyPair.getPublic()).algorithm((SignatureAlgorithm) null).build());
+        var builder = Bruce.verifierBuilder().key(keyPair.getPublic());
+        assertThrows(BruceException.class, () -> builder.algorithm((SignatureAlgorithm) null));
     }
 
     @Test
@@ -366,16 +366,14 @@ class AlgorithmEnumTest {
 
     @Test
     void cipherBuilderRejectsNullSymmetricEnumAlgorithms() {
+        var builder = Bruce.cipherBuilder();
         assertThrows(BruceException.class, () ->
-                Bruce.cipherBuilder().algorithms((SymmetricAlgorithm) null, SymmetricCipherAlgorithm.AES_CBC_PKCS5));
+                builder.algorithms((SymmetricAlgorithm) null, SymmetricCipherAlgorithm.AES_CBC_PKCS5));
         assertThrows(BruceException.class, () ->
-                Bruce.cipherBuilder().algorithms(SymmetricAlgorithm.AES, (SymmetricCipherAlgorithm) null));
-        assertThrows(BruceException.class, () ->
-                Bruce.cipherBuilder().keyAlgorithm((SymmetricAlgorithm) null));
-        assertThrows(BruceException.class, () ->
-                Bruce.cipherBuilder().algorithm((SymmetricCipherAlgorithm) null));
-        assertThrows(BruceException.class, () ->
-                Bruce.cipherBuilder().algorithm((AsymmetricAlgorithm) null));
+                builder.algorithms(SymmetricAlgorithm.AES, (SymmetricCipherAlgorithm) null));
+        assertThrows(BruceException.class, () -> builder.keyAlgorithm((SymmetricAlgorithm) null));
+        assertThrows(BruceException.class, () -> builder.algorithm((SymmetricCipherAlgorithm) null));
+        assertThrows(BruceException.class, () -> builder.algorithm((AsymmetricAlgorithm) null));
     }
 
     // ── CipherBuilder asymmetric enum overloads ──────────────────────────────

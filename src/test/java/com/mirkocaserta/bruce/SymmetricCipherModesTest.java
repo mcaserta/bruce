@@ -55,8 +55,9 @@ class SymmetricCipherModesTest {
 
         byte[] tampered = encryptor.encrypt(iv, PLAINTEXT).asBytes();
         tampered[0] ^= 0x01;
+        Bytes tamperedCiphertext = Bytes.from(tampered);
 
-        assertThrows(BruceException.class, () -> decryptor.decrypt(iv, Bytes.from(tampered)));
+        assertThrows(BruceException.class, () -> decryptor.decrypt(iv, tamperedCiphertext));
     }
 
     @Test

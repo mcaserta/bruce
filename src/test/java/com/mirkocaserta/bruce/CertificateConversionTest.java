@@ -93,7 +93,8 @@ class CertificateConversionTest {
         @DisplayName("keyToDer throws on key with no encoded form")
         void keyToDerThrowsOnNullEncoding() {
             // Use a key implementation that returns null from getEncoded()
-            assertThrows(BruceException.class, () -> keyToDer(new NoEncodingKey()));
+            var key = new NoEncodingKey();
+            assertThrows(BruceException.class, () -> keyToDer(key));
         }
 
         @Test
@@ -117,7 +118,8 @@ class CertificateConversionTest {
         @Test
         @DisplayName("certificateToDer throws when certificate encoding fails")
         void certificateToDerThrowsOnEncodingFailure() {
-            assertThrows(BruceException.class, () -> certificateToDer(new FailingCertificate()));
+            var certificate = new FailingCertificate();
+            assertThrows(BruceException.class, () -> certificateToDer(certificate));
         }
     }
 
@@ -190,8 +192,8 @@ class CertificateConversionTest {
         @Test
         @DisplayName("derToPem rejects null PEM type")
         void derToPemRejectsNullType() {
-            KeyPair kp = keyPair("RSA", 2048);
-            assertThrows(BruceException.class, () -> derToPem(kp.getPublic().getEncoded(), null));
+            byte[] der = keyPair("RSA", 2048).getPublic().getEncoded();
+            assertThrows(BruceException.class, () -> derToPem(der, null));
         }
     }
 
@@ -246,8 +248,8 @@ class CertificateConversionTest {
         @Test
         @DisplayName("rsaPrivateKeyToPkcs1 throws on null-encoding key")
         void rsaPrivateKeyToPkcs1ThrowsOnNullEncoding() {
-            assertThrows(BruceException.class,
-                    () -> rsaPrivateKeyToPkcs1(new NoEncodingPrivateKey()));
+            var key = new NoEncodingPrivateKey();
+            assertThrows(BruceException.class, () -> rsaPrivateKeyToPkcs1(key));
         }
 
         @Test
@@ -268,16 +270,16 @@ class CertificateConversionTest {
         @DisplayName("rsaPrivateKeyToPkcs1 throws on truncated PKCS#8 encoding")
         void rsaPrivateKeyToPkcs1ThrowsOnTruncatedPkcs8() {
             // 0x30 0x00 is a valid SEQUENCE tag but an empty body; parsing fails
-            assertThrows(BruceException.class,
-                    () -> rsaPrivateKeyToPkcs1(new StubPrivateKey(new byte[]{0x30, 0x00})));
+            var key = new StubPrivateKey(new byte[]{0x30, 0x00});
+            assertThrows(BruceException.class, () -> rsaPrivateKeyToPkcs1(key));
         }
 
         @Test
         @DisplayName("rsaPrivateKeyToPkcs1 throws on wrong outer DER tag")
         void rsaPrivateKeyToPkcs1ThrowsOnWrongOuterTag() {
             // 0x04 is OCTET STRING, not the expected SEQUENCE (0x30)
-            assertThrows(BruceException.class,
-                    () -> rsaPrivateKeyToPkcs1(new StubPrivateKey(new byte[]{0x04, 0x01, 0x00})));
+            var key = new StubPrivateKey(new byte[]{0x04, 0x01, 0x00});
+            assertThrows(BruceException.class, () -> rsaPrivateKeyToPkcs1(key));
         }
 
         @Test
@@ -286,8 +288,8 @@ class CertificateConversionTest {
             // Valid SEQUENCE containing version INTEGER + algorithmId SEQUENCE,
             // but BIT STRING (0x03) where OCTET STRING (0x04) is expected
             byte[] crafted = {0x30, 0x0a, 0x02, 0x01, 0x00, 0x30, 0x02, 0x05, 0x00, 0x03, 0x01, 0x00};
-            assertThrows(BruceException.class,
-                    () -> rsaPrivateKeyToPkcs1(new StubPrivateKey(crafted)));
+            var key = new StubPrivateKey(crafted);
+            assertThrows(BruceException.class, () -> rsaPrivateKeyToPkcs1(key));
         }
     }
 
@@ -341,8 +343,8 @@ class CertificateConversionTest {
         @Test
         @DisplayName("rsaPublicKeyToPkcs1 throws on null-encoding key")
         void rsaPublicKeyToPkcs1ThrowsOnNullEncoding() {
-            assertThrows(BruceException.class,
-                    () -> rsaPublicKeyToPkcs1(new NoEncodingPublicKey()));
+            var key = new NoEncodingPublicKey();
+            assertThrows(BruceException.class, () -> rsaPublicKeyToPkcs1(key));
         }
 
         @Test
@@ -370,15 +372,15 @@ class CertificateConversionTest {
         @Test
         @DisplayName("rsaPublicKeyToPkcs1 throws on truncated SPKI encoding")
         void rsaPublicKeyToPkcs1ThrowsOnTruncatedSpki() {
-            assertThrows(BruceException.class,
-                    () -> rsaPublicKeyToPkcs1(new StubPublicKey(new byte[]{0x30, 0x00})));
+            var key = new StubPublicKey(new byte[]{0x30, 0x00});
+            assertThrows(BruceException.class, () -> rsaPublicKeyToPkcs1(key));
         }
 
         @Test
         @DisplayName("rsaPublicKeyToPkcs1 throws on wrong outer DER tag")
         void rsaPublicKeyToPkcs1ThrowsOnWrongOuterTag() {
-            assertThrows(BruceException.class,
-                    () -> rsaPublicKeyToPkcs1(new StubPublicKey(new byte[]{0x04, 0x01, 0x00})));
+            var key = new StubPublicKey(new byte[]{0x04, 0x01, 0x00});
+            assertThrows(BruceException.class, () -> rsaPublicKeyToPkcs1(key));
         }
 
         @Test
@@ -387,8 +389,8 @@ class CertificateConversionTest {
             // Valid SEQUENCE + algorithmId SEQUENCE, but OCTET STRING (0x04) where
             // BIT STRING (0x03) is expected
             byte[] crafted = {0x30, 0x07, 0x30, 0x02, 0x05, 0x00, 0x04, 0x01, 0x00};
-            assertThrows(BruceException.class,
-                    () -> rsaPublicKeyToPkcs1(new StubPublicKey(crafted)));
+            var key = new StubPublicKey(crafted);
+            assertThrows(BruceException.class, () -> rsaPublicKeyToPkcs1(key));
         }
 
         @Test
@@ -396,8 +398,8 @@ class CertificateConversionTest {
         void rsaPublicKeyToPkcs1ThrowsOnNonZeroUnusedBits() {
             // BIT STRING value byte 0x01 (non-zero unused bits count) is invalid DER
             byte[] crafted = {0x30, 0x08, 0x30, 0x02, 0x05, 0x00, 0x03, 0x02, 0x01, 0x00};
-            assertThrows(BruceException.class,
-                    () -> rsaPublicKeyToPkcs1(new StubPublicKey(crafted)));
+            var key = new StubPublicKey(crafted);
+            assertThrows(BruceException.class, () -> rsaPublicKeyToPkcs1(key));
         }
     }
 
@@ -452,10 +454,14 @@ class CertificateConversionTest {
         }
         @Override public void verify(PublicKey key)
                 throws CertificateException, NoSuchAlgorithmException,
-                       InvalidKeyException, NoSuchProviderException, SignatureException {}
+                       InvalidKeyException, NoSuchProviderException, SignatureException {
+            // not exercised: these tests only call getEncoded()
+        }
         @Override public void verify(PublicKey key, String sigProvider)
                 throws CertificateException, NoSuchAlgorithmException,
-                       InvalidKeyException, NoSuchProviderException, SignatureException {}
+                       InvalidKeyException, NoSuchProviderException, SignatureException {
+            // not exercised: these tests only call getEncoded()
+        }
         @Override public String toString()     { return "FailingCertificate"; }
         @Override public PublicKey getPublicKey() { return null; }
     }
