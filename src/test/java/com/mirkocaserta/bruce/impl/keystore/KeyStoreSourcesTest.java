@@ -255,6 +255,27 @@ class KeyStoreSourcesTest {
         assertEquals("", KeyStoreSources.redact(""));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {" ", "\t", "\n", "\u000B", "\f", "\r"})
+    void queryAndFragmentEndAtWhitespace(String space) {
+        assertEquals("https://h/p?***" + space + "next",
+                KeyStoreSources.redact("https://h/p?t=1" + space + "next"));
+        assertEquals("https://h/p#***" + space + "next",
+                KeyStoreSources.redact("https://h/p#t=1" + space + "next"));
+        // a URL with whitespace before the ? is not followed into the query
+        assertEquals("https://h" + space + "p?t=1", KeyStoreSources.redact("https://h" + space + "p?t=1"));
+    }
+
+    @Test
+    void queryAndFragmentRedactionEdgeCases() {
+        assertEquals("https://h?***", KeyStoreSources.redact("https://h?"));
+        assertEquals("https://h?***#***", KeyStoreSources.redact("https://h?a#b"));
+        assertEquals("https://h?***#***", KeyStoreSources.redact("https://h?a?b#c#d"));
+        assertEquals("a https://h?*** b https://g#***", KeyStoreSources.redact("a https://h?x b https://g#y"));
+        assertEquals("x://a/y://b?***", KeyStoreSources.redact("x://a/y://b?c"));
+        assertEquals("h/p?t=1", KeyStoreSources.redact("h/p?t=1"));
+    }
+
     @Test
     void userInfoRedactionIsLinear() {
         String noAt = "://" + "a".repeat(200_000);
